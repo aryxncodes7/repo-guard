@@ -27,12 +27,18 @@ const INITIAL_MESSAGE: ChatMessage = {
   text: "Hello! I am RepoGuard's Resident Auditor. Ask me about your security scan results, fixing plain-text secrets, resolving vulnerabilities, or modifying repository code structures."
 };
 
+const ALLOWED_EMAIL_DOMAINS = ['github.com', 'gmail.com', 'outlook.com', 'hotmail.com', 'yahoo.com', 'protonmail.com', 'proton.me', 'google.com'];
+
 function getSafeHref(href?: string) {
   if (!href) return undefined;
   try {
     const parsed = new URL(href, window.location.origin);
     if (parsed.protocol === 'mailto:') {
       const email = parsed.pathname.trim();
+      const domain = email.split('@').pop()?.toLowerCase();
+      if (!domain || !ALLOWED_EMAIL_DOMAINS.includes(domain)) {
+        return undefined;
+      }
       if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
         return undefined;
       }

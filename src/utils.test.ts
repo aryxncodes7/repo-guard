@@ -40,6 +40,8 @@ test("normalizeGithubRepoUrl parses valid and invalid URLs", () => {
     "https://github.com/expressjs/express"
   );
   assert.strictEqual(normalizeGithubRepoUrl("https://malicious.site.com/foo/bar"), "");
+  assert.strictEqual(normalizeGithubRepoUrl("https://github.com/../express"), "");
+  assert.strictEqual(normalizeGithubRepoUrl("https://github.com/expressjs\\express"), "");
 });
 
 test("normalizePrNumber formats numbers and handles invalid values", () => {
@@ -58,16 +60,20 @@ test("parseGithubRepo gets owner and repo", () => {
   assert.deepStrictEqual(shortResult, { owner: "owner", repo: "my-repo" });
 
   assert.strictEqual(parseGithubRepo("invalid-format"), null);
+  assert.strictEqual(parseGithubRepo("https://github.com/../repo"), null);
+  assert.strictEqual(parseGithubRepo("https://github.com/owner\\repo"), null);
 });
 
 test("cleanClientRepoUrl adds https prefix if missing", () => {
-  assert.strictEqual(cleanClientRepoUrl("github.com/foo/bar"), "https://github.com/github.com/foo/bar");
+  assert.strictEqual(cleanClientRepoUrl("github.com/foo/bar"), "https://github.com/foo/bar");
   assert.strictEqual(cleanClientRepoUrl("https://github.com/foo/bar"), "https://github.com/foo/bar");
   assert.strictEqual(cleanClientRepoUrl(""), "https://github.com/");
   assert.strictEqual(cleanClientRepoUrl("   "), "https://github.com/");
   assert.strictEqual(cleanClientRepoUrl("javascript:alert(1)"), "https://github.com/");
   assert.strictEqual(cleanClientRepoUrl("data:text/html,malicious"), "https://github.com/");
   assert.strictEqual(cleanClientRepoUrl("github.com/../malicious"), "https://github.com/");
+  assert.strictEqual(cleanClientRepoUrl("https://github.com/foo/bar?query=../../injection"), "https://github.com/foo/bar");
+  assert.strictEqual(cleanClientRepoUrl("github.com\\foo/bar"), "https://github.com/");
   assert.strictEqual(cleanClientRepoUrl("//github.com/foo/bar"), "https://github.com/foo/bar");
 });
 

@@ -510,7 +510,7 @@ export default function App() {
           </div>
 
           <div className="p-4 border-t border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-800 text-center text-[10px] text-slate-400 dark:text-zinc-500 font-extrabold uppercase tracking-wide font-sans">
-            BUILT BY <a href="https://github.com/aryxncodes7" target="_blank" rel="noopener noreferrer" className="text-emerald-600 dark:text-emerald-400 font-extrabold hover:underline transition">ARYAN RAJ</a> • REPOGUARD SUITE
+            BUILT BY <a href="https://github.com/aryxncodes7" target="_blank" rel="noopener noreferrer" className="text-emerald-600 dark:text-emerald-400 font-extrabold hover:underline transition">ARYAN RAJ</a> • REPOGUARD
           </div>
         </div>
       </div>
@@ -920,7 +920,7 @@ export default function App() {
           <footer className="border-t border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 py-4 px-4 text-center mt-auto">
             <div className="max-w-[1500px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2.5">
               <span className="text-[9.5px] font-sans text-slate-400 dark:text-zinc-500 tracking-wider font-extrabold uppercase">
-                &copy; REPOGUARD SUITE. ALL RIGHTS RESERVED.
+                &copy; REPOGUARD. ALL RIGHTS RESERVED.
               </span>
               <span className="text-[9.5px] font-sans text-slate-500 dark:text-zinc-400 font-extrabold uppercase tracking-wide">
                 BUILT BY <a href="https://github.com/aryxncodes7" target="_blank" rel="noopener noreferrer" className="text-emerald-600 dark:text-emerald-400 font-extrabold hover:underline transition-all" id="aryan-raj-footer-link">ARYAN RAJ</a>

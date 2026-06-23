@@ -24,6 +24,11 @@ export function normalizeGithubRepoUrl(rawUrl: unknown): string {
   const repoUrl = clampText(rawUrl, MAX_REPO_URL_LENGTH);
   if (!repoUrl) return "";
 
+  // Reject relative paths, double dots, or backslashes
+  if (repoUrl.includes("..") || repoUrl.includes("\\")) {
+    return "";
+  }
+
   try {
     // Basic fix to support input starting with 'github.com/owner/repo' or 'owner/repo'
     let normalizedInput = repoUrl;
@@ -33,14 +38,21 @@ export function normalizeGithubRepoUrl(rawUrl: unknown): string {
 
     const parsed = new URL(normalizedInput);
     const pathParts = parsed.pathname.split("/").filter(Boolean);
+    
+    if (pathParts.length < 2) return "";
+    
+    const owner = pathParts[0];
+    const repo = pathParts[1];
+    
     const isGithubRepo =
       parsed.protocol === "https:" &&
       parsed.hostname.toLowerCase() === "github.com" &&
-      pathParts.length >= 2 &&
-      /^[A-Za-z0-9_.-]+$/.test(pathParts[0]) &&
-      /^[A-Za-z0-9_.-]+$/.test(pathParts[1]);
+      /^[A-Za-z0-9_.-]+$/.test(owner) &&
+      /^[A-Za-z0-9_.-]+$/.test(repo) &&
+      owner !== "." && owner !== ".." &&
+      repo !== "." && repo !== "..";
 
-    return isGithubRepo ? `https://github.com/${pathParts[0]}/${pathParts[1]}` : "";
+    return isGithubRepo ? `https://github.com/${owner}/${repo}` : "";
   } catch {
     return "";
   }
@@ -55,6 +67,10 @@ export function normalizePrNumber(rawPrNumber: unknown): string | undefined {
 export function parseGithubRepo(repoUrl: string): { owner: string; repo: string } | null {
   try {
     const cleanedUrl = repoUrl.trim().replace(/\/$/, "");
+    if (cleanedUrl.includes("..") || cleanedUrl.includes("\\")) {
+      return null;
+    }
+    
     let urlToParse = cleanedUrl;
     if (!cleanedUrl.startsWith("http://") && !cleanedUrl.startsWith("https://")) {
       urlToParse = "https://" + cleanedUrl.replace(/^(github\.com\/)?/i, "github.com/");
@@ -62,7 +78,16 @@ export function parseGithubRepo(repoUrl: string): { owner: string; repo: string 
     const parsed = new URL(urlToParse);
     const pathParts = parsed.pathname.split("/").filter(Boolean);
     if (pathParts.length >= 2) {
-      return { owner: pathParts[0], repo: pathParts[1] };
+      const owner = pathParts[0];
+      const repo = pathParts[1];
+      if (
+        /^[A-Za-z0-9_.-]+$/.test(owner) &&
+        /^[A-Za-z0-9_.-]+$/.test(repo) &&
+        owner !== "." && owner !== ".." &&
+        repo !== "." && repo !== ".."
+      ) {
+        return { owner, repo };
+      }
     }
   } catch {
     // ignore
@@ -74,17 +99,29 @@ export function cleanClientRepoUrl(repoUrl: string): string {
   const trimmed = (repoUrl || "").trim();
   if (!trimmed) return "https://github.com/";
 
-  // Detect and reject relative path traversals or malicious schemes (XSS)
-  if (trimmed.includes("..") || /^(javascript|data|file|vbscript):/i.test(trimmed)) {
+  // Detect and reject relative path traversals, backslashes, or malicious schemes (XSS)
+  if (trimmed.includes("..") || trimmed.includes("\\") || /^(javascript|data|file|vbscript):/i.test(trimmed)) {
     return "https://github.com/";
   }
 
   // Handle protocol relative URLs
+  let normalized = trimmed;
   if (trimmed.startsWith("//")) {
-    return `https:${trimmed}`;
+    normalized = `https:${trimmed}`;
+  } else if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) {
+    normalized = "https://" + trimmed.replace(/^(github\.com\/)?/i, "github.com/");
   }
 
-  return trimmed.startsWith("http") ? trimmed : `https://github.com/${trimmed}`;
+  try {
+    const parsed = new URL(normalized);
+    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+      return "https://github.com/";
+    }
+    // Strip query parameters and fragment to prevent path injection
+    return `${parsed.protocol}//${parsed.host}${parsed.pathname}`;
+  } catch {
+    return "https://github.com/";
+  }
 }
 
 export function getShortRepoName(repoUrl: string): string {
