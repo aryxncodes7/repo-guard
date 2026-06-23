@@ -26,6 +26,12 @@ const MAX_CHAT_MESSAGE_LENGTH = 2000;
 const MAX_REPO_URL_LENGTH = 200;
 
 app.disable("x-powered-by");
+app.use((req, _res, next) => {
+  if (process.env.VERCEL && req.originalUrl) {
+    req.url = req.originalUrl;
+  }
+  next();
+});
 app.use((_req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
