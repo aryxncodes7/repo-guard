@@ -5,7 +5,6 @@
 
 import express from "express";
 import path from "path";
-import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import type { GenerateContentConfig } from "@google/genai";
 import dotenv from "dotenv";
@@ -17,7 +16,7 @@ import {
   normalizeGithubRepoUrl, 
   normalizePrNumber, 
   parseGithubRepo 
-} from "./src/utils.js";
+} from "./src/utils";
 
 const app = express();
 const PORT = 3000;
@@ -649,6 +648,7 @@ app.post("/api/chat", async (req, res) => {
 // Configure Vite middleware or static delivery
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",

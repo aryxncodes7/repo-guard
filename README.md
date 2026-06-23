@@ -1,38 +1,40 @@
-# 🛡️ RepoGuard: AI-Powered Repository Security Companion
+# 🛡️ RepoGuard — AI-Powered Repository Security Companion
 
-RepoGuard is a state-of-the-art multi-agent repository auditor and security companion designed to scan source code repositories and Pull Requests. It automatically identifies security vulnerabilities, exposes leaked secrets or API credentials, evaluates logic bugs, inspects code styles, and generates documentation verdicts. It also features a conversational AI companion to assist developers in reviewing findings and implementing immediate mitigations.
+RepoGuard is a multi-agent repository auditor and security companion that scans GitHub repositories and Pull Requests. It automatically identifies security vulnerabilities, exposes leaked secrets or API credentials, evaluates logic bugs, inspects code styles, and generates documentation verdicts — all powered by Google's Gemini AI models with intelligent fallback across model tiers.
 
 ---
 
 ## ✨ Features
 
-- **🔍 Comprehensive Security Audits**: Performs full-scope security reviews on actual repository files to spot leaked credentials, logic bugs, and structural flaws.
+- **🔍 Comprehensive Security Audits** — Full-scope security reviews on actual repository source files to spot leaked credentials, logic bugs, and structural flaws.
 - **🤖 Multi-Agent Analysis Pipeline**:
-  - **Triage Agent**: Analyzes the size, scope, and initial risk metrics of the codebase.
-  - **Code Review Agent**: Scans line-by-line for memory leaks, logic bugs, style violations, and exposed secrets.
-  - **Docs Agent**: Checks README compliance, inline code comments, and outdated documentation segments.
-  - **Synthesizer Agent**: Compiles individual agent reports into a unified markdown summary.
-- **💬 AI Chatbot Companion**: An interactive sidebar assistant that lets you query the codebase, ask about specific vulnerabilities, and receive step-by-step remediation advice.
-- **⚙️ Configurable Audit Depth**: Toggle between **Rapid Threat Check** (Concise), **Full Scope Engine** (Standard), and **Cryptographic Trace** (Deep) to suit your speed and coverage needs.
-- **🔐 Secure API Key Sandbox**: Input your own Gemini API key or GitHub Personal Access Token (PAT) inside a secure client sandbox, which is saved locally in your browser.
-- **🎨 Premium Responsive UI**: Translucent glassmorphism header, smooth hardware-accelerated logo animations, dark/light theme alignment, and beautiful dashboard elements.
+  - **Triage Agent** — Analyzes the size, scope, and initial risk metrics of the codebase.
+  - **Code Review Agent** — Scans line-by-line for memory leaks, logic bugs, style violations, and exposed secrets.
+  - **Docs Agent** — Checks README compliance, inline code comments, and outdated documentation segments.
+  - **Synthesizer Agent** — Compiles individual agent reports into a unified markdown summary with priority fixes.
+- **💬 AI Chatbot Companion** — An interactive sidebar assistant where you can query about vulnerabilities, ask for remediation steps, and learn secure coding practices.
+- **⚙️ Configurable Audit Depth** — Toggle between **Rapid Threat Check** (Concise), **Full Scope Engine** (Standard), and **Cryptographic Trace** (Deep) scan modes.
+- **🔐 Secure API Key Sandbox** — Input your own Gemini API key or GitHub Personal Access Token (PAT) in a client-side settings panel, saved locally in your browser.
+- **🎨 Premium Responsive UI** — Glassmorphism header, smooth hardware-accelerated logo animations, dark/light theme, and a polished dashboard built with Tailwind CSS v4 and Framer Motion.
+- **🧪 Tested Utilities** — Core input sanitization and URL parsing functions are covered by automated unit tests.
 
 ---
 
 ## 🛠️ Architecture Overview
 
-RepoGuard is built as a single-page application (SPA) backed by a secure proxy server to negotiate Gemini and GitHub MCP interactions without exposing secrets:
+RepoGuard is built as a single-page application (SPA) backed by a secure Express proxy server that negotiates Gemini AI and GitHub API interactions without exposing secrets. The backend supports both local development (via Vite middleware) and Vercel serverless deployment.
 
 ```
 ┌────────────────────────────────────────────────────────┐
 │                      Web Client                        │
-│ (React + Tailwind CSS + Lucide Icons + Framer Motion) │
+│ (React + Tailwind CSS v4 + Lucide Icons + Motion)      │
 └──────────────────────────┬─────────────────────────────┘
                            │ POST /api/review or /api/chat
                            ▼
 ┌────────────────────────────────────────────────────────┐
-│                    Express Proxy                       │
-│    (Node.js + tsx server + dynamic Gemini Clients)     │
+│              Express API (server.ts)                   │
+│   Local: Vite dev middleware  │  Vercel: Serverless    │
+│   (tsx server.ts)             │  (api/index.ts)        │
 └──────────────────────────┬─────────────────────────────┘
                            │ Scans & API Calls
                            ▼
@@ -50,21 +52,28 @@ RepoGuard is built as a single-page application (SPA) backed by a secure proxy s
 
 ```
 repoguard/
+├── api/
+│   └── index.ts                    # Vercel serverless function entry point
 ├── src/
 │   ├── components/
 │   │   ├── AgentStepper.tsx        # Multi-agent visual progression stepper
 │   │   ├── ChatbotCompanion.tsx    # Sidebar AI chat assistant interface
-│   │   ├── MarkdownLite.tsx        # Optimized lightweight markdown renderer
+│   │   ├── MarkdownLite.tsx        # Lightweight markdown renderer
 │   │   └── ReportView.tsx          # Detailed audit reports and code patch diff views
 │   ├── types.ts                    # TypeScript interfaces (ReviewResponse, CodeIssue, etc.)
-│   ├── App.tsx                     # Core workspace application page and splash screen
-│   ├── main.tsx                    # React client mounting entrypoint
-│   └── index.css                   # Tailwind theme guidelines and baseline styling
-├── server.ts                       # Secure Express proxy negotiating Gemini/GitHub APIs
-├── index.html                      # HTML SPA client entrypoint
-├── package.json                    # Workspace dependencies, build, and start script hooks
-├── tsconfig.json                   # Client and server TypeScript compilation config
-└── vite.config.ts                  # Vite client dev server and asset bundler rules
+│   ├── utils.ts                    # Input sanitization, URL parsing, and security helpers
+│   ├── utils.test.ts               # Unit tests for utility functions
+│   ├── App.tsx                     # Core workspace page, splash screen, and settings modal
+│   ├── main.tsx                    # React client mounting entry point
+│   └── index.css                   # Tailwind v4 theme and baseline styling
+├── server.ts                       # Express proxy server (Gemini + GitHub API integration)
+├── vercel.json                     # Vercel deployment config (rewrites, build settings)
+├── index.html                      # HTML SPA client entry point
+├── package.json                    # Dependencies, build, dev, test, and start scripts
+├── tsconfig.json                   # TypeScript compilation config
+├── vite.config.ts                  # Vite client dev server and asset bundler config
+├── .env.example                    # Template for required environment variables
+└── .gitignore                      # Ignores node_modules, dist, .env files, and logs
 ```
 
 ---
@@ -73,65 +82,96 @@ repoguard/
 
 ### Prerequisites
 
-Make sure you have [Node.js](https://nodejs.org/) installed (v18 or higher recommended).
+- [Node.js](https://nodejs.org/) v18 or higher
 
-### 🛠️ Environment Setup Guide
+### Installation
 
-To configure the application locally:
-1. Clone the repository and install the dependencies:
-   ```bash
-   npm install
-   ```
-2. Create a `.env` file in the root directory (you can copy `.env.example` as a baseline).
+```bash
+git clone https://github.com/aryxncodes7/repo-guard.git
+cd repo-guard
+npm install
+```
 
----
+### Environment Setup
 
-## ⚙️ API Configuration Requirements
+Create a `.env` file in the root directory (you can copy `.env.example` as a baseline):
 
-The application requires specific environment variables to interact with backend APIs and run client audits safely:
+```bash
+cp .env.example .env
+```
+
+Then fill in the required values:
 
 ```env
-# Your primary Gemini API credentials (fallback if not supplied in UI)
+# Required — Gemini API key for AI-powered reviews
 GEMINI_API_KEY=your_gemini_api_key_here
 
-# Optional: GitHub token to scan private repositories and prevent API rate-limiting
+# Optional — GitHub PAT to access private repos and avoid rate limits
 GITHUB_TOKEN=your_github_personal_access_token
 
-# Allowed domains for email links to prevent phishing/XSS
+# Allowed domains for email links (XSS/phishing prevention)
 VITE_ALLOWED_EMAIL_DOMAINS=github.com,gmail.com,outlook.com,hotmail.com,yahoo.com,protonmail.com,proton.me,google.com
 ```
 
 ### Running Locally
-Start the development server:
+
 ```bash
 npm run dev
 ```
-The application will launch on `http://localhost:3000`.
+
+The app launches on **http://localhost:3000**.
 
 ### Production Build
-To bundle the client files and package the server code:
+
 ```bash
-npm run build
+npm run build    # Bundles client (Vite) + server (esbuild)
+npm run start    # Starts the production server
 ```
-To run the production build:
+
+### Testing
+
 ```bash
-npm run start
+npm run test     # Runs unit tests for utility functions
+npm run lint     # TypeScript type-checking (tsc --noEmit)
 ```
 
 ---
 
-## 🛡️ Security Model Definitions
+## ☁️ Vercel Deployment
+
+RepoGuard supports deployment to [Vercel](https://vercel.com) out of the box.
+
+### How It Works
+
+- The **frontend** is built with Vite and served as static files from `dist/`.
+- The **backend API** (`/api/review`, `/api/chat`) runs as a Vercel Serverless Function via `api/index.ts`, which imports the Express app from `server.ts`.
+- `vercel.json` rewrites all `/api/*` requests to the serverless function entry point.
+
+### Setup Steps
+
+1. Push the repo to GitHub and import it in [Vercel Dashboard](https://vercel.com/new).
+2. **Add environment variables** in Vercel → Settings → Environment Variables:
+   - `GEMINI_API_KEY` *(required)*
+   - `GITHUB_TOKEN` *(optional, recommended)*
+3. Deploy. Vercel will auto-detect the Vite framework and run `npm run build`.
+
+> [!IMPORTANT]
+> Your `.env` file is gitignored and will NOT be available on Vercel. You **must** add `GEMINI_API_KEY` in the Vercel dashboard, otherwise scans will fail.
+
+---
+
+## 🛡️ Security Model
 
 RepoGuard enforces a multi-layer security model to protect developers and backend systems:
 
-### 1. Threat Scenarios & Remediation
-- **Credential Leak Detection**: Identifies plain-text API keys, tokens, and certificates within the codebase. Remediated by prompting users to clean branch history before merging.
-- **Prompt Injection Defense**: Cleans user context and dynamic fields (`repoUrl`, issues list) by stripping brackets, quotes, and HTML tag indicators to prevent model instruction overrides.
-- **XSS & Injection Protection**: HTML sanitization is applied during string clamping (`clampText`), and URL sanitization blocks path-traversal sequences and relative paths.
+### Threat Scenarios & Remediation
+- **Credential Leak Detection** — Identifies plain-text API keys, tokens, and certificates within the codebase. Remediated by prompting users to clean branch history before merging.
+- **Prompt Injection Defense** — Cleans user context and dynamic fields by stripping brackets, quotes, and HTML tag indicators to prevent model instruction overrides.
+- **XSS & Injection Protection** — HTML sanitization is applied during string clamping (`clampText`), and URL sanitization blocks path-traversal sequences and relative paths via `getSafeHref`.
 
-### 2. Scheme & Link Filtering Allowlists
-- **Dynamic Email Domain Validation**: Standardizes `mailto:` parsing by dropping all query parameters and checking domains against a strict allowlist loaded from the `VITE_ALLOWED_EMAIL_DOMAINS` environment variable.
-- **Protocol Allowlist**: Only `http:`, `https:`, and valid `mailto:` protocols are allowed. `javascript:`, `data:`, and Windows backslash paths are completely blocked.
+### Scheme & Link Filtering Allowlists
+- **Dynamic Email Domain Validation** — Standardizes `mailto:` parsing by dropping all query parameters and checking domains against a strict allowlist loaded from the `VITE_ALLOWED_EMAIL_DOMAINS` environment variable.
+- **Protocol Allowlist** — Only `http:`, `https:`, and valid `mailto:` protocols are allowed. `javascript:`, `data:`, and Windows backslash paths are completely blocked.
 
 ---
 
@@ -141,9 +181,10 @@ RepoGuard enforces a multi-layer security model to protect developers and backen
 > RepoGuard handles sensitive codebase scans. For public deployments:
 > - Do not commit your `.env` files. Ensure they are listed in your `.gitignore`.
 > - If deploying to cloud platforms, store `GEMINI_API_KEY` and `GITHUB_TOKEN` as secure system environment variables.
+> - API keys supplied in the browser settings panel are only stored in `localStorage` and never transmitted to any third party.
 
 ---
 
 ## 👥 Authors & Contributors
 
-- **Aryan Raj** - Creator ([GitHub Profile](https://github.com/aryxncodes7))
+- **Aryan Raj** — Creator ([GitHub Profile](https://github.com/aryxncodes7))
