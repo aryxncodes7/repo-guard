@@ -14,7 +14,14 @@ function getSafeHref(href?: string) {
   if (!href) return undefined;
   try {
     const parsed = new URL(href, window.location.origin);
-    return ['http:', 'https:', 'mailto:'].includes(parsed.protocol) ? href : undefined;
+    if (parsed.protocol === 'mailto:') {
+      const email = parsed.pathname.trim();
+      if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+        return undefined;
+      }
+      return `mailto:${email}`;
+    }
+    return ['http:', 'https:'].includes(parsed.protocol) ? href : undefined;
   } catch {
     return undefined;
   }

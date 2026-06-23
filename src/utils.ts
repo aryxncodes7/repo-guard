@@ -5,8 +5,19 @@
 
 const MAX_REPO_URL_LENGTH = 200;
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 export function clampText(value: unknown, maxLength: number): string {
-  return typeof value === "string" ? value.slice(0, maxLength).trim() : "";
+  if (typeof value !== "string") return "";
+  const sliced = value.slice(0, maxLength).trim();
+  return escapeHtml(sliced);
 }
 
 export function normalizeGithubRepoUrl(rawUrl: unknown): string {
@@ -62,6 +73,17 @@ export function parseGithubRepo(repoUrl: string): { owner: string; repo: string 
 export function cleanClientRepoUrl(repoUrl: string): string {
   const trimmed = (repoUrl || "").trim();
   if (!trimmed) return "https://github.com/";
+
+  // Detect and reject relative path traversals or malicious schemes (XSS)
+  if (trimmed.includes("..") || /^(javascript|data|file|vbscript):/i.test(trimmed)) {
+    return "https://github.com/";
+  }
+
+  // Handle protocol relative URLs
+  if (trimmed.startsWith("//")) {
+    return `https:${trimmed}`;
+  }
+
   return trimmed.startsWith("http") ? trimmed : `https://github.com/${trimmed}`;
 }
 
