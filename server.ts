@@ -38,7 +38,13 @@ app.use((_req, res, next) => {
   res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
   next();
 });
-app.use(express.json({ limit: "32kb" }));
+app.use((req, res, next) => {
+  if (req.body !== undefined && req.body !== null) {
+    next();
+  } else {
+    express.json({ limit: "32kb" })(req, res, next);
+  }
+});
 
 type GeminiContentPart = { text: string };
 type GeminiChatContent = { role: "user" | "model"; parts: GeminiContentPart[] };
