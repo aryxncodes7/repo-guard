@@ -868,7 +868,7 @@ export default function App() {
                   </div>
 
                   {/* Inline diagnostic block formatted like terminal */}
-                  <div className="rounded-xl border border-rose-300 bg-slate-900 font-sans text-xs text-rose-400 shadow-lg overflow-hidden relative">
+                  <div className="rounded-xl border border-rose-300 bg-slate-900 font-mono text-xs text-rose-400 shadow-lg overflow-hidden relative">
                     <div className="bg-slate-950 px-4 py-2.5 text-[10px] text-slate-400 border-b border-slate-800 flex items-center justify-between select-none">
                       <div className="flex items-center gap-1.5 font-sans font-bold">
                         <div className="w-2.5 h-2.5 rounded-full bg-rose-500" />
@@ -877,16 +877,16 @@ export default function App() {
                       <span>{errorTimestamp || 'UTC ERROR_LOG'}</span>
                     </div>
                     
-                    <div className="p-4 space-y-3 overflow-x-auto leading-relaxed font-sans">
+                    <div className="p-4 space-y-3 overflow-x-auto leading-relaxed font-mono">
                       <div className="flex gap-2">
                         <span className="text-rose-500 select-none">[FATAL_ERROR]</span>
                         <span className="text-slate-100 font-semibold">{errorStatusCode || 'HTTP 500 Internal Server Error'}</span>
                       </div>
-                      <div className="border-t border-slate-800 pt-2 text-[11px] text-slate-300 font-sans">
+                      <div className="border-t border-slate-800 pt-2 text-[11px] text-slate-300 font-mono">
                         <p className="font-semibold text-rose-300">TRACE ID MESSAGES:</p>
                         <p className="mt-1 pl-2 border-l-2 border-rose-500/30 whitespace-pre-wrap">{errorMessage}</p>
                       </div>
-                      <div className="text-[10px] text-slate-500 pt-2 border-t border-slate-800/50 font-sans">
+                      <div className="text-[10px] text-slate-500 pt-2 border-t border-slate-800/50 font-mono">
                         Possible remedies: Check repository route spelling, verify repo has public visibility, or verify that your internet connectivity status is healthy.
                       </div>
                     </div>

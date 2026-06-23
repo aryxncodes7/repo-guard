@@ -41,7 +41,7 @@ export default function MarkdownLite({ text }: MarkdownLiteProps) {
           return codeParts.map((cPart, cI) => {
             if (cI % 2 === 1) {
               return (
-                <code key={cI} className="px-1.5 py-0.5 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded font-sans text-[11px] text-teal-700 dark:text-teal-400 font-semibold">
+                <code key={cI} className="px-1.5 py-0.5 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded font-mono text-[11px] text-teal-700 dark:text-teal-400 font-semibold">
                   {cPart}
                 </code>
               );

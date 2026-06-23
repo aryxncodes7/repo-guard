@@ -59,7 +59,7 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack, apiKey
           <span>suggested-docs-patch.diff</span>
           <span className="text-teal-400 tracking-wider">Patch Format</span>
         </div>
-        <div className="p-4 overflow-x-auto select-all space-y-0.5 leading-relaxed font-sans">
+        <div className="p-4 overflow-x-auto select-all space-y-0.5 leading-relaxed font-mono">
           {lines.map((line, idx) => {
             let bgClass = 'hover:bg-slate-800/30';
             let textClass = 'text-slate-400';
@@ -348,7 +348,7 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack, apiKey
                     <div key={`${sec.file}-${sec.line}-${sec.snippet_redacted}`} className="text-xs space-y-2 bg-white dark:bg-zinc-800 p-3.5 rounded-lg border border-rose-200 dark:border-rose-900/30 shadow-sm animate-fade-in">
                       <div className="flex items-center gap-1.5 text-[10px] font-mono text-slate-500 dark:text-zinc-400">
                         <span className="font-extrabold text-rose-500 dark:text-rose-400">Exposed inside:</span>
-                        <code className="text-slate-800 dark:text-zinc-100 font-extrabold bg-slate-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">{sec.file} : Line {sec.line}</code>
+                        <code className="text-slate-800 dark:text-zinc-100 font-mono font-extrabold bg-slate-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">{sec.file} : Line {sec.line}</code>
                       </div>
                       <pre className="p-4 rounded-lg bg-slate-950 text-rose-300 font-mono text-[10.5px] overflow-x-auto whitespace-pre leading-normal border border-slate-800 shadow-inner">
                         <code>{sec.snippet_redacted}</code>
