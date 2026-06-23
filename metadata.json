@@ -1,0 +1,6 @@
+{
+  "name": "RepoGuard",
+  "description": "A polished developer-first multi-agent review dashboard for GitHub pull requests and codebases, providing automated triage, security scanning, and documentation insights.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
