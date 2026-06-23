@@ -22,6 +22,7 @@ import { ReviewResponse, CodeIssue } from '../types';
 import { motion } from 'motion/react';
 import MarkdownLite from './MarkdownLite';
 import ChatbotCompanion from './ChatbotCompanion';
+import { cleanClientRepoUrl, getShortRepoName } from '../utils';
 
 interface ReportViewProps {
   activeReviewResult: ReviewResponse;
@@ -59,7 +60,7 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack, apiKey
           <span>suggested-docs-patch.diff</span>
           <span className="text-teal-400 tracking-wider">Patch Format</span>
         </div>
-        <div className="p-4 overflow-x-auto select-all space-y-0.5 leading-relaxed font-mono">
+        <div className="p-4 overflow-x-auto select-all space-y-0.5 leading-relaxed font-sans">
           {lines.map((line, idx) => {
             let bgClass = 'hover:bg-slate-800/30';
             let textClass = 'text-slate-400';
@@ -88,8 +89,8 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack, apiKey
     );
   };
 
-  const cleanRepoUrl = repoUrl.trim().startsWith('http') ? repoUrl.trim() : `https://github.com/${repoUrl.trim()}`;
-  const shortName = repoUrl.replace(/https?:\/\/(www\.)?github\.com\//, '').replace(/\/$/, '') || 'repository';
+  const cleanRepoUrl = cleanClientRepoUrl(repoUrl);
+  const shortName = getShortRepoName(repoUrl);
 
   return (
     <div className="space-y-8 pt-2 pb-16 animate-fade-in relative z-20 font-sans">
@@ -98,7 +99,7 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack, apiKey
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/85 pb-6">
         <div className="space-y-1.5">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="bg-emerald-50 text-emerald-700 text-[10px] uppercase tracking-wider font-mono border border-emerald-200/70 px-2.5 py-0.5 rounded-full font-bold shadow-sm">
+            <span className="bg-emerald-50 text-emerald-700 text-[10px] uppercase tracking-wider font-sans border border-emerald-200/70 px-2.5 py-0.5 rounded-full font-bold shadow-sm">
               Live Audit Result
             </span>
             <span className="font-sans text-xs text-slate-300 select-none">/</span>
@@ -106,7 +107,7 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack, apiKey
               href={cleanRepoUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-mono text-xs text-slate-500 dark:text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors flex items-center gap-1 font-bold underline decoration-dotted"
+              className="font-sans text-xs text-slate-500 dark:text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors flex items-center gap-1 font-bold underline decoration-dotted"
               title="View on GitHub"
             >
               {shortName}
@@ -150,7 +151,7 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack, apiKey
               'from-amber-500 to-yellow-400'
             }`} />
             
-            <span className="text-[10px] font-mono text-slate-400 dark:text-zinc-500 uppercase tracking-wide block font-extrabold">
+            <span className="text-[10px] font-sans text-slate-400 dark:text-zinc-500 uppercase tracking-wide block font-extrabold">
               PREDOMINANT VERDICT
             </span>
 
@@ -201,13 +202,13 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack, apiKey
 
           {/* Pull Request Metadata Detail Box */}
           <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-sm space-y-5">
-            <span className="text-[10px] font-mono text-slate-400 dark:text-zinc-500 uppercase tracking-widest block font-extrabold border-b border-slate-100 dark:border-zinc-800 pb-2.5">
+            <span className="text-[10px] font-sans text-slate-400 dark:text-zinc-500 uppercase tracking-widest block font-extrabold border-b border-slate-100 dark:border-zinc-800 pb-2.5">
               METRIC SUMMARY & SCOPE
             </span>
 
             {/* Target Title */}
             <div className="space-y-1.5">
-              <span className="text-[10px] font-mono text-slate-400 dark:text-zinc-500 uppercase font-extrabold">PR IDENT TITLE</span>
+              <span className="text-[10px] font-sans text-slate-400 dark:text-zinc-500 uppercase font-extrabold">PR IDENT TITLE</span>
               <h3 className="text-sm font-extrabold text-slate-900 dark:text-zinc-200 tracking-tight leading-snug font-sans">
                 {activeReviewResult.pr_title || "Repository Master Analysis"}
               </h3>
@@ -216,15 +217,15 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack, apiKey
             {/* Submitter & Modified */}
             <div className="grid grid-cols-2 gap-4 pb-1 pt-1">
               <div className="space-y-1">
-                <span className="text-[10px] font-mono text-slate-400 dark:text-zinc-500 uppercase font-extrabold">SUBMITTER ID</span>
-                <span className="text-xs font-mono font-bold text-slate-700 dark:text-zinc-300 block bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 px-2.5 py-1 rounded-lg w-max">
+                <span className="text-[10px] font-sans text-slate-400 dark:text-zinc-500 uppercase font-extrabold">SUBMITTER ID</span>
+                <span className="text-xs font-sans font-bold text-slate-700 dark:text-zinc-300 block bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 px-2.5 py-1 rounded-lg w-max">
                   @{activeReviewResult.pr_author || "extern_deployer"}
                 </span>
               </div>
 
               <div className="space-y-1">
-                <span className="text-[10px] font-mono text-slate-400 dark:text-zinc-500 uppercase font-extrabold">FILES OVERVIEW</span>
-                <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 block bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-800 px-2.5 py-1 rounded-lg w-max">
+                <span className="text-[10px] font-sans text-slate-400 dark:text-zinc-500 uppercase font-extrabold">FILES OVERVIEW</span>
+                <span className="text-xs font-sans font-bold text-emerald-600 dark:text-emerald-400 block bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-800 px-2.5 py-1 rounded-lg w-max">
                   {activeReviewResult.files_changed} {activeReviewResult.files_changed === 1 ? 'file' : 'files'}
                 </span>
               </div>
@@ -233,8 +234,8 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack, apiKey
             {/* Risk Indicators and Category sizes */}
             <div className="pt-4 border-t border-slate-100 dark:border-zinc-800 grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <span className="text-[10px] font-mono text-slate-400 dark:text-zinc-500 uppercase block font-extrabold">RISK CLASSIFIER</span>
-                <span className={`inline-flex px-2.5 py-1 rounded-full font-mono text-[9px] font-extrabold border uppercase leading-none tracking-wider ${
+                <span className="text-[10px] font-sans text-slate-400 dark:text-zinc-500 uppercase block font-extrabold">RISK CLASSIFIER</span>
+                <span className={`inline-flex px-2.5 py-1 rounded-full font-sans text-[9px] font-extrabold border uppercase leading-none tracking-wider ${
                   activeReviewResult.triage.risk_level === 'high' ? 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900' :
                   activeReviewResult.triage.risk_level === 'medium' ? 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900' :
                   'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900'
@@ -244,8 +245,8 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack, apiKey
               </div>
 
               <div className="space-y-1">
-                <span className="text-[10px] font-mono text-slate-400 dark:text-zinc-500 uppercase block font-extrabold">COMPUTED SCALE</span>
-                <span className="inline-flex px-2.5 py-1 rounded-full font-mono text-[9px] font-extrabold border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 uppercase leading-none tracking-wider font-extrabold">
+                <span className="text-[10px] font-sans text-slate-400 dark:text-zinc-500 uppercase block font-extrabold">COMPUTED SCALE</span>
+                <span className="inline-flex px-2.5 py-1 rounded-full font-sans text-[9px] font-extrabold border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 uppercase leading-none tracking-wider font-extrabold">
                   {activeReviewResult.triage.size_category}
                 </span>
               </div>
@@ -253,7 +254,7 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack, apiKey
 
             {/* Small visualization bar of files modified */}
             <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
-              <span className="text-[9px] font-mono text-slate-400 dark:text-zinc-500 block font-extrabold">SCOPE COVERAGE FACTOR</span>
+              <span className="text-[9px] font-sans text-slate-400 dark:text-zinc-500 block font-extrabold">SCOPE COVERAGE FACTOR</span>
               <div className="h-1.5 w-full bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden flex">
                 <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${Math.min(100, Math.max(15, activeReviewResult.files_changed * 18))}%` }} />
               </div>
@@ -264,13 +265,13 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack, apiKey
           {/* Quick resolution checklist */}
           {activeReviewResult.final_summary.top_priority_fixes && activeReviewResult.final_summary.top_priority_fixes.length > 0 && (
             <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm space-y-4">
-              <span className="text-[10px] font-mono text-slate-400 dark:text-zinc-500 uppercase tracking-wide block font-extrabold">
+              <span className="text-[10px] font-sans text-slate-400 dark:text-zinc-500 uppercase tracking-wide block font-extrabold">
                 REQUIRED ADJUSTMENTS
               </span>
               <ul className="space-y-3.5 pt-1">
                 {activeReviewResult.final_summary.top_priority_fixes.map((fix, idx) => (
                   <li key={`${fix}-${idx}`} className="flex gap-3 items-start text-xs text-slate-600 dark:text-zinc-400 leading-relaxed font-sans">
-                    <span className="text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/25 border border-emerald-200 dark:border-emerald-900 rounded-lg w-5.5 h-5.5 flex items-center justify-center flex-shrink-0 select-none text-[10px] font-bold font-mono shadow-sm">
+                    <span className="text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/25 border border-emerald-200 dark:border-emerald-900 rounded-lg w-5.5 h-5.5 flex items-center justify-center flex-shrink-0 select-none text-[10px] font-bold font-sans shadow-sm">
                       0{idx + 1}
                     </span>
                     <span className="flex-1 text-slate-700 dark:text-zinc-200 font-semibold leading-normal">
@@ -307,7 +308,7 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack, apiKey
           >
             <div className="flex items-center gap-2 border-b border-slate-100 dark:border-zinc-800 pb-3.5">
               <Layers className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <h3 className="text-xs font-bold uppercase tracking-wider font-mono text-slate-900 dark:text-zinc-100">
+              <h3 className="text-xs font-bold uppercase tracking-wider font-sans text-slate-900 dark:text-zinc-100">
                 Triage Overview Report
               </h3>
             </div>
@@ -326,7 +327,7 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack, apiKey
           >
             <div className="flex items-center gap-2 border-b border-slate-100 dark:border-zinc-800 pb-3.5">
               <FileCode2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <h3 className="text-xs font-bold uppercase tracking-wider font-mono text-slate-900 dark:text-zinc-100">
+              <h3 className="text-xs font-bold uppercase tracking-wider font-sans text-slate-900 dark:text-zinc-100">
                 Core Static Scan Findings
               </h3>
             </div>
@@ -338,7 +339,7 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack, apiKey
                 
                 <div className="flex items-center gap-2.5 text-rose-700 dark:text-rose-400">
                   <ShieldAlert className="w-4.5 h-4.5 text-rose-600 dark:text-rose-400 animate-bounce" />
-                  <span className="text-xs font-mono font-extrabold tracking-widest uppercase">
+                  <span className="text-xs font-sans font-extrabold tracking-widest uppercase">
                     ALERT: EXPOSED CREDENTIALS ({secretsCount})
                   </span>
                 </div>
@@ -346,11 +347,11 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack, apiKey
                 <div className="space-y-3.5">
                   {activeReviewResult.code_review.secrets_detected.map((sec) => (
                     <div key={`${sec.file}-${sec.line}-${sec.snippet_redacted}`} className="text-xs space-y-2 bg-white dark:bg-zinc-800 p-3.5 rounded-lg border border-rose-200 dark:border-rose-900/30 shadow-sm animate-fade-in">
-                      <div className="flex items-center gap-1.5 text-[10px] font-mono text-slate-500 dark:text-zinc-400">
+                      <div className="flex items-center gap-1.5 text-[10px] font-sans text-slate-500 dark:text-zinc-400">
                         <span className="font-extrabold text-rose-500 dark:text-rose-400">Exposed inside:</span>
-                        <code className="text-slate-800 dark:text-zinc-100 font-mono font-extrabold bg-slate-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">{sec.file} : Line {sec.line}</code>
+                        <code className="text-slate-800 dark:text-zinc-100 font-sans font-extrabold bg-slate-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">{sec.file} : Line {sec.line}</code>
                       </div>
-                      <pre className="p-4 rounded-lg bg-slate-950 text-rose-300 font-mono text-[10.5px] overflow-x-auto whitespace-pre leading-normal border border-slate-800 shadow-inner">
+                      <pre className="p-4 rounded-lg bg-slate-950 text-rose-300 font-sans text-[10.5px] overflow-x-auto whitespace-pre leading-normal border border-slate-800 shadow-inner">
                         <code>{sec.snippet_redacted}</code>
                       </pre>
                     </div>
@@ -367,7 +368,7 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack, apiKey
             {totalIssuesCount === 0 ? (
               <div className="p-8 rounded-xl bg-slate-50/70 dark:bg-zinc-800/30 border border-slate-200/80 dark:border-zinc-800 text-center space-y-3 shadow-inner">
                 <ShieldCheck className="w-9 h-9 text-emerald-500 mx-auto animate-pulse" />
-                <h4 className="text-xs font-extrabold font-mono tracking-widest uppercase text-emerald-600">
+                <h4 className="text-xs font-extrabold font-sans tracking-widest uppercase text-emerald-600">
                   No Violations Detected
                 </h4>
                 <p className="text-[11px] text-slate-500 dark:text-zinc-400 max-w-sm mx-auto leading-relaxed">
@@ -380,7 +381,7 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack, apiKey
                   <div key={pathName} className="space-y-4">
                     
                     {/* File Group Title */}
-                    <div className="flex items-center gap-2 px-3.5 py-2 bg-slate-100/90 dark:bg-zinc-800/80 border border-slate-200/60 dark:border-zinc-800 rounded-xl text-[11px] font-mono text-slate-700 dark:text-zinc-300 font-bold">
+                    <div className="flex items-center gap-2 px-3.5 py-2 bg-slate-100/90 dark:bg-zinc-800/80 border border-slate-200/60 dark:border-zinc-800 rounded-xl text-[11px] font-sans text-slate-700 dark:text-zinc-300 font-bold">
                       <FileCode2 className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
                       <span className="truncate">{pathName}</span>
                     </div>
@@ -399,16 +400,16 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack, apiKey
                             key={`${issue.file}-${issue.line}-${issue.category}-${issue.message}`}
                             className="bg-slate-50/50 dark:bg-zinc-800/10 hover:bg-slate-100/30 dark:hover:bg-zinc-800/20 p-4 rounded-xl border border-slate-200/50 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700 transition-all flex gap-3.5 relative shadow-sm"
                           >
-                            <div className="text-center font-mono text-[9px] text-slate-500 dark:text-zinc-400 h-max px-2.5 py-1 bg-white dark:bg-zinc-800 rounded-lg border border-slate-200 dark:border-zinc-700 shadow-sm leading-none flex items-center justify-center select-none font-extrabold">
+                            <div className="text-center font-sans text-[9px] text-slate-500 dark:text-zinc-400 h-max px-2.5 py-1 bg-white dark:bg-zinc-800 rounded-lg border border-slate-200 dark:border-zinc-700 shadow-sm leading-none flex items-center justify-center select-none font-extrabold">
                               L{issue.line}
                             </div>
 
                             <div className="flex-1 space-y-2">
                               <div className="flex flex-wrap gap-2 items-center">
-                                <span className={`px-2 py-0.5 rounded font-mono text-[9px] uppercase tracking-wider border leading-none font-bold ${badgeStyle}`}>
+                                <span className={`px-2 py-0.5 rounded font-sans text-[9px] uppercase tracking-wider border leading-none font-bold ${badgeStyle}`}>
                                   {issue.severity}
                                 </span>
-                                <span className="px-1.5 py-0.5 rounded font-mono text-[9px] tracking-wide bg-white dark:bg-zinc-800 border border-slate-100 dark:border-zinc-700 text-slate-500 dark:text-zinc-400 leading-none uppercase font-extrabold">
+                                <span className="px-1.5 py-0.5 rounded font-sans text-[9px] tracking-wide bg-white dark:bg-zinc-800 border border-slate-100 dark:border-zinc-700 text-slate-500 dark:text-zinc-400 leading-none uppercase font-extrabold">
                                   {issue.category}
                                 </span>
                               </div>
@@ -416,7 +417,7 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack, apiKey
                                 {issue.message}
                               </p>
                               <div className="pt-2 border-t border-slate-100/80 dark:border-zinc-800 mt-2 space-y-1">
-                                <span className="text-[10px] uppercase font-mono tracking-wider font-extrabold text-slate-400 dark:text-zinc-500 block">Recommended Resolution Guide</span>
+                                <span className="text-[10px] uppercase font-sans tracking-wider font-extrabold text-slate-400 dark:text-zinc-500 block">Recommended Resolution Guide</span>
                                 <p className="text-[11.5px] text-slate-500 dark:text-zinc-400 leading-relaxed font-sans">
                                   {issue.severity === 'critical' ? 'Emergency security remediation. Wipe all historical references from branch tracking tools using BFG Repo Cleaner or filter-branch prior to merging.' :
                                    issue.severity === 'warning' ? 'Bounds violation risk. Sanitize payload attributes, add bounds constraints, and properly handle execution exceptions.' :
@@ -445,19 +446,19 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack, apiKey
           >
             <div className="flex items-center gap-2 border-b border-slate-100 dark:border-zinc-800 pb-3.5">
               <BookOpen className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <h3 className="text-xs font-bold uppercase tracking-wider font-mono text-slate-900 dark:text-zinc-100">
+              <h3 className="text-xs font-bold uppercase tracking-wider font-sans text-slate-900 dark:text-zinc-100">
                 Documentation Synchronicity
               </h3>
             </div>
 
             <div className="flex items-center gap-3">
-              <span className="text-[11px] font-mono text-slate-500 dark:text-zinc-400 uppercase font-extrabold">STATUS DISCREPANCIES:</span>
+              <span className="text-[11px] font-sans text-slate-500 dark:text-zinc-400 uppercase font-extrabold">STATUS DISCREPANCIES:</span>
               {activeReviewResult.docs_review.docs_outdated ? (
-                <span className="bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-400 text-[9px] font-mono px-2.5 py-1 border border-amber-300 dark:border-amber-900 rounded font-bold uppercase leading-none tracking-wider">
+                <span className="bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-400 text-[9px] font-sans px-2.5 py-1 border border-amber-300 dark:border-amber-900 rounded font-bold uppercase leading-none tracking-wider">
                   Outof-sync anomalies detected
                 </span>
               ) : (
-                <span className="bg-emerald-50 dark:bg-emerald-950/20 text-emerald-800 dark:text-emerald-400 text-[9px] font-mono px-2.5 py-1 border border-emerald-300 dark:border-emerald-900 rounded font-bold uppercase leading-none tracking-wider font-extrabold">
+                <span className="bg-emerald-50 dark:bg-emerald-950/20 text-emerald-800 dark:text-emerald-400 text-[9px] font-sans px-2.5 py-1 border border-emerald-300 dark:border-emerald-900 rounded font-bold uppercase leading-none tracking-wider font-extrabold">
                   Correct alignment healthy
                 </span>
               )}
@@ -466,7 +467,7 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack, apiKey
             {/* Tags of missing categories */}
             {activeReviewResult.docs_review.missing_sections && activeReviewResult.docs_review.missing_sections.length > 0 && (
               <div className="space-y-2 pt-1">
-                <span className="text-[10px] font-mono text-slate-400 dark:text-zinc-500 block uppercase font-extrabold">MISSING DOCUMENTATION CHAPTERS</span>
+                <span className="text-[10px] font-sans text-slate-400 dark:text-zinc-500 block uppercase font-extrabold">MISSING DOCUMENTATION CHAPTERS</span>
                 <div className="flex flex-wrap gap-2">
                   {activeReviewResult.docs_review.missing_sections.map((sec) => (
                     <span 
@@ -484,7 +485,7 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack, apiKey
             {/* Suggested Readme code patch renderer style */}
             {activeReviewResult.docs_review.suggested_readme_diff ? (
               <div className="space-y-2.5 pt-2">
-                <span className="text-[10px] font-mono text-slate-400 dark:text-zinc-500 block uppercase font-extrabold">SUGGESTED ENHANCEMENT PATCH</span>
+                <span className="text-[10px] font-sans text-slate-400 dark:text-zinc-500 block uppercase font-extrabold">SUGGESTED ENHANCEMENT PATCH</span>
                 {renderReadmeDiff(activeReviewResult.docs_review.suggested_readme_diff)}
               </div>
             ) : (
@@ -505,7 +506,7 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack, apiKey
           >
             <div className="flex items-center gap-2 border-b border-slate-100 dark:border-zinc-800 pb-3.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <h3 className="text-xs font-bold uppercase tracking-wider font-mono text-slate-900 dark:text-zinc-100">
+              <h3 className="text-xs font-bold uppercase tracking-wider font-sans text-slate-900 dark:text-zinc-100">
                 Auditor Final Synthesis
               </h3>
             </div>

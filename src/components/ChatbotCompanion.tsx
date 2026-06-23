@@ -81,14 +81,27 @@ export default function ChatbotCompanion({ activeReportContext, apiKey }: Chatbo
       // If active context is provided, we can prepend a small secret prompt block for the AI model
       let finalMessage = userMsg;
       if (activeReportContext && messages.length <= 2) {
-        const issueMessages = activeReportContext.issues.map((issue) => issue.message);
-        finalMessage = `[System Context: We are inspecting repository "${activeReportContext.repoUrl}". The predominant verdict is "${activeReportContext.verdict}". Critical issues: ${JSON.stringify(issueMessages)}. Guide recommended: "${activeReportContext.verdict === 'request_changes' ? 'Wipe secrets using BFG Repo Cleaner or rotate keys.' : 'None.'}"] User Query: ${userMsg}`;
+        const sanitize = (val: string) => (val || '').replace(/[\[\]{}<>`"]/g, '');
+        const cleanRepoUrl = sanitize(activeReportContext.repoUrl);
+        const cleanVerdict = sanitize(activeReportContext.verdict);
+        const cleanIssues = activeReportContext.issues
+          .map((issue) => sanitize(issue.message))
+          .filter(Boolean);
+
+        finalMessage = `[System Context: Inspecting repository "${cleanRepoUrl}". Predominant verdict: "${cleanVerdict}". Issues: ${JSON.stringify(cleanIssues)}. Guide: "${cleanVerdict === 'request_changes' ? 'Wipe secrets using BFG Repo Cleaner or rotate keys.' : 'None.'}"] User Query: ${userMsg}`;
+      }
+
+      const chatHeaders: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      if (apiKey) {
+        chatHeaders['x-api-key'] = apiKey;
       }
 
       const response = await fetch('/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: finalMessage, history: formattedHistory, api_key: apiKey || undefined })
+        headers: chatHeaders,
+        body: JSON.stringify({ message: finalMessage, history: formattedHistory })
       });
       const data = await response.json();
       
@@ -116,7 +129,7 @@ export default function ChatbotCompanion({ activeReportContext, apiKey }: Chatbo
           </div>
           <div>
             <span className="text-xs font-bold font-sans text-slate-800 dark:text-zinc-200 block">AI Security Companion</span>
-            <span className="text-[9px] font-mono text-emerald-600 dark:text-emerald-400 uppercase font-extrabold flex items-center gap-1.5">
+            <span className="text-[9px] font-sans text-emerald-600 dark:text-emerald-400 uppercase font-extrabold flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
               Live Auditor Connected
             </span>
@@ -167,11 +180,11 @@ export default function ChatbotCompanion({ activeReportContext, apiKey }: Chatbo
                         const codeString = String(children || '').replace(/\n$/, '');
                         const isInline = !codeString.includes('\n');
                         return isInline ? (
-                          <code className="bg-slate-100 dark:bg-zinc-700/60 px-1 py-0.5 rounded text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400" {...props}>
+                          <code className="bg-slate-100 dark:bg-zinc-700/60 px-1 py-0.5 rounded text-[10px] font-sans font-bold text-emerald-600 dark:text-emerald-400" {...props}>
                             {codeString}
                           </code>
                         ) : (
-                          <pre className="bg-slate-950 text-slate-100 p-2.5 rounded-lg text-[10px] font-mono overflow-x-auto my-1.5 border border-slate-800 w-full whitespace-pre-wrap break-all">
+                          <pre className="bg-slate-950 text-slate-100 p-2.5 rounded-lg text-[10px] font-sans overflow-x-auto my-1.5 border border-slate-800 w-full whitespace-pre-wrap break-all">
                             <code className="block" {...props}>{codeString}</code>
                           </pre>
                         );

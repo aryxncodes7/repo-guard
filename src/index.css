@@ -5,7 +5,6 @@
 
 @theme {
   --font-sans: "Open Sans", "Inter", system-ui, -apple-system, sans-serif;
-  --font-mono: "Open Sans", "Inter", system-ui, -apple-system, sans-serif;
 }
 
 body {
@@ -17,7 +16,7 @@ body {
 }
 
 code, pre, kbd, samp {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
 }
 
 .dark body {

@@ -4,77 +4,96 @@
  */
 
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
 
 interface MarkdownLiteProps {
   text: string;
 }
 
+function getSafeHref(href?: string) {
+  if (!href) return undefined;
+  try {
+    const parsed = new URL(href, window.location.origin);
+    return ['http:', 'https:', 'mailto:'].includes(parsed.protocol) ? href : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export default function MarkdownLite({ text }: MarkdownLiteProps) {
   if (!text) return null;
-  const lines = text.split('\n');
 
   return (
     <div className="space-y-3.5 text-sm leading-relaxed text-slate-800 dark:text-zinc-200">
-      {lines.map((line, idx) => {
-        const trimmed = line.trim();
-        
-        // Skip completely empty lines
-        if (!trimmed) return <div key={idx} className="h-2" />;
-
-        // Handle Bullet points starting with "- " or "* " or "+ "
-        const isBullet = trimmed.startsWith('- ') || trimmed.startsWith('* ') || trimmed.startsWith('+ ');
-        const cleanLine = isBullet ? trimmed.substring(2) : trimmed;
-
-        // Parse bold elements **bold**
-        const boldParts = cleanLine.split('**');
-        const renderedContent = boldParts.map((part, i) => {
-          if (i % 2 === 1) {
-            return (
-              <strong key={i} className="font-semibold text-teal-700 dark:text-teal-400 tracking-normal">
-                {part}
-              </strong>
+      <ReactMarkdown
+        components={{
+          p: ({ children }) => (
+            <p className="text-[13px] text-slate-600 dark:text-zinc-400 leading-relaxed mb-2 last:mb-0">
+              {children}
+            </p>
+          ),
+          h1: ({ children }) => (
+            <h4 className="text-xs font-bold tracking-wider text-slate-900 dark:text-zinc-100 mt-6 mb-2 uppercase font-sans border-b border-slate-200/60 dark:border-zinc-800 pb-1 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 bg-teal-500 dark:bg-teal-400 rounded-full" />
+              {children}
+            </h4>
+          ),
+          h2: ({ children }) => (
+            <h4 className="text-xs font-bold tracking-wider text-slate-900 dark:text-zinc-100 mt-6 mb-2 uppercase font-sans border-b border-slate-200/60 dark:border-zinc-800 pb-1 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 bg-teal-500 dark:bg-teal-400 rounded-full" />
+              {children}
+            </h4>
+          ),
+          h3: ({ children }) => (
+            <h4 className="text-xs font-bold tracking-wider text-slate-900 dark:text-zinc-100 mt-6 mb-2 uppercase font-sans border-b border-slate-200/60 dark:border-zinc-800 pb-1 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 bg-teal-500 dark:bg-teal-400 rounded-full" />
+              {children}
+            </h4>
+          ),
+          h4: ({ children }) => (
+            <h4 className="text-xs font-bold tracking-wider text-slate-900 dark:text-zinc-100 mt-6 mb-2 uppercase font-sans border-b border-slate-200/60 dark:border-zinc-800 pb-1 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 bg-teal-500 dark:bg-teal-400 rounded-full" />
+              {children}
+            </h4>
+          ),
+          strong: ({ children }) => (
+            <strong className="font-semibold text-teal-700 dark:text-teal-400 tracking-normal">
+              {children}
+            </strong>
+          ),
+          ul: ({ children }) => (
+            <div className="space-y-1.5 my-2">
+              {children}
+            </div>
+          ),
+          li: ({ children }) => (
+            <div className="flex items-start gap-2.5 my-1 translate-x-1">
+              <span className="text-teal-500 dark:text-teal-400 font-bold text-xs mt-1 select-none" aria-hidden="true">&bull;</span>
+              <span className="flex-1 text-[13px] text-slate-700 dark:text-zinc-300">{children}</span>
+            </div>
+          ),
+          a: ({ children, href }) => (
+            <a href={getSafeHref(href)} target="_blank" rel="noopener noreferrer" className="text-teal-700 dark:text-teal-400 hover:underline font-semibold">
+              {children}
+            </a>
+          ),
+          code: ({ children, ...props }: React.HTMLAttributes<HTMLElement>) => {
+            const codeString = String(children || '').replace(/\n$/, '');
+            const isInline = !codeString.includes('\n');
+            return isInline ? (
+              <code className="px-1.5 py-0.5 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded font-sans text-[11px] text-teal-700 dark:text-teal-400 font-semibold" {...props}>
+                {codeString}
+              </code>
+            ) : (
+              <pre className="p-4 rounded-lg bg-slate-950 text-rose-300 font-sans text-[10.5px] overflow-x-auto whitespace-pre leading-normal border border-slate-800 shadow-inner w-full">
+                <code className="block" {...props}>{codeString}</code>
+              </pre>
             );
           }
-          
-          // Parse inline backticks `code`
-          const codeParts = part.split('`');
-          return codeParts.map((cPart, cI) => {
-            if (cI % 2 === 1) {
-              return (
-                <code key={cI} className="px-1.5 py-0.5 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded font-mono text-[11px] text-teal-700 dark:text-teal-400 font-semibold">
-                  {cPart}
-                </code>
-              );
-            }
-            return cPart;
-          });
-        });
-
-        if (isBullet) {
-          return (
-            <div key={idx} className="flex items-start gap-2.5 my-1 translate-x-1">
-              <span className="text-teal-500 dark:text-teal-400 font-bold text-xs mt-1 select-none" aria-hidden="true">&bull;</span>
-              <span className="flex-1 text-[13px] text-slate-700 dark:text-zinc-300">{renderedContent}</span>
-            </div>
-          );
-        }
-
-        // Handle Headers e.g. "### Key Verification"
-        if (trimmed.startsWith('### ')) {
-          return (
-            <h4 key={idx} className="text-xs font-bold tracking-wider text-slate-900 dark:text-zinc-100 mt-6 mb-2 uppercase font-sans border-b border-slate-200/60 dark:border-zinc-800 pb-1 flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 bg-teal-500 dark:bg-teal-400 rounded-full" />
-              {trimmed.substring(4)}
-            </h4>
-          );
-        }
-
-        return (
-          <p key={idx} className="text-[13px] text-slate-600 dark:text-zinc-400 leading-relaxed">
-            {renderedContent}
-          </p>
-        );
-      })}
+        }}
+      >
+        {text}
+      </ReactMarkdown>
     </div>
   );
 }

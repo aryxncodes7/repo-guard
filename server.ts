@@ -12,6 +12,13 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+import { 
+  clampText, 
+  normalizeGithubRepoUrl, 
+  normalizePrNumber, 
+  parseGithubRepo 
+} from "./src/utils.js";
+
 const app = express();
 const PORT = 3000;
 const MAX_CHAT_HISTORY_ITEMS = 12;
@@ -49,35 +56,6 @@ function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : String(error);
 }
 
-function clampText(value: unknown, maxLength: number) {
-  return typeof value === "string" ? value.slice(0, maxLength).trim() : "";
-}
-
-function normalizeGithubRepoUrl(rawUrl: unknown) {
-  const repoUrl = clampText(rawUrl, MAX_REPO_URL_LENGTH);
-  if (!repoUrl) return "";
-
-  try {
-    const parsed = new URL(repoUrl);
-    const pathParts = parsed.pathname.split("/").filter(Boolean);
-    const isGithubRepo =
-      parsed.protocol === "https:" &&
-      parsed.hostname.toLowerCase() === "github.com" &&
-      pathParts.length >= 2 &&
-      /^[A-Za-z0-9_.-]+$/.test(pathParts[0]) &&
-      /^[A-Za-z0-9_.-]+$/.test(pathParts[1]);
-
-    return isGithubRepo ? `https://github.com/${pathParts[0]}/${pathParts[1]}` : "";
-  } catch {
-    return "";
-  }
-}
-
-function normalizePrNumber(rawPrNumber: unknown) {
-  if (rawPrNumber === undefined || rawPrNumber === null || rawPrNumber === "") return undefined;
-  const numeric = Number(rawPrNumber);
-  return Number.isInteger(numeric) && numeric > 0 && numeric <= 1_000_000 ? String(numeric) : undefined;
-}
 
 // Initialize Gemini Client
 const ai = new GoogleGenAI({
@@ -203,20 +181,7 @@ async function generateContentWithFallback(modelPrompt: GeminiPrompt, config: Ge
   throw new Error(`Fallback sequence complete: ${cleanLastErrorMsg}`);
 }
 
-// Helper to parse GitHub repository owner and repo name from URL
-function parseGithubRepo(repoUrl: string): { owner: string; repo: string } | null {
-  try {
-    const cleanedUrl = repoUrl.trim().replace(/\/$/, "");
-    const parsed = new URL(cleanedUrl);
-    const pathParts = parsed.pathname.split("/").filter(Boolean);
-    if (pathParts.length >= 2) {
-      return { owner: pathParts[0], repo: pathParts[1] };
-    }
-  } catch {
-    // ignore
-  }
-  return null;
-}
+
 
 // Helper to fetch from GitHub API with optional token
 async function fetchFromGithub(url: string, token?: string) {
@@ -383,7 +348,16 @@ async function getRepositoryDetails(owner: string, repo: string, token?: string)
 
 // Real AI Multi-Agent PR Review Endpoint
 app.post("/api/review", async (req, res) => {
-  const { repo_url, pr_number, github_token, api_key } = req.body as ReviewRequestBody;
+  const repo_url = (req.body as any).repo_url;
+  const pr_number = (req.body as any).pr_number;
+  const api_key = (req.headers["x-api-key"] as string) || (req.body as any).api_key;
+  const github_token = (req.headers["x-github-token"] as string) || (req.body as any).github_token;
+
+  if (req.body) {
+    delete (req.body as any).api_key;
+    delete (req.body as any).github_token;
+  }
+
   const normalizedRepoUrl = normalizeGithubRepoUrl(repo_url);
   const normalizedPrNumber = normalizePrNumber(pr_number);
 
@@ -606,7 +580,14 @@ Return the unified report output strictly conforming to the requested JSON respo
 
 // AI Chat Handler
 app.post("/api/chat", async (req, res) => {
-  const { message, history, api_key } = req.body as ChatRequestBody;
+  const message = (req.body as any).message;
+  const history = (req.body as any).history;
+  const api_key = (req.headers["x-api-key"] as string) || (req.body as any).api_key;
+
+  if (req.body) {
+    delete (req.body as any).api_key;
+  }
+
   const cleanMessage = clampText(message, MAX_CHAT_MESSAGE_LENGTH);
   if (!cleanMessage) {
     return res.status(400).json({ status: "error", message: "Message is required." });

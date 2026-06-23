@@ -237,18 +237,26 @@ export default function App() {
     let responseCodeStatus = 'HTTP 500';
     let hasError = false;
 
+    const reviewHeaders: Record<string, string> = {
+      'Content-Type': 'application/json'
+    };
+    if (customKey) {
+      reviewHeaders['x-api-key'] = customKey;
+    }
+    if (githubToken) {
+      reviewHeaders['x-github-token'] = githubToken;
+    }
+
     const requestBody = {
       repo_url: repoUrl.trim(),
-      pr_number: prNumber ? parseInt(prNumber, 10) : undefined,
-      github_token: githubToken || undefined,
-      api_key: customKey || undefined
+      pr_number: prNumber ? parseInt(prNumber, 10) : undefined
     };
 
     const fetchPromise = (async () => {
       try {
         const response = await fetch('/api/review', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: reviewHeaders,
           body: JSON.stringify(requestBody)
         });
 
@@ -408,7 +416,7 @@ export default function App() {
 
             {/* Scan depth */}
             <div className="space-y-1.5">
-              <label htmlFor="settings-scan-depth" className="text-[10px] font-mono text-slate-500 dark:text-zinc-400 uppercase font-extrabold flex items-center gap-1">
+              <label htmlFor="settings-scan-depth" className="text-[10px] font-sans text-slate-500 dark:text-zinc-400 uppercase font-extrabold flex items-center gap-1">
                 <Sliders className="w-3 h-3 text-emerald-600" /> ANALYSIS TYPE SELECTION
               </label>
               <select 
@@ -457,7 +465,7 @@ export default function App() {
                       >
                         @{githubConnectedUser}
                       </a>
-                      <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold uppercase block tracking-wider font-mono">
+                      <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold uppercase block tracking-wider font-sans">
                         CONNECTED
                       </span>
                     </div>
@@ -591,7 +599,7 @@ export default function App() {
                      splashProgress < 90 ? 'Resolving security sandbox proxy...' :
                      'Finalizing dashboard workspace...'}
                   </span>
-                  <span className="text-[#2DD4BF] font-mono font-bold text-[10px]">{splashProgress}%</span>
+                  <span className="text-[#2DD4BF] font-sans font-bold text-[10px]">{splashProgress}%</span>
                 </div>
                 <div className="w-full bg-zinc-950 rounded-full h-1.5 overflow-hidden border border-zinc-800 relative">
                   <motion.div 
@@ -868,7 +876,7 @@ export default function App() {
                   </div>
 
                   {/* Inline diagnostic block formatted like terminal */}
-                  <div className="rounded-xl border border-rose-300 bg-slate-900 font-mono text-xs text-rose-400 shadow-lg overflow-hidden relative">
+                  <div className="rounded-xl border border-rose-300 bg-slate-900 font-sans text-xs text-rose-400 shadow-lg overflow-hidden relative">
                     <div className="bg-slate-950 px-4 py-2.5 text-[10px] text-slate-400 border-b border-slate-800 flex items-center justify-between select-none">
                       <div className="flex items-center gap-1.5 font-sans font-bold">
                         <div className="w-2.5 h-2.5 rounded-full bg-rose-500" />
@@ -877,16 +885,16 @@ export default function App() {
                       <span>{errorTimestamp || 'UTC ERROR_LOG'}</span>
                     </div>
                     
-                    <div className="p-4 space-y-3 overflow-x-auto leading-relaxed font-mono">
+                    <div className="p-4 space-y-3 overflow-x-auto leading-relaxed font-sans">
                       <div className="flex gap-2">
                         <span className="text-rose-500 select-none">[FATAL_ERROR]</span>
                         <span className="text-slate-100 font-semibold">{errorStatusCode || 'HTTP 500 Internal Server Error'}</span>
                       </div>
-                      <div className="border-t border-slate-800 pt-2 text-[11px] text-slate-300 font-mono">
+                      <div className="border-t border-slate-800 pt-2 text-[11px] text-slate-300 font-sans">
                         <p className="font-semibold text-rose-300">TRACE ID MESSAGES:</p>
                         <p className="mt-1 pl-2 border-l-2 border-rose-500/30 whitespace-pre-wrap">{errorMessage}</p>
                       </div>
-                      <div className="text-[10px] text-slate-500 pt-2 border-t border-slate-800/50 font-mono">
+                      <div className="text-[10px] text-slate-500 pt-2 border-t border-slate-800/50 font-sans">
                         Possible remedies: Check repository route spelling, verify repo has public visibility, or verify that your internet connectivity status is healthy.
                       </div>
                     </div>
@@ -911,7 +919,7 @@ export default function App() {
           {/* Simplified footer with built by Aryan Raj link in caps */}
           <footer className="border-t border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 py-4 px-4 text-center mt-auto">
             <div className="max-w-[1500px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2.5">
-              <span className="text-[9.5px] font-mono text-slate-400 dark:text-zinc-500 tracking-wider font-extrabold uppercase">
+              <span className="text-[9.5px] font-sans text-slate-400 dark:text-zinc-500 tracking-wider font-extrabold uppercase">
                 &copy; REPOGUARD SUITE. ALL RIGHTS RESERVED.
               </span>
               <span className="text-[9.5px] font-sans text-slate-500 dark:text-zinc-400 font-extrabold uppercase tracking-wide">
