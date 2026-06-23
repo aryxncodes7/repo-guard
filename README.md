@@ -75,17 +75,20 @@ repoguard/
 
 Make sure you have [Node.js](https://nodejs.org/) installed (v18 or higher recommended).
 
-### 1. Installation
+### 🛠️ Environment Setup Guide
 
-Clone the repository and install the dependencies:
+To configure the application locally:
+1. Clone the repository and install the dependencies:
+   ```bash
+   npm install
+   ```
+2. Create a `.env` file in the root directory (you can copy `.env.example` as a baseline).
 
-```bash
-npm install
-```
+---
 
-### 2. Configure Environment Variables
+## ⚙️ API Configuration Requirements
 
-Create a `.env` file in the root directory (you can copy [.env.example](.env.example)):
+The application requires specific environment variables to interact with backend APIs and run client audits safely:
 
 ```env
 # Your primary Gemini API credentials (fallback if not supplied in UI)
@@ -93,42 +96,42 @@ GEMINI_API_KEY=your_gemini_api_key_here
 
 # Optional: GitHub token to scan private repositories and prevent API rate-limiting
 GITHUB_TOKEN=your_github_personal_access_token
+
+# Allowed domains for email links to prevent phishing/XSS
+VITE_ALLOWED_EMAIL_DOMAINS=github.com,gmail.com,outlook.com,hotmail.com,yahoo.com,protonmail.com,proton.me,google.com
 ```
 
-### 3. Run Locally
-
+### Running Locally
 Start the development server:
-
 ```bash
 npm run dev
 ```
-
 The application will launch on `http://localhost:3000`.
 
-### 4. Build for Production
-
+### Production Build
 To bundle the client files and package the server code:
-
 ```bash
 npm run build
 ```
-
 To run the production build:
-
 ```bash
 npm run start
 ```
 
 ---
 
-## ⚙️ Configuration & Settings
+## 🛡️ Security Model Definitions
 
-Inside the **Audit System Settings** panel in the UI:
-- **Analysis Type Selection**:
-  - **Concise**: Fast scans for key risks.
-  - **Standard**: Complete logic, security, and structure analysis.
-  - **Deep**: Extensive cryptographic trace and risk simulation.
-- **GitHub Identity Alignment**: Align your GitHub profile handle to associate scans with your developer username.
+RepoGuard enforces a multi-layer security model to protect developers and backend systems:
+
+### 1. Threat Scenarios & Remediation
+- **Credential Leak Detection**: Identifies plain-text API keys, tokens, and certificates within the codebase. Remediated by prompting users to clean branch history before merging.
+- **Prompt Injection Defense**: Cleans user context and dynamic fields (`repoUrl`, issues list) by stripping brackets, quotes, and HTML tag indicators to prevent model instruction overrides.
+- **XSS & Injection Protection**: HTML sanitization is applied during string clamping (`clampText`), and URL sanitization blocks path-traversal sequences and relative paths.
+
+### 2. Scheme & Link Filtering Allowlists
+- **Dynamic Email Domain Validation**: Standardizes `mailto:` parsing by dropping all query parameters and checking domains against a strict allowlist loaded from the `VITE_ALLOWED_EMAIL_DOMAINS` environment variable.
+- **Protocol Allowlist**: Only `http:`, `https:`, and valid `mailto:` protocols are allowed. `javascript:`, `data:`, and Windows backslash paths are completely blocked.
 
 ---
 

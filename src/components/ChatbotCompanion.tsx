@@ -27,7 +27,7 @@ const INITIAL_MESSAGE: ChatMessage = {
   text: "Hello! I am RepoGuard's Resident Auditor. Ask me about your security scan results, fixing plain-text secrets, resolving vulnerabilities, or modifying repository code structures."
 };
 
-const ALLOWED_EMAIL_DOMAINS = ['github.com', 'gmail.com', 'outlook.com', 'hotmail.com', 'yahoo.com', 'protonmail.com', 'proton.me', 'google.com'];
+const ALLOWED_EMAIL_DOMAINS = (((import.meta as any).env?.VITE_ALLOWED_EMAIL_DOMAINS) || "github.com,gmail.com,outlook.com,hotmail.com,yahoo.com,protonmail.com,proton.me,google.com").split(",");
 
 function getSafeHref(href?: string) {
   if (!href) return undefined;
