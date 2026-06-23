@@ -68,16 +68,6 @@ function getErrorMessage(error: unknown) {
 }
 
 
-// Initialize Gemini Client
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-  httpOptions: {
-    headers: {
-      'User-Agent': 'aistudio-build',
-    }
-  }
-});
-
 // Helper utility to safely parse JSON text, even if wrapped in markdown code blocks
 function parseJsonSafe(text: string) {
   let cleaned = text.trim();
