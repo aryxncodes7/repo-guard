@@ -109,7 +109,7 @@ export function cleanClientRepoUrl(repoUrl: string): string {
   if (trimmed.startsWith("//")) {
     normalized = `https:${trimmed}`;
   } else if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) {
-    normalized = "https://" + trimmed.replace(/^(github\.com\/)?/i, "github.com/");
+    normalized = "https://" + (trimmed.toLowerCase().startsWith("github.com/") ? trimmed : `github.com/${trimmed}`);
   }
 
   try {

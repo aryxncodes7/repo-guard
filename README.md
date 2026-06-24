@@ -92,7 +92,7 @@ cd repo-guard
 npm install
 ```
 
-### Environment Setup
+### Environment Variables Configuration
 
 Create a `.env` file in the root directory (you can copy `.env.example` as a baseline):
 
@@ -112,6 +112,10 @@ GITHUB_TOKEN=your_github_personal_access_token
 # Allowed domains for email links (XSS/phishing prevention)
 VITE_ALLOWED_EMAIL_DOMAINS=github.com,gmail.com,outlook.com,hotmail.com,yahoo.com,protonmail.com,proton.me,google.com
 ```
+
+### Domain Access Restrictions
+
+The allowed email domains for markdown link sanitation can be configured via `VITE_ALLOWED_EMAIL_DOMAINS`. Ensure there are no spaces after commas since strict string matches are performed on the values. Domains are automatically trimmed upon loading.
 
 ### Running Locally
 

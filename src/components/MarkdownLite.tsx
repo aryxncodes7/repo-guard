@@ -9,8 +9,7 @@ import ReactMarkdown from 'react-markdown';
 interface MarkdownLiteProps {
   text: string;
 }
-
-const ALLOWED_EMAIL_DOMAINS = (((import.meta as any).env?.VITE_ALLOWED_EMAIL_DOMAINS) || "github.com,gmail.com,outlook.com,hotmail.com,yahoo.com,protonmail.com,proton.me,google.com").split(",");
+const ALLOWED_EMAIL_DOMAINS = (((import.meta as any).env?.VITE_ALLOWED_EMAIL_DOMAINS) || "github.com,gmail.com,outlook.com,hotmail.com,yahoo.com,protonmail.com,proton.me,google.com").split(",").map((d: string) => d.trim());
 
 function getSafeHref(href?: string) {
   if (!href) return undefined;
