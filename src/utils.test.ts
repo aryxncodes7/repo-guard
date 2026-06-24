@@ -153,3 +153,25 @@ test("MarkdownLite sanitizes malicious URLs and scripts during render", async ()
   assert.ok(!result.includes("javascript:alert(1)"), "MarkdownLite strips javascript: URLs");
   assert.ok(!result.includes("<script>"), "MarkdownLite strips script tags");
 });
+
+test("AgentStepper component instantiates and renders states", async () => {
+  const { default: AgentStepper } = await import("./components/AgentStepper.js");
+  const { renderToString } = await import("react-dom/server");
+  const React = await import("react");
+  
+  const pendingAgents = [{ id: '1', name: 'Agent 1', status: 'pending', description: 'Pending desc' }];
+  const resultPending = renderToString(React.createElement(AgentStepper, { agents: pendingAgents as any }));
+  assert.ok(resultPending.includes("Agent 1"), "AgentStepper renders pending agent");
+  assert.ok(resultPending.includes("pending"), "AgentStepper renders pending status text");
+  
+  const runningAgents = [{ id: '2', name: 'Agent 2', status: 'running', description: 'Running desc' }];
+  const resultRunning = renderToString(React.createElement(AgentStepper, { agents: runningAgents as any }));
+  assert.ok(resultRunning.includes("Agent 2"), "AgentStepper renders running agent");
+  assert.ok(resultRunning.includes("running"), "AgentStepper renders running status text");
+  
+  const completedAgents = [{ id: '3', name: 'Agent 3', status: 'completed', description: 'Completed desc' }];
+  const resultCompleted = renderToString(React.createElement(AgentStepper, { agents: completedAgents as any }));
+  assert.ok(resultCompleted.includes("Agent 3"), "AgentStepper renders completed agent");
+  assert.ok(resultCompleted.includes("completed"), "AgentStepper renders completed status text");
+  assert.ok(resultCompleted.includes("100"), "AgentStepper renders 100 progress for completed");
+});

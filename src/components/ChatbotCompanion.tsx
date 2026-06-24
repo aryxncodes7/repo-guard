@@ -81,7 +81,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
     e.preventDefault();
     if (!input.trim() || isTyping) return;
 
-    const safeUserMsg = input.replace(/[<>]/g, '');
+    const safeUserMsg = DOMPurify.sanitize(input);
     setInput('');
     setMessages(prev => [...prev, { sender: 'user', text: safeUserMsg }]);
     setIsTyping(true);
@@ -109,14 +109,12 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
           .map((issue) => sanitize(issue.message))
           .filter(Boolean);
 
-        const secureContext = JSON.stringify({
+        reportContextBody = {
           repository: cleanRepoUrl,
           verdict: cleanVerdict,
           issues: cleanIssues,
           guide: cleanVerdict === 'request_changes' ? 'Wipe secrets using BFG Repo Cleaner or rotate keys.' : 'None.'
-        });
-
-        reportContextBody = JSON.parse(secureContext);
+        };
       }
 
       const requestBody: any = { message: finalMessage, history: formattedHistory };
