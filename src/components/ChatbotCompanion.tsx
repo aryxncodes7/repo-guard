@@ -106,7 +106,9 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: chatHeaders,
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
+        mode: 'same-origin',
+        credentials: 'same-origin'
       });
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {

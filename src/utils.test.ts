@@ -115,7 +115,7 @@ test("getShortRepoName extracts standard text names", () => {
 });
 
 test("MarkdownLite email regex prevents ReDoS and bypasses", () => {
-  const emailRegex = /^[^@\s]{1,64}@[^@\s]{1,255}\.[^@\s]{2,63}$/;
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   assert.strictEqual(emailRegex.test("valid@example.com"), true);
   assert.strictEqual(emailRegex.test("invalid@"), false);
   assert.strictEqual(emailRegex.test("invalid.com"), false);
@@ -186,6 +186,8 @@ test("AgentStepper component instantiates and renders states", async () => {
   const failedAgents = [{ id: '4', name: 'Agent 4', status: 'error', description: 'Failed desc' }];
   const resultFailed = renderToString(React.createElement(AgentStepper, { agents: failedAgents as any }));
   assert.ok(resultFailed.includes("Agent 4"), "AgentStepper renders error agent");
+  assert.ok(resultFailed.includes("error"), "AgentStepper renders error status");
+  assert.ok(resultFailed.includes("Failed desc"), "AgentStepper renders error description");
 
 });
 
