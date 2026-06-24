@@ -24,7 +24,8 @@ export function clampText(value: unknown, maxLength: number): string {
 }
 
 export function normalizeGithubRepoUrl(rawUrl: unknown): string {
-  const repoUrl = clampText(rawUrl, MAX_REPO_URL_LENGTH);
+  if (typeof rawUrl !== "string") return "";
+  const repoUrl = rawUrl.slice(0, MAX_REPO_URL_LENGTH).trim();
   if (!repoUrl) return "";
 
   // Reject relative paths, double dots, or backslashes
@@ -46,7 +47,7 @@ export function normalizeGithubRepoUrl(rawUrl: unknown): string {
     
     const isGithubRepo =
       parsed.protocol === "https:" &&
-      parsed.hostname.toLowerCase() === "github.com" &&
+      (parsed.hostname.toLowerCase() === "github.com" || parsed.hostname.toLowerCase() === "www.github.com") &&
       /^[A-Za-z0-9_-]+$/.test(owner) &&
       /^[A-Za-z0-9_.-]+$/.test(repo) &&
       owner !== "." && owner !== ".." &&
@@ -126,6 +127,8 @@ export function cleanClientRepoUrl(repoUrl: string): string {
 }
 
 export function getShortRepoName(repoUrl: string): string {
+  const parsed = parseGithubRepo(repoUrl);
+  if (parsed) return `${parsed.owner}/${parsed.repo}`;
   const parts = repoUrl.split('/').filter(Boolean);
   const len = parts.length;
   if (len < 2) return repoUrl;

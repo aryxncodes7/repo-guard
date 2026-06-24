@@ -103,6 +103,8 @@ export default function ChatbotCompanion({ activeReportContext, apiKey }: Chatbo
         chatHeaders['x-api-key'] = apiKey;
       }
 
+      let reportContextBody: any = undefined;
+
       if (activeReportContext && messages.length <= 2) {
         const sanitize = (val: string) => (val || '').replace(/[<>\x00-\x1F\x7F-\x9F`$\\]/g, '');
         const cleanRepoUrl = sanitize(activeReportContext.repoUrl);
@@ -118,13 +120,18 @@ export default function ChatbotCompanion({ activeReportContext, apiKey }: Chatbo
           guide: cleanVerdict === 'request_changes' ? 'Wipe secrets using BFG Repo Cleaner or rotate keys.' : 'None.'
         });
 
-        chatHeaders['x-report-context'] = encodeURIComponent(secureContext);
+        reportContextBody = JSON.parse(secureContext);
+      }
+
+      const requestBody: any = { message: finalMessage, history: formattedHistory };
+      if (reportContextBody) {
+        requestBody.reportContext = reportContextBody;
       }
 
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: chatHeaders,
-        body: JSON.stringify({ message: finalMessage, history: formattedHistory })
+        body: JSON.stringify(requestBody)
       });
       const data = await response.json();
       
@@ -215,7 +222,7 @@ export default function ChatbotCompanion({ activeReportContext, apiKey }: Chatbo
                     }}
                     urlTransform={getSafeHref}
                   >
-                    {typeof DOMPurify !== 'undefined' && DOMPurify.sanitize ? DOMPurify.sanitize(m.text) : m.text}
+                    {m.text}
                   </ReactMarkdown>
                 </div>
               )}
