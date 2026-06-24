@@ -82,7 +82,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
     e.preventDefault();
     if (!input.trim() || isTyping) return;
 
-    const safeUserMsg = DOMPurify.sanitize(input);
+    const safeUserMsg = input;
     setInput('');
     setMessages(prev => [...prev, { sender: 'user', text: safeUserMsg }]);
     setIsTyping(true);
@@ -103,11 +103,10 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       let reportContextBody: any = undefined;
 
       if (activeReportContext && messages.length <= 2) {
-        const sanitize = (val: string) => (val || '').replace(/[<>\x00-\x1F\x7F-\x9F]/g, '');
-        const cleanRepoUrl = sanitize(activeReportContext.repoUrl);
-        const cleanVerdict = sanitize(activeReportContext.verdict);
+        const cleanRepoUrl = activeReportContext.repoUrl;
+        const cleanVerdict = activeReportContext.verdict;
         const cleanIssues = Array.isArray(activeReportContext.issues)
-          ? activeReportContext.issues.map((issue) => sanitize(issue?.message || '')).filter(Boolean)
+          ? activeReportContext.issues.map((issue) => issue?.message || '').filter(Boolean)
           : [];
 
         reportContextBody = {

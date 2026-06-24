@@ -67,11 +67,10 @@ test("normalizePrNumber formats numbers and handles invalid values", () => {
 });
 
 test("parseGithubRepo gets owner and repo", () => {
-  const result = parseGithubRepo("https://github.com/owner/my-repo");
-  assert.deepStrictEqual(result, { owner: "owner", repo: "my-repo" });
-  
-  const shortResult = parseGithubRepo("owner/my-repo");
-  assert.deepStrictEqual(shortResult, { owner: "owner", repo: "my-repo" });
+  assert.deepStrictEqual(parseGithubRepo("https://github.com/facebook/react"), { owner: "facebook", repo: "react" });
+  assert.deepStrictEqual(parseGithubRepo("facebook/react"), { owner: "facebook", repo: "react" });
+  assert.strictEqual(parseGithubRepo("https://gitlab.com/facebook/react"), null, "Rejects gitlab.com");
+  assert.strictEqual(parseGithubRepo("https://malicious.com/facebook/react"), null, "Rejects malicious domains");
 
   assert.strictEqual(parseGithubRepo("invalid-format"), null);
   assert.strictEqual(parseGithubRepo("https://github.com/../repo"), null);

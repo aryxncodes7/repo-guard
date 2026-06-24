@@ -79,6 +79,9 @@ export function parseGithubRepo(repoUrl: string): { owner: string; repo: string 
     const urlToParse = parseUrlOrImplicitPath(cleanedUrl);
     if (!urlToParse) return null;
     const parsed = new URL(urlToParse);
+    if (parsed.hostname.toLowerCase() !== "github.com" && parsed.hostname.toLowerCase() !== "www.github.com") {
+      return null;
+    }
     const pathParts = parsed.pathname.split("/").filter(Boolean);
     if (pathParts.length >= 2) {
       const owner = pathParts[0];
