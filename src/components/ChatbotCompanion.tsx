@@ -44,8 +44,10 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
 
   // If there is context and the chat just opened, we can customize the greeting
   const repoUrl = activeReportContext?.repoUrl;
+  const prevRepoUrlRef = useRef<string | undefined>(undefined);
   useEffect(() => {
-    if (repoUrl) {
+    if (repoUrl && repoUrl !== prevRepoUrlRef.current) {
+      prevRepoUrlRef.current = repoUrl;
       const shortName = repoUrl.replace(/https?:\/\/(www\.)?github\.com\//, '') || 'this repository';
       setMessages([
         { 
@@ -60,7 +62,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
     e.preventDefault();
     if (!input.trim() || isTyping) return;
 
-    const safeUserMsg = input;
+    const safeUserMsg = sanitize(input);
     setInput('');
     setMessages(prev => [...prev, { sender: 'user', text: safeUserMsg }]);
     setIsTyping(true);
@@ -69,10 +71,10 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       // Clean up messages format for backend history
       const formattedHistory = messages.map(msg => ({
         role: msg.sender === 'user' ? 'user' : 'model',
-        content: String(msg.text).trim().slice(0, 4000)
+        content: sanitize(String(msg.text).trim().slice(0, 4000))
       }));
 
-      let finalMessage = String(safeUserMsg).trim().slice(0, 4000);
+      let finalMessage = sanitize(String(safeUserMsg).trim().slice(0, 4000));
       
       const chatHeaders: Record<string, string> = {
         'Content-Type': 'application/json'

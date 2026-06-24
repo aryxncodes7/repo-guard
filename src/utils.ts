@@ -6,7 +6,7 @@
 export const MAX_PR_NUMBER = 1000000;
 export const ALLOWED_EMAIL_DOMAINS = import.meta.env?.VITE_ALLOWED_EMAIL_DOMAINS 
   ? import.meta.env.VITE_ALLOWED_EMAIL_DOMAINS.split(',').map((d: string) => d.trim()) 
-  : ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com'];
+  : [];
 
 const MAX_REPO_URL_LENGTH = 200;
 
@@ -156,6 +156,9 @@ export function cleanClientRepoUrl(repoUrl: string): string {
   try {
     const parsed = new URL(normalized);
     if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+      return "https://github.com/";
+    }
+    if (parsed.hostname.toLowerCase() !== "github.com" && parsed.hostname.toLowerCase() !== "www.github.com") {
       return "https://github.com/";
     }
     // Strip query parameters and fragment to prevent path injection

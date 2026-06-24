@@ -185,3 +185,17 @@ test("ChatbotCompanion handles API fetch errors securely", async () => {
   assert.ok(result.includes("Live Auditor Connected"));
   global.fetch = undefined as any;
 });
+
+test("getSafeHref transforms and validates URLs properly", async () => {
+  const { getSafeHref } = await import("./utils.js");
+  assert.strictEqual(getSafeHref("https://github.com/aryxncodes7"), "https://github.com/aryxncodes7");
+  assert.strictEqual(getSafeHref("http://example.com"), "http://example.com");
+  assert.strictEqual(getSafeHref("javascript:alert(1)"), undefined);
+});
+
+test("parseUrlOrImplicitPath correctly prefixes URLs", async () => {
+  const { parseUrlOrImplicitPath } = await import("./utils.js");
+  assert.strictEqual(parseUrlOrImplicitPath("https://github.com"), "https://github.com");
+  assert.strictEqual(parseUrlOrImplicitPath("github.com/owner/repo"), "https://github.com/owner/repo");
+  assert.strictEqual(parseUrlOrImplicitPath("//example.com"), "https://example.com");
+});
