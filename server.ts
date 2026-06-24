@@ -38,7 +38,17 @@ app.use((_req, res, next) => {
   next();
 });
 app.use((req, res, next) => {
-  if (req.body !== undefined && req.body !== null) {
+  // Vercel may pre-parse the body as a string or object
+  if (req.body && typeof req.body === "object" && !Buffer.isBuffer(req.body)) {
+    // Already a parsed object — skip express.json()
+    next();
+  } else if (typeof req.body === "string") {
+    // Vercel sometimes passes body as a raw string — parse it
+    try {
+      req.body = JSON.parse(req.body);
+    } catch {
+      // If it's not valid JSON, leave it as-is
+    }
     next();
   } else {
     express.json({ limit: "32kb" })(req, res, next);
