@@ -180,10 +180,11 @@ test("ChatbotCompanion handles API fetch errors securely", async () => {
   const { renderToString } = await import("react-dom/server");
   const React = await import("react");
   
+  const originalFetch = global.fetch;
   global.fetch = async () => { throw new Error("Network offline"); };
   const result = renderToString(React.createElement(ChatbotCompanion, {}));
   assert.ok(result.includes("Live Auditor Connected"));
-  global.fetch = undefined as any;
+  global.fetch = originalFetch;
 });
 
 test("getSafeHref transforms and validates URLs properly", async () => {

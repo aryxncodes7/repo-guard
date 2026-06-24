@@ -31,7 +31,7 @@ export function getSafeHref(href?: string) {
       if (!/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+$/.test(email)) {
         return undefined;
       }
-      return `mailto:${email}`;
+      return `mailto:${email}${parsed.search}`;
     }
     return ['http:', 'https:'].includes(parsed.protocol) ? href : undefined;
   } catch {
