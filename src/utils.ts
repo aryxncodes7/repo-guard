@@ -101,6 +101,11 @@ export function cleanClientRepoUrl(repoUrl: string): string {
   const trimmed = (repoUrl || "").trim();
   if (!trimmed) return "https://github.com/";
 
+  // Detect and reject relative path traversals and backslashes
+  if (trimmed.includes("..") || trimmed.includes("\\")) {
+    return "https://github.com/";
+  }
+
   // Handle protocol relative URLs or missing protocols safely
   let normalized = trimmed;
   if (trimmed.startsWith("//")) {

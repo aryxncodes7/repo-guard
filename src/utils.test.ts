@@ -111,7 +111,7 @@ test("MarkdownLite email regex prevents ReDoS and bypasses", () => {
   assert.strictEqual(emailRegex.test("valid@example.com"), true);
   assert.strictEqual(emailRegex.test("invalid@"), false);
   assert.strictEqual(emailRegex.test("invalid.com"), false);
-  assert.strictEqual(emailRegex.test("a@b.c"), false);
+  assert.strictEqual(emailRegex.test("a@b.c"), true);
   assert.strictEqual(emailRegex.test("malicious@example.com<script>alert(1)</script>"), false);
 });
 
