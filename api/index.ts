@@ -1,20 +1,3 @@
-import express from "express";
-
-let app: any;
-
-try {
-  const server = await import("../server.js");
-  app = server.default;
-} catch (e: any) {
-  app = express();
-  app.use(express.json());
-  app.all("*", (_req: any, res: any) => {
-    res.status(500).json({
-      error: "Server module failed to load",
-      message: e?.message || String(e),
-      stack: e?.stack?.split("\n").slice(0, 10),
-    });
-  });
-}
+import app from "../server.js";
 
 export default app;
