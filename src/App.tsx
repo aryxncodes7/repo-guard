@@ -795,7 +795,13 @@ export default function App() {
 
                   {/* Right column: Chatbot Companion Panel (Spans 5 on md+) */}
                   <div className="md:col-span-5 w-full flex flex-col justify-start">
-                    <ChatbotCompanion />
+                    <ChatbotCompanion 
+                      activeReportContext={activeReviewResult ? {
+                        repoUrl: repoUrl,
+                        verdict: activeReviewResult.final_summary.verdict,
+                        issues: activeReviewResult.code_review.issues
+                      } : undefined}
+                    />
                   </div>
                 </motion.div>
               )}
