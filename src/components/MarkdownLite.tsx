@@ -14,7 +14,8 @@ interface MarkdownLiteProps {
 function getSafeHref(href?: string) {
   if (!href) return undefined;
   try {
-    const parsed = new URL(href, window.location.origin);
+    const isAbsolute = /^(?:[a-z]+:)?\/\//i.test(href);
+    const parsed = isAbsolute ? new URL(href) : new URL(href, 'https://github.com');
     if (parsed.protocol === 'mailto:') {
       const email = parsed.pathname.trim();
       const domain = email.split('@').pop()?.toLowerCase();

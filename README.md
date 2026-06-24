@@ -109,9 +109,12 @@ GEMINI_API_KEY=your_gemini_api_key_here
 # Optional — GitHub PAT to access private repos and avoid rate limits
 GITHUB_TOKEN=your_github_personal_access_token
 
+# Optional — Comma separated list of allowed email domains for markdown links
+VITE_ALLOWED_EMAIL_DOMAINS=gmail.com,yahoo.com,outlook.com,hotmail.com
+
 ### Domain Access Restrictions
 
-The allowed email domains for markdown link sanitation are strictly enforced by the `ALLOWED_EMAIL_DOMAINS` exported configuration constant defined inside `src/utils.ts`.
+The allowed email domains for markdown link sanitation are securely enforced by the `VITE_ALLOWED_EMAIL_DOMAINS` environment variable, falling back to a default allowlist if not provided.
 
 ### Running Locally
 

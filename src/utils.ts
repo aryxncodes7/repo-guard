@@ -87,7 +87,7 @@ export function parseGithubRepo(repoUrl: string): { owner: string; repo: string 
       const owner = pathParts[0];
       const repo = pathParts[1];
       if (
-        /^[A-Za-z0-9_-]+$/.test(owner) &&
+        /^[A-Za-z0-9_.-]+$/.test(owner) &&
         /^[A-Za-z0-9_.-]+$/.test(repo) &&
         owner !== "." && owner !== ".." &&
         repo !== "." && repo !== ".."

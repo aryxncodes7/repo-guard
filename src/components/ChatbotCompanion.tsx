@@ -30,7 +30,8 @@ const INITIAL_MESSAGE: ChatMessage = {
 function getSafeHref(href?: string) {
   if (!href) return undefined;
   try {
-    const parsed = new URL(href, window.location.origin);
+    const isAbsolute = /^(?:[a-z]+:)?\/\//i.test(href);
+    const parsed = isAbsolute ? new URL(href) : new URL(href, 'https://github.com');
     if (parsed.protocol === 'mailto:') {
       const email = parsed.pathname.trim();
       const domain = email.split('@').pop()?.toLowerCase();
@@ -90,10 +91,10 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       // Clean up messages format for backend history
       const formattedHistory = messages.map(msg => ({
         role: msg.sender === 'user' ? 'user' : 'model',
-        content: msg.text
+        content: String(msg.text).trim().slice(0, 4000)
       }));
 
-      let finalMessage = safeUserMsg;
+      let finalMessage = String(safeUserMsg).trim().slice(0, 4000);
       
       const chatHeaders: Record<string, string> = {
         'Content-Type': 'application/json'

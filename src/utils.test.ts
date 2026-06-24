@@ -174,3 +174,14 @@ test("AgentStepper component instantiates and renders states", async () => {
   assert.ok(resultCompleted.includes("completed"), "AgentStepper renders completed status text");
   assert.ok(resultCompleted.includes("100"), "AgentStepper renders 100 progress for completed");
 });
+
+test("ChatbotCompanion handles API fetch errors securely", async () => {
+  const { default: ChatbotCompanion } = await import("./components/ChatbotCompanion.js");
+  const { renderToString } = await import("react-dom/server");
+  const React = await import("react");
+  
+  global.fetch = async () => { throw new Error("Network offline"); };
+  const result = renderToString(React.createElement(ChatbotCompanion, {}));
+  assert.ok(result.includes("Live Auditor Connected"));
+  global.fetch = undefined as any;
+});
