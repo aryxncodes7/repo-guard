@@ -35,12 +35,15 @@ function getSafeHref(href?: string) {
   }
 }
 
-const HeadingComponent = ({ children }: { children: React.ReactNode }) => (
-  <h4 className="text-xs font-bold tracking-wider text-slate-900 dark:text-zinc-100 mt-6 mb-2 uppercase font-sans border-b border-slate-200/60 dark:border-zinc-800 pb-1 flex items-center gap-1.5">
-    <span className="w-1.5 h-1.5 bg-teal-500 dark:bg-teal-400 rounded-full" />
-    {children}
-  </h4>
-);
+const HeadingComponent = ({ children, level, ...props }: React.HTMLAttributes<HTMLHeadingElement> & { level: 1 | 2 | 3 | 4 }) => {
+  const Tag = `h${level}` as any;
+  return (
+    <Tag {...props} className="text-xs font-bold tracking-wider text-slate-900 dark:text-zinc-100 mt-6 mb-2 uppercase font-sans border-b border-slate-200/60 dark:border-zinc-800 pb-1 flex items-center gap-1.5">
+      <span className="w-1.5 h-1.5 bg-teal-500 dark:bg-teal-400 rounded-full" />
+      {children}
+    </Tag>
+  );
+};
 
 export default function MarkdownLite({ text }: MarkdownLiteProps) {
   if (!text) return null;
@@ -54,10 +57,10 @@ export default function MarkdownLite({ text }: MarkdownLiteProps) {
               {children}
             </p>
           ),
-          h1: HeadingComponent,
-          h2: HeadingComponent,
-          h3: HeadingComponent,
-          h4: HeadingComponent,
+          h1: (props) => <HeadingComponent level={1} {...props} />,
+          h2: (props) => <HeadingComponent level={2} {...props} />,
+          h3: (props) => <HeadingComponent level={3} {...props} />,
+          h4: (props) => <HeadingComponent level={4} {...props} />,
           strong: ({ children }) => (
             <strong className="font-semibold text-teal-700 dark:text-teal-400 tracking-normal">
               {children}

@@ -80,8 +80,14 @@ export function parseGithubRepo(repoUrl: string): { owner: string; repo: string 
     }
     
     let urlToParse = cleanedUrl;
-    if (!cleanedUrl.startsWith("http://") && !cleanedUrl.startsWith("https://")) {
-      urlToParse = "https://" + cleanedUrl.replace(/^(github\.com\/)?/i, "github.com/");
+    const schemeMatch = cleanedUrl.match(/^([^:\/?#]+):/);
+    if (schemeMatch) {
+      const scheme = schemeMatch[1].toLowerCase();
+      if (scheme !== "http" && scheme !== "https") return null;
+    } else if (cleanedUrl.startsWith("//")) {
+      urlToParse = "https:" + cleanedUrl;
+    } else {
+      urlToParse = "https://" + (cleanedUrl.toLowerCase().startsWith("github.com/") ? cleanedUrl : `github.com/${cleanedUrl}`);
     }
     const parsed = new URL(urlToParse);
     const pathParts = parsed.pathname.split("/").filter(Boolean);

@@ -39,7 +39,10 @@ function getSafeHref(href?: string) {
       if (!domain || !ALLOWED_EMAIL_DOMAINS.includes(domain)) {
         return undefined;
       }
-      if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+      if (email.length > 254) {
+        return undefined;
+      }
+      if (!/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+$/.test(email)) {
         return undefined;
       }
       return `mailto:${email}`;
@@ -94,7 +97,7 @@ export default function ChatbotCompanion({ activeReportContext, apiKey }: Chatbo
       const safeUserMsg = userMsg.replace(/<\/?user_input[^>]*>/gi, '');
       let finalMessage = safeUserMsg;
       if (activeReportContext && messages.length <= 2) {
-        const sanitize = (val: string) => (val || '').replace(/[<>\x00-\x1F\x7F-\x9F]/g, '');
+        const sanitize = (val: string) => (val || '').replace(/[<>\x00-\x1F\x7F-\x9F`$\\]/g, '');
         const cleanRepoUrl = sanitize(activeReportContext.repoUrl);
         const cleanVerdict = sanitize(activeReportContext.verdict);
         const cleanIssues = activeReportContext.issues

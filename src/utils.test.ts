@@ -117,10 +117,11 @@ test("MarkdownLite email regex prevents ReDoS and bypasses", () => {
 });
 
 test("ChatbotCompanion sanitize function strips XML tags", () => {
-  const sanitize = (val: string) => (val || '').replace(/[<>\x00-\x1F\x7F-\x9F]/g, '');
+  const sanitize = (val: string) => (val || '').replace(/[<>\x00-\x1F\x7F-\x9F`$\\]/g, '');
   assert.strictEqual(sanitize("hello <script> alert(1); </script> world"), "hello script alert(1); /script world");
   assert.strictEqual(sanitize('{"key": "value"}'), '{"key": "value"}');
   assert.strictEqual(sanitize("issues <issues>"), "issues issues");
+  assert.strictEqual(sanitize("injection `${alert(1)}\\x00`"), "injection {alert(1)}x00");
 });
 
 test("MarkdownLite component instantiates without crashing", async () => {
