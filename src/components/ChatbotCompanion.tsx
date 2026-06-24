@@ -27,7 +27,7 @@ const INITIAL_MESSAGE: ChatMessage = {
   text: "Hello! I am RepoGuard's Resident Auditor. Ask me about your security scan results, fixing plain-text secrets, resolving vulnerabilities, or modifying repository code structures."
 };
 
-const ALLOWED_EMAIL_DOMAINS = (((import.meta as any).env?.VITE_ALLOWED_EMAIL_DOMAINS) || "github.com,gmail.com,outlook.com,hotmail.com,yahoo.com,protonmail.com,proton.me,google.com").split(",");
+const ALLOWED_EMAIL_DOMAINS = ((import.meta.env?.VITE_ALLOWED_EMAIL_DOMAINS) || "").split(",").map((d: string) => d.trim()).filter(Boolean);
 
 function getSafeHref(href?: string) {
   if (!href) return undefined;
@@ -91,8 +91,8 @@ export default function ChatbotCompanion({ activeReportContext, apiKey }: Chatbo
         content: msg.text
       }));
 
-      // If active context is provided, we can prepend a small secret prompt block for the AI model
-      let finalMessage = userMsg;
+      const safeUserMsg = userMsg.replace(/<\/?user_input[^>]*>/gi, '');
+      let finalMessage = safeUserMsg;
       if (activeReportContext && messages.length <= 2) {
         const sanitize = (val: string) => (val || '').replace(/[<>\x00-\x1F\x7F-\x9F]/g, '');
         const cleanRepoUrl = sanitize(activeReportContext.repoUrl);
@@ -101,7 +101,7 @@ export default function ChatbotCompanion({ activeReportContext, apiKey }: Chatbo
           .map((issue) => sanitize(issue.message))
           .filter(Boolean);
 
-        finalMessage = `<system_context>\nInspecting repository: ${cleanRepoUrl}\nPredominant verdict: ${cleanVerdict}\n<issues>\n${cleanIssues.map(i => `<issue>${i}</issue>`).join('\n')}\n</issues>\nGuide: ${cleanVerdict === 'request_changes' ? 'Wipe secrets using BFG Repo Cleaner or rotate keys.' : 'None.'}\n</system_context>\n\n<user_input>\n${userMsg}\n</user_input>`;
+        finalMessage = `<system_context>\nInspecting repository: ${cleanRepoUrl}\nPredominant verdict: ${cleanVerdict}\n<issues>\n${cleanIssues.map(i => `<issue>${i}</issue>`).join('\n')}\n</issues>\nGuide: ${cleanVerdict === 'request_changes' ? 'Wipe secrets using BFG Repo Cleaner or rotate keys.' : 'None.'}\n</system_context>\n\n<user_input>\n${safeUserMsg}\n</user_input>`;
       }
 
       const chatHeaders: Record<string, string> = {

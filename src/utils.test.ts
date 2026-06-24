@@ -117,8 +117,24 @@ test("MarkdownLite email regex prevents ReDoS and bypasses", () => {
 });
 
 test("ChatbotCompanion sanitize function strips XML tags", () => {
-  const sanitize = (val: string) => (val || '').replace(/[<>]/g, '');
+  const sanitize = (val: string) => (val || '').replace(/[<>\x00-\x1F\x7F-\x9F]/g, '');
   assert.strictEqual(sanitize("hello <script> alert(1); </script> world"), "hello script alert(1); /script world");
   assert.strictEqual(sanitize('{"key": "value"}'), '{"key": "value"}');
   assert.strictEqual(sanitize("issues <issues>"), "issues issues");
+});
+
+test("MarkdownLite component instantiates without crashing", async () => {
+  const { default: MarkdownLite } = await import("./components/MarkdownLite.js");
+  const { renderToString } = await import("react-dom/server");
+  const React = await import("react");
+  const result = renderToString(React.createElement(MarkdownLite, { text: "# Hello" }));
+  assert.ok(typeof result === "string", "MarkdownLite should render to a string");
+});
+
+test("ChatbotCompanion component instantiates without crashing", async () => {
+  const { default: ChatbotCompanion } = await import("./components/ChatbotCompanion.js");
+  const { renderToString } = await import("react-dom/server");
+  const React = await import("react");
+  const result = renderToString(React.createElement(ChatbotCompanion, { activeReportContext: null }));
+  assert.ok(typeof result === "string", "ChatbotCompanion should render to a string");
 });

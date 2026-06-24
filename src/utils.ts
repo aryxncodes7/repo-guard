@@ -66,7 +66,8 @@ export function normalizeGithubRepoUrl(rawUrl: unknown): string {
 }
 
 export function normalizePrNumber(rawPrNumber: unknown): string | undefined {
-  if (rawPrNumber === undefined || rawPrNumber === null || rawPrNumber === "") return undefined;
+  if (typeof rawPrNumber !== 'string' && typeof rawPrNumber !== 'number') return undefined;
+  if (rawPrNumber === "") return undefined;
   const numeric = Number(rawPrNumber);
   return Number.isInteger(numeric) && numeric > 0 && numeric <= 1_000_000 ? String(numeric) : undefined;
 }
