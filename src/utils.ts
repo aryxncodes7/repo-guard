@@ -31,7 +31,7 @@ export function getSafeHref(href?: string) {
       if (email.length > 254) {
         return undefined;
       }
-      if (!/^[a-zA-Z0-9.]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+      if (!/^[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
         return undefined;
       }
       return `mailto:${email}${parsed.search}`;
@@ -119,7 +119,7 @@ export function parseGithubRepo(repoUrl: string): { owner: string; repo: string 
       const owner = pathParts[0];
       const repo = pathParts[1];
       if (
-        /^[A-Za-z0-9_.-]+$/.test(owner) &&
+        /^[A-Za-z0-9_-]+$/.test(owner) &&
         /^[A-Za-z0-9_.-]+$/.test(repo) &&
         owner !== "." && owner !== ".." &&
         repo !== "." && repo !== ".."

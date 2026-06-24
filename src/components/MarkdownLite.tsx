@@ -75,12 +75,12 @@ export default function MarkdownLite({ text }: MarkdownLiteProps) {
             const codeString = String(children || '').replace(/\n$/, '');
             const isInline = typeof inline === 'boolean' ? inline : !codeString.includes('\n');
             return isInline ? (
-              <code className={className || "px-1.5 py-0.5 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded font-sans text-[11px] text-teal-700 dark:text-teal-400 font-semibold"} {...props}>
+              <code className={className || "px-1.5 py-0.5 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded font-sans text-[11px] text-teal-700 dark:text-teal-400 font-semibold"}>
                 {codeString}
               </code>
             ) : (
               <pre className="p-4 rounded-lg bg-slate-950 text-rose-300 font-sans text-[10.5px] overflow-x-auto whitespace-pre leading-normal border border-slate-800 shadow-inner w-full">
-                <code className={`block ${className || ''}`} {...props}>{codeString}</code>
+                <code className={`block ${className || ''}`}>{codeString}</code>
               </pre>
             );
           }
