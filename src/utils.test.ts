@@ -115,7 +115,7 @@ test("getShortRepoName extracts standard text names", () => {
 });
 
 test("MarkdownLite email regex prevents ReDoS and bypasses", () => {
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   assert.strictEqual(emailRegex.test("valid@example.com"), true);
   assert.strictEqual(emailRegex.test("invalid@"), false);
   assert.strictEqual(emailRegex.test("invalid.com"), false);
@@ -187,6 +187,25 @@ test("AgentStepper component instantiates and renders states", async () => {
   const resultFailed = renderToString(React.createElement(AgentStepper, { agents: failedAgents as any }));
   assert.ok(resultFailed.includes("Agent 4"), "AgentStepper renders error agent");
 
+});
+
+test("AgentStepper component handles empty and extreme agent arrays safely", async () => {
+  const { default: AgentStepper } = await import("./components/AgentStepper.js");
+  const { renderToString } = await import("react-dom/server");
+  const React = await import("react");
+
+  const resultEmpty = renderToString(React.createElement(AgentStepper, { agents: [] }));
+  assert.ok(typeof resultEmpty === "string");
+
+  const extremeAgents = Array.from({ length: 1000 }, (_, i) => ({
+    id: String(i), name: `Agent ${i}`, status: 'completed', description: `Desc ${i}`
+  }));
+  const resultExtreme = renderToString(React.createElement(AgentStepper, { agents: extremeAgents as any }));
+
+  assert.ok(resultExtreme.includes("Agent 999"));
+  
+  const undefinedAgents = renderToString(React.createElement(AgentStepper, { agents: undefined as any }));
+  assert.ok(typeof undefinedAgents === "string");
 });
 
 test("ChatbotCompanion handles endpoint failure payloads securely", async () => {

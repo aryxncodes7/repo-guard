@@ -108,6 +108,10 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
         headers: chatHeaders,
         body: JSON.stringify(requestBody)
       });
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Invalid content type");
+      }
       const data = await response.json();
       
       if (data.status === 'success') {
