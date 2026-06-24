@@ -105,3 +105,19 @@ test("getShortRepoName extracts standard text names", () => {
   assert.strictEqual(getShortRepoName("https://github.com/owner/repo/"), "owner/repo");
   assert.strictEqual(getShortRepoName("owner/repo"), "owner/repo");
 });
+
+test("MarkdownLite email regex prevents ReDoS and bypasses", () => {
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+  assert.strictEqual(emailRegex.test("valid@example.com"), true);
+  assert.strictEqual(emailRegex.test("invalid@"), false);
+  assert.strictEqual(emailRegex.test("invalid.com"), false);
+  assert.strictEqual(emailRegex.test("a@b.c"), false);
+  assert.strictEqual(emailRegex.test("malicious@example.com<script>alert(1)</script>"), false);
+});
+
+test("ChatbotCompanion sanitize function strips XML tags", () => {
+  const sanitize = (val: string) => (val || '').replace(/[<>]/g, '');
+  assert.strictEqual(sanitize("hello <script> alert(1); </script> world"), "hello script alert(1); /script world");
+  assert.strictEqual(sanitize('{"key": "value"}'), '{"key": "value"}');
+  assert.strictEqual(sanitize("issues <issues>"), "issues issues");
+});

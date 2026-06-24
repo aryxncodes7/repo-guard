@@ -32,7 +32,8 @@ export function normalizeGithubRepoUrl(rawUrl: unknown): string {
   try {
     // Basic fix to support input starting with 'github.com/owner/repo' or 'owner/repo'
     let normalizedInput = repoUrl;
-    if (!repoUrl.startsWith("http://") && !repoUrl.startsWith("https://")) {
+    if (!/^https?:\/\//i.test(repoUrl)) {
+      if (/^[a-zA-Z][a-zA-Z\d+\-.]*:/i.test(repoUrl)) return "";
       normalizedInput = "https://" + (repoUrl.toLowerCase().startsWith("github.com/") ? repoUrl : `github.com/${repoUrl}`);
     }
 
@@ -100,16 +101,15 @@ export function cleanClientRepoUrl(repoUrl: string): string {
   const trimmed = (repoUrl || "").trim();
   if (!trimmed) return "https://github.com/";
 
-  // Detect and reject relative path traversals, backslashes, or malicious schemes (XSS)
-  if (trimmed.includes("..") || trimmed.includes("\\") || /^(javascript|data|file|vbscript|android-app|intent):/i.test(trimmed)) {
-    return "https://github.com/";
-  }
-
-  // Handle protocol relative URLs
+  // Handle protocol relative URLs or missing protocols safely
   let normalized = trimmed;
   if (trimmed.startsWith("//")) {
     normalized = `https:${trimmed}`;
-  } else if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) {
+  } else if (!/^https?:\/\//i.test(trimmed)) {
+    // If it has a scheme that is not http/https, reject it
+    if (/^[a-zA-Z][a-zA-Z\d+\-.]*:/i.test(trimmed)) {
+      return "https://github.com/";
+    }
     normalized = "https://" + (trimmed.toLowerCase().startsWith("github.com/") ? trimmed : `github.com/${trimmed}`);
   }
 

@@ -21,6 +21,9 @@ function getSafeHref(href?: string) {
       if (!domain || !ALLOWED_EMAIL_DOMAINS.includes(domain)) {
         return undefined;
       }
+      if (email.length > 254) {
+        return undefined;
+      }
       if (!/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/.test(email)) {
         return undefined;
       }
