@@ -21,7 +21,7 @@ export function getSafeHref(href?: string) {
       absoluteHref = 'https:' + href;
     }
     const isAbsolute = /^(?:[a-z]+:)?\/\//i.test(absoluteHref);
-    const parsed = isAbsolute ? new URL(absoluteHref) : new URL(absoluteHref, 'https://github.com');
+    const parsed = isAbsolute ? new URL(absoluteHref) : new URL(absoluteHref, 'http://localhost');
     if (parsed.protocol === 'mailto:') {
       const email = parsed.pathname.trim();
       const domain = email.split('@').pop()?.toLowerCase();

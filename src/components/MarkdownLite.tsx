@@ -34,7 +34,7 @@ const HeadingComponent = ({ children, level, node, ...props }: React.HTMLAttribu
 
 export default function MarkdownLite({ text }: MarkdownLiteProps) {
   if (!text) return null;
-  const cleanText = typeof DOMPurify.sanitize === 'function' ? DOMPurify.sanitize(text) : text;
+  const cleanText = DOMPurify.sanitize(text);
 
   return (
     <div className="space-y-3.5 text-sm leading-relaxed text-slate-800 dark:text-zinc-200">

@@ -222,6 +222,13 @@ test("getSafeHref transforms and validates URLs properly", async () => {
   assert.strictEqual(getSafeHref("https://github.com/aryxncodes7"), "https://github.com/aryxncodes7");
   assert.strictEqual(getSafeHref("http://example.com"), "http://example.com");
   assert.strictEqual(getSafeHref("javascript:alert(1)"), undefined);
+  assert.strictEqual(getSafeHref("/relative/path"), "/relative/path");
+  assert.strictEqual(getSafeHref("mailto:test@example.com"), "mailto:test@example.com");
+  assert.strictEqual(getSafeHref("mailto:invalid@"), undefined);
+  assert.strictEqual(getSafeHref("data:text/html,<h1>"), undefined);
+  assert.strictEqual(getSafeHref("vbscript:msgbox(1)"), undefined);
+  assert.strictEqual(getSafeHref("file:///etc/passwd"), undefined);
+  assert.strictEqual(getSafeHref("//example.com/protocol-relative"), "//example.com/protocol-relative");
 });
 
 test("parseUrlOrImplicitPath correctly prefixes URLs", async () => {
@@ -229,4 +236,7 @@ test("parseUrlOrImplicitPath correctly prefixes URLs", async () => {
   assert.strictEqual(parseUrlOrImplicitPath("https://github.com"), "https://github.com");
   assert.strictEqual(parseUrlOrImplicitPath("github.com/owner/repo"), "https://github.com/owner/repo");
   assert.strictEqual(parseUrlOrImplicitPath("//example.com"), "https://example.com");
+  assert.strictEqual(parseUrlOrImplicitPath("http://example.com"), "https://example.com");
+  assert.strictEqual(parseUrlOrImplicitPath("facebook/react"), "https://github.com/facebook/react");
+  assert.strictEqual(parseUrlOrImplicitPath("invalid...format"), "");
 });
