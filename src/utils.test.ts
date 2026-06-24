@@ -118,8 +118,8 @@ test("MarkdownLite email regex prevents ReDoS and bypasses", () => {
   assert.strictEqual(emailRegex.test("malicious@example.com<script>alert(1)</script>"), false);
 });
 
-test("ChatbotCompanion sanitize function strips XML tags", () => {
-  const sanitize = (val: string) => (val || '').replace(/[<>\x00-\x1F\x7F-\x9F`$\\]/g, '');
+test("ChatbotCompanion sanitize function strips XML tags", async () => {
+  const { sanitize } = await import("./components/ChatbotCompanion.js");
   assert.strictEqual(sanitize("hello <script> alert(1); </script> world"), "hello script alert(1); /script world");
   assert.strictEqual(sanitize('{"key": "value"}'), '{"key": "value"}');
   assert.strictEqual(sanitize("issues <issues>"), "issues issues");

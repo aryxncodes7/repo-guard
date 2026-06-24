@@ -13,8 +13,12 @@ const MAX_REPO_URL_LENGTH = 200;
 export function getSafeHref(href?: string) {
   if (!href) return undefined;
   try {
-    const isAbsolute = /^(?:[a-z]+:)?\/\//i.test(href);
-    const parsed = isAbsolute ? new URL(href) : new URL(href, 'https://github.com');
+    let absoluteHref = href;
+    if (href.startsWith('//')) {
+      absoluteHref = 'https:' + href;
+    }
+    const isAbsolute = /^(?:[a-z]+:)?\/\//i.test(absoluteHref);
+    const parsed = isAbsolute ? new URL(absoluteHref) : new URL(absoluteHref, 'https://github.com');
     if (parsed.protocol === 'mailto:') {
       const email = parsed.pathname.trim();
       const domain = email.split('@').pop()?.toLowerCase();
@@ -164,10 +168,7 @@ export function cleanClientRepoUrl(repoUrl: string): string {
 export function getShortRepoName(repoUrl: string): string {
   const parsed = parseGithubRepo(repoUrl);
   if (parsed) return `${parsed.owner}/${parsed.repo}`;
-  const parts = repoUrl.split('/').filter(Boolean);
-  const len = parts.length;
-  if (len < 2) return repoUrl;
-  return `${parts[len-2]}/${parts[len-1]}`;
+  return repoUrl;
 }
 
 export function parseUrlOrImplicitPath(inputUrl: string): string {
