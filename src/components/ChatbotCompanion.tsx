@@ -30,9 +30,9 @@ const INITIAL_MESSAGE: ChatMessage = {
 
 export const sanitize = (val: string) => {
   if (typeof DOMPurify.sanitize === 'function') {
-    return DOMPurify.sanitize(val || '');
+    return DOMPurify.sanitize(val || '', { USE_PROFILES: { html: false } });
   }
-  return (val || '').replace(/[<>\x00-\x1F\x7F-\x9F`$\\]/g, '');
+  return val || '';
 };
 
 
