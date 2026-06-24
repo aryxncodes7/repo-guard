@@ -12,7 +12,7 @@ interface MarkdownLiteProps {
 }
 
 
-const HeadingComponent = ({ children, level, ...props }: React.HTMLAttributes<HTMLHeadingElement> & { level: 1 | 2 | 3 | 4 | 5 | 6 }) => {
+const HeadingComponent = ({ children, level, node, ...props }: React.HTMLAttributes<HTMLHeadingElement> & { level: 1 | 2 | 3 | 4 | 5 | 6; node?: any }) => {
   const headings: Record<1 | 2 | 3 | 4 | 5 | 6, any> = { 1: 'h1', 2: 'h2', 3: 'h3', 4: 'h4', 5: 'h5', 6: 'h6' };
   const sizes: Record<1 | 2 | 3 | 4 | 5 | 6, string> = {
     1: 'text-lg text-slate-800 dark:text-zinc-100 font-bold mt-5 mb-2.5',
@@ -69,7 +69,7 @@ export default function MarkdownLite({ text }: MarkdownLiteProps) {
               {children}
             </a>
           ),
-          code: ({ inline, className, children, ...props }: any) => {
+          code: ({ inline, className, children, node, ...props }: any) => {
             const codeString = String(children || '').replace(/\n$/, '');
             const isInline = typeof inline === 'boolean' ? inline : !codeString.includes('\n');
             return isInline ? (

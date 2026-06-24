@@ -147,7 +147,7 @@ export function cleanClientRepoUrl(repoUrl: string): string {
 
   let normalized = "";
   try {
-    normalized = parseUrlOrImplicitPath(trimmed);
+    normalized = parseUrlOrImplicitPath(decoded);
   } catch {
     return "https://github.com/";
   }
