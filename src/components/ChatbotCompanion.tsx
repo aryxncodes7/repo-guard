@@ -7,6 +7,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import DOMPurify from 'dompurify';
 import { MessageSquare, Send } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { ALLOWED_EMAIL_DOMAINS } from '../utils';
 import { CodeIssue, FinalSummary } from '../types';
 
 interface ChatbotCompanionProps {
@@ -28,9 +29,6 @@ const INITIAL_MESSAGE: ChatMessage = {
   text: "Hello! I am RepoGuard's Resident Auditor. Ask me about your security scan results, fixing plain-text secrets, resolving vulnerabilities, or modifying repository code structures."
 };
 
-const rawDomains = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_ALLOWED_EMAIL_DOMAINS) || "";
-const ALLOWED_EMAIL_DOMAINS = typeof rawDomains === 'string' ? rawDomains.split(",").map((d: string) => d.trim()).filter(Boolean) : [];
-
 function getSafeHref(href?: string) {
   if (!href) return undefined;
   try {
@@ -38,7 +36,6 @@ function getSafeHref(href?: string) {
     if (parsed.protocol === 'mailto:') {
       const email = parsed.pathname.trim();
       const domain = email.split('@').pop()?.toLowerCase();
-      const ALLOWED_EMAIL_DOMAINS = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com'];
       if (!domain || !ALLOWED_EMAIL_DOMAINS.includes(domain)) {
         return undefined;
       }
@@ -122,7 +119,7 @@ export default function ChatbotCompanion({ activeReportContext, apiKey }: Chatbo
           guide: cleanVerdict === 'request_changes' ? 'Wipe secrets using BFG Repo Cleaner or rotate keys.' : 'None.'
         });
 
-        chatHeaders['x-report-context'] = btoa(encodeURIComponent(secureContext));
+        chatHeaders['x-report-context'] = encodeURIComponent(secureContext);
       }
 
       const response = await fetch('/api/chat', {

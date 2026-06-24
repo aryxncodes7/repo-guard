@@ -3,6 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+export const MAX_PR_NUMBER = 1000000;
+export const ALLOWED_EMAIL_DOMAINS = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com'];
+
 const MAX_REPO_URL_LENGTH = 200;
 
 function escapeHtml(str: string): string {
@@ -30,24 +33,8 @@ export function normalizeGithubRepoUrl(rawUrl: unknown): string {
   }
 
   try {
-    // Basic fix to support input starting with 'github.com/owner/repo' or 'owner/repo'
-    let normalizedInput = repoUrl;
-    try {
-      const parsed = new URL(repoUrl);
-      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return "";
-      normalizedInput = repoUrl.replace(/^http:/i, "https:");
-    } catch {
-      if (repoUrl.startsWith("//")) {
-        normalizedInput = "https:" + repoUrl;
-      } else {
-        const tempParsed = new URL("https://" + repoUrl);
-        if (tempParsed.hostname.toLowerCase() === "github.com" || tempParsed.hostname.toLowerCase() === "www.github.com") {
-          normalizedInput = "https://" + repoUrl;
-        } else {
-          normalizedInput = `https://github.com/${repoUrl}`;
-        }
-      }
-    }
+    const normalizedInput = parseUrlOrImplicitPath(repoUrl);
+    if (!normalizedInput) return "";
 
     const parsed = new URL(normalizedInput);
     const pathParts = parsed.pathname.split("/").filter(Boolean);
@@ -86,23 +73,8 @@ export function parseGithubRepo(repoUrl: string): { owner: string; repo: string 
       return null;
     }
     
-    let urlToParse = cleanedUrl;
-    try {
-      const parsed = new URL(cleanedUrl);
-      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null;
-      urlToParse = cleanedUrl.replace(/^http:/i, "https:");
-    } catch {
-      if (cleanedUrl.startsWith("//")) {
-        urlToParse = "https:" + cleanedUrl;
-      } else {
-        const tempParsed = new URL("https://" + cleanedUrl);
-        if (tempParsed.hostname.toLowerCase() === "github.com" || tempParsed.hostname.toLowerCase() === "www.github.com") {
-          urlToParse = "https://" + cleanedUrl;
-        } else {
-          urlToParse = `https://github.com/${cleanedUrl}`;
-        }
-      }
-    }
+    const urlToParse = parseUrlOrImplicitPath(cleanedUrl);
+    if (!urlToParse) return null;
     const parsed = new URL(urlToParse);
     const pathParts = parsed.pathname.split("/").filter(Boolean);
     if (pathParts.length >= 2) {
@@ -133,23 +105,8 @@ export function cleanClientRepoUrl(repoUrl: string): string {
     return "https://github.com/";
   }
 
-  let normalized = trimmed;
-  try {
-    const parsed = new URL(trimmed);
-    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return "https://github.com/";
-    normalized = trimmed.replace(/^http:/i, "https:");
-  } catch {
-    if (trimmed.startsWith("//")) {
-      normalized = `https:${trimmed}`;
-    } else {
-      const tempParsed = new URL("https://" + trimmed);
-      if (tempParsed.hostname.toLowerCase() === "github.com" || tempParsed.hostname.toLowerCase() === "www.github.com") {
-        normalized = "https://" + trimmed;
-      } else {
-        normalized = `https://github.com/${trimmed}`;
-      }
-    }
-  }
+  const normalized = parseUrlOrImplicitPath(trimmed);
+  if (!normalized) return "https://github.com/";
 
   try {
     const parsed = new URL(normalized);
@@ -164,6 +121,27 @@ export function cleanClientRepoUrl(repoUrl: string): string {
 }
 
 export function getShortRepoName(repoUrl: string): string {
-  const trimmed = (repoUrl || "").trim();
-  return trimmed.replace(/https?:\/\/(www\.)?github\.com\//i, "").replace(/\/$/, "") || "repository";
+  const parts = repoUrl.split('/').filter(Boolean);
+  const len = parts.length;
+  if (len < 2) return repoUrl;
+  return `${parts[len-2]}/${parts[len-1]}`;
+}
+
+export function parseUrlOrImplicitPath(inputUrl: string): string {
+  try {
+    const parsed = new URL(inputUrl);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return "";
+    return inputUrl.replace(/^http:/i, "https:");
+  } catch {
+    if (inputUrl.startsWith("//")) {
+      return "https:" + inputUrl;
+    } else {
+      const tempParsed = new URL("https://" + inputUrl);
+      if (tempParsed.hostname.toLowerCase() === "github.com" || tempParsed.hostname.toLowerCase() === "www.github.com") {
+        return "https://" + inputUrl;
+      } else {
+        return `https://github.com/${inputUrl}`;
+      }
+    }
+  }
 }

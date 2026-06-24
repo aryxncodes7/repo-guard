@@ -5,6 +5,7 @@
 
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import { ALLOWED_EMAIL_DOMAINS } from '../utils';
 
 interface MarkdownLiteProps {
   text: string;
@@ -17,7 +18,6 @@ function getSafeHref(href?: string) {
     if (parsed.protocol === 'mailto:') {
       const email = parsed.pathname.trim();
       const domain = email.split('@').pop()?.toLowerCase();
-      const ALLOWED_EMAIL_DOMAINS = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com'];
       if (!domain || !ALLOWED_EMAIL_DOMAINS.includes(domain)) {
         return undefined;
       }
