@@ -221,6 +221,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
           id="security-chat-input"
           type="text"
           value={input}
+          maxLength={4000}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Type message..."
           className="flex-1 px-3.5 py-2 bg-slate-50 dark:bg-zinc-800 dark:text-zinc-200 placeholder-slate-400 border border-slate-200 dark:border-zinc-700 rounded-lg text-xs font-sans focus:outline-none focus:border-emerald-500 dark:focus:border-emerald-400 transition"
