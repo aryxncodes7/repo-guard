@@ -136,6 +136,14 @@ test("MarkdownLite component instantiates without crashing", async () => {
   assert.ok(typeof result === "string", "MarkdownLite should render to a string");
 });
 
+test("MarkdownLite sanitizes XSS payloads", async () => {
+  const { default: MarkdownLite } = await import("./components/MarkdownLite.js");
+  const { renderToString } = await import("react-dom/server");
+  const React = await import("react");
+  const result = renderToString(React.createElement(MarkdownLite, { text: "<script>alert('xss')</script>" }));
+  assert.ok(!result.includes("<script>"));
+});
+
 test("ChatbotCompanion component instantiates without crashing", async () => {
   const { default: ChatbotCompanion } = await import("./components/ChatbotCompanion.js");
   const { renderToString } = await import("react-dom/server");

@@ -5,7 +5,8 @@
 
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
-import { getSafeHref } from '../utils';
+import DOMPurify from 'dompurify';
+import { ALLOWED_EMAIL_DOMAINS, getSafeHref } from '../utils';
 
 interface MarkdownLiteProps {
   text: string;
@@ -33,6 +34,7 @@ const HeadingComponent = ({ children, level, node, ...props }: React.HTMLAttribu
 
 export default function MarkdownLite({ text }: MarkdownLiteProps) {
   if (!text) return null;
+  const cleanText = typeof DOMPurify.sanitize === 'function' ? DOMPurify.sanitize(text) : text;
 
   return (
     <div className="space-y-3.5 text-sm leading-relaxed text-slate-800 dark:text-zinc-200">
@@ -84,7 +86,7 @@ export default function MarkdownLite({ text }: MarkdownLiteProps) {
           }
         }}
       >
-        {text}
+        {cleanText}
       </ReactMarkdown>
     </div>
   );

@@ -12,6 +12,9 @@ const MAX_REPO_URL_LENGTH = 200;
 
 export function getSafeHref(href?: string) {
   if (!href) return undefined;
+  if (/^(javascript|data|vbscript|file):/i.test(href.trim())) {
+    return undefined;
+  }
   try {
     let absoluteHref = href;
     if (href.startsWith('//')) {
@@ -28,7 +31,7 @@ export function getSafeHref(href?: string) {
       if (email.length > 254) {
         return undefined;
       }
-      if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+      if (!/^[a-zA-Z0-9.]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
         return undefined;
       }
       return `mailto:${email}${parsed.search}`;
@@ -193,5 +196,5 @@ export function parseUrlOrImplicitPath(inputUrl: string): string {
     }
   }
   
-  return `https://github.com/${inputUrl}`;
+  return "";
 }
