@@ -16,7 +16,7 @@ import {
   normalizeGithubRepoUrl, 
   normalizePrNumber, 
   parseGithubRepo 
-} from "./src/utils";
+} from "./src/utils.js";
 
 const app = express();
 const PORT = 3000;

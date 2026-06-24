@@ -3,11 +3,9 @@ import express from "express";
 let app: any;
 
 try {
-  const server = await import("../server");
+  const server = await import("../server.js");
   app = server.default;
 } catch (e: any) {
-  // If server.ts crashes on import, create a diagnostic Express app
-  // that returns the actual error so we can debug it
   app = express();
   app.use(express.json());
   app.all("*", (_req: any, res: any) => {
