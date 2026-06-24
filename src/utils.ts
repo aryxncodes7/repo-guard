@@ -21,8 +21,8 @@ function escapeHtml(str: string): string {
 
 export function clampText(value: unknown, maxLength: number): string {
   if (typeof value !== "string") return "";
-  const sliced = value.slice(0, maxLength).trim();
-  return escapeHtml(sliced);
+  const escaped = escapeHtml(value.trim());
+  return escaped.slice(0, maxLength);
 }
 
 export function normalizeGithubRepoUrl(rawUrl: unknown): string {

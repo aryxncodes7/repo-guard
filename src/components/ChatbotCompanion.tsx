@@ -65,9 +65,10 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
   }, [messages]);
 
   // If there is context and the chat just opened, we can customize the greeting
+  const repoUrl = activeReportContext?.repoUrl;
   useEffect(() => {
-    if (activeReportContext) {
-      const shortName = activeReportContext.repoUrl?.replace(/https?:\/\/(www\.)?github\.com\//, '') || 'this repository';
+    if (repoUrl) {
+      const shortName = repoUrl.replace(/https?:\/\/(www\.)?github\.com\//, '') || 'this repository';
       setMessages([
         { 
           sender: 'assistant', 
@@ -75,7 +76,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
         }
       ]);
     }
-  }, [activeReportContext]);
+  }, [repoUrl]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,7 +103,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       let reportContextBody: any = undefined;
 
       if (activeReportContext && messages.length <= 2) {
-        const sanitize = (val: string) => (val || '').replace(/[<>\x00-\x1F\x7F-\x9F`$\\]/g, '');
+        const sanitize = (val: string) => (val || '').replace(/[<>\x00-\x1F\x7F-\x9F]/g, '');
         const cleanRepoUrl = sanitize(activeReportContext.repoUrl);
         const cleanVerdict = sanitize(activeReportContext.verdict);
         const cleanIssues = activeReportContext.issues
