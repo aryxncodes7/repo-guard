@@ -41,7 +41,7 @@ export function normalizeGithubRepoUrl(rawUrl: unknown): string {
         normalizedInput = "https:" + repoUrl;
       } else {
         const tempParsed = new URL("https://" + repoUrl);
-        if (tempParsed.hostname.toLowerCase() === "github.com") {
+        if (tempParsed.hostname.toLowerCase() === "github.com" || tempParsed.hostname.toLowerCase() === "www.github.com") {
           normalizedInput = "https://" + repoUrl;
         } else {
           normalizedInput = `https://github.com/${repoUrl}`;
@@ -96,7 +96,7 @@ export function parseGithubRepo(repoUrl: string): { owner: string; repo: string 
         urlToParse = "https:" + cleanedUrl;
       } else {
         const tempParsed = new URL("https://" + cleanedUrl);
-        if (tempParsed.hostname.toLowerCase() === "github.com") {
+        if (tempParsed.hostname.toLowerCase() === "github.com" || tempParsed.hostname.toLowerCase() === "www.github.com") {
           urlToParse = "https://" + cleanedUrl;
         } else {
           urlToParse = `https://github.com/${cleanedUrl}`;
@@ -143,7 +143,7 @@ export function cleanClientRepoUrl(repoUrl: string): string {
       normalized = `https:${trimmed}`;
     } else {
       const tempParsed = new URL("https://" + trimmed);
-      if (tempParsed.hostname.toLowerCase() === "github.com") {
+      if (tempParsed.hostname.toLowerCase() === "github.com" || tempParsed.hostname.toLowerCase() === "www.github.com") {
         normalized = "https://" + trimmed;
       } else {
         normalized = `https://github.com/${trimmed}`;

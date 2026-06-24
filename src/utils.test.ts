@@ -139,6 +139,17 @@ test("ChatbotCompanion component instantiates without crashing", async () => {
   const { default: ChatbotCompanion } = await import("./components/ChatbotCompanion.js");
   const { renderToString } = await import("react-dom/server");
   const React = await import("react");
-  const result = renderToString(React.createElement(ChatbotCompanion, { activeReportContext: null }));
-  assert.ok(typeof result === "string", "ChatbotCompanion should render to a string");
+  const result = renderToString(React.createElement(ChatbotCompanion, { 
+    activeReportContext: null 
+  }));
+  assert.ok(result.includes("AI Security Companion"), "ChatbotCompanion renders");
+});
+
+test("MarkdownLite sanitizes malicious URLs and scripts during render", async () => {
+  const { default: MarkdownLite } = await import("./components/MarkdownLite.js");
+  const { renderToString } = await import("react-dom/server");
+  const React = await import("react");
+  const result = renderToString(React.createElement(MarkdownLite, { text: "[malicious](javascript:alert(1)) <script>alert(2)</script>" }));
+  assert.ok(!result.includes("javascript:alert(1)"), "MarkdownLite strips javascript: URLs");
+  assert.ok(!result.includes("<script>"), "MarkdownLite strips script tags");
 });
