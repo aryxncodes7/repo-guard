@@ -196,5 +196,10 @@ export function parseUrlOrImplicitPath(inputUrl: string): string {
     }
   }
   
+  // Explicitly support strictly formatted owner/repo strings
+  if (/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(inputUrl)) {
+    return `https://github.com/${inputUrl}`;
+  }
+  
   return "";
 }
