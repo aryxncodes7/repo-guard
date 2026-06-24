@@ -28,7 +28,7 @@ export function getSafeHref(href?: string) {
       if (email.length > 254) {
         return undefined;
       }
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
         return undefined;
       }
       return `mailto:${email}${parsed.search}`;
@@ -175,24 +175,23 @@ export function getShortRepoName(repoUrl: string): string {
 }
 
 export function parseUrlOrImplicitPath(inputUrl: string): string {
-  try {
+  if (URL.canParse(inputUrl)) {
     const parsed = new URL(inputUrl);
     if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return "";
     return inputUrl.replace(/^http:/i, "https:");
-  } catch {
-    if (inputUrl.startsWith("//")) {
-      return "https:" + inputUrl;
-    } else {
-      try {
-        const tempParsed = new URL("https://" + inputUrl);
-        if (tempParsed.hostname.toLowerCase() === "github.com" || tempParsed.hostname.toLowerCase() === "www.github.com") {
-          return "https://" + inputUrl;
-        } else {
-          return `https://github.com/${inputUrl}`;
-        }
-      } catch {
-        return "";
-      }
+  }
+  
+  if (inputUrl.startsWith("//")) {
+    return "https:" + inputUrl;
+  }
+  
+  const httpsUrl = "https://" + inputUrl;
+  if (URL.canParse(httpsUrl)) {
+    const tempParsed = new URL(httpsUrl);
+    if (tempParsed.hostname.toLowerCase() === "github.com" || tempParsed.hostname.toLowerCase() === "www.github.com") {
+      return httpsUrl;
     }
   }
+  
+  return `https://github.com/${inputUrl}`;
 }
