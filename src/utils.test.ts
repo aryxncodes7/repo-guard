@@ -18,7 +18,7 @@ test("clampText limits strings properly", () => {
   assert.strictEqual(clampText("hello world", 5), "hello");
   assert.strictEqual(clampText("   trimmed   ", 10), "trimmed");
   assert.strictEqual(clampText(12345, 5), "");
-  assert.strictEqual(clampText("<script>alert(1)</script>", 37), "&lt;script&gt;alert(1)&lt;/script&gt;");
+  assert.strictEqual(clampText("<script>alert(1)</script>", 30), "&lt;script&gt;alert(1)&lt;/script&gt;");
   assert.strictEqual(clampText("john & doe", 20), "john &amp; doe");
   
   // Non-string inputs

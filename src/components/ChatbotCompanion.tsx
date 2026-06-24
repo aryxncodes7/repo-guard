@@ -4,7 +4,6 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import DOMPurify from 'dompurify';
 import { MessageSquare, Send } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { ALLOWED_EMAIL_DOMAINS } from '../utils';
@@ -102,7 +101,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
 
       let reportContextBody: any = undefined;
 
-      if (activeReportContext && messages.length <= 2) {
+      if (activeReportContext) {
         const cleanRepoUrl = activeReportContext.repoUrl;
         const cleanVerdict = activeReportContext.verdict;
         const cleanIssues = Array.isArray(activeReportContext.issues)

@@ -21,8 +21,8 @@ function escapeHtml(str: string): string {
 
 export function clampText(value: unknown, maxLength: number): string {
   if (typeof value !== "string") return "";
-  const escaped = escapeHtml(value.trim());
-  return escaped.slice(0, maxLength);
+  const sliced = value.slice(0, maxLength).trim();
+  return escapeHtml(sliced);
 }
 
 export function normalizeGithubRepoUrl(rawUrl: unknown): string {
@@ -154,11 +154,15 @@ export function parseUrlOrImplicitPath(inputUrl: string): string {
     if (inputUrl.startsWith("//")) {
       return "https:" + inputUrl;
     } else {
-      const tempParsed = new URL("https://" + inputUrl);
-      if (tempParsed.hostname.toLowerCase() === "github.com" || tempParsed.hostname.toLowerCase() === "www.github.com") {
-        return "https://" + inputUrl;
-      } else {
-        return `https://github.com/${inputUrl}`;
+      try {
+        const tempParsed = new URL("https://" + inputUrl);
+        if (tempParsed.hostname.toLowerCase() === "github.com" || tempParsed.hostname.toLowerCase() === "www.github.com") {
+          return "https://" + inputUrl;
+        } else {
+          return `https://github.com/${inputUrl}`;
+        }
+      } catch {
+        return "";
       }
     }
   }
