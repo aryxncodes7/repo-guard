@@ -37,7 +37,8 @@ function getSafeHref(href?: string) {
 }
 
 const HeadingComponent = ({ children, level, ...props }: React.HTMLAttributes<HTMLHeadingElement> & { level: 1 | 2 | 3 | 4 }) => {
-  const Tag = `h${level}` as any;
+  const headings: Record<1 | 2 | 3 | 4, any> = { 1: 'h1', 2: 'h2', 3: 'h3', 4: 'h4' };
+  const Tag = headings[level] || 'h4';
   return (
     <Tag {...props} className="text-xs font-bold tracking-wider text-slate-900 dark:text-zinc-100 mt-6 mb-2 uppercase font-sans border-b border-slate-200/60 dark:border-zinc-800 pb-1 flex items-center gap-1.5">
       <span className="w-1.5 h-1.5 bg-teal-500 dark:bg-teal-400 rounded-full" />

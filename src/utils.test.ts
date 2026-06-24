@@ -60,6 +60,10 @@ test("normalizePrNumber formats numbers and handles invalid values", () => {
   assert.strictEqual(normalizePrNumber(1_000_000), "1000000");
   assert.strictEqual(normalizePrNumber(1_000_001), undefined);
   assert.strictEqual(normalizePrNumber(999_999), "999999");
+  
+  // Extremely large numbers testing
+  assert.strictEqual(normalizePrNumber(1_000_000_000), undefined);
+  assert.strictEqual(normalizePrNumber(Number.MAX_SAFE_INTEGER), undefined);
 });
 
 test("parseGithubRepo gets owner and repo", () => {
