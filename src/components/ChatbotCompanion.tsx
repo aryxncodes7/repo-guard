@@ -106,9 +106,9 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
         const sanitize = (val: string) => (val || '').replace(/[<>\x00-\x1F\x7F-\x9F]/g, '');
         const cleanRepoUrl = sanitize(activeReportContext.repoUrl);
         const cleanVerdict = sanitize(activeReportContext.verdict);
-        const cleanIssues = activeReportContext.issues
-          .map((issue) => sanitize(issue.message))
-          .filter(Boolean);
+        const cleanIssues = Array.isArray(activeReportContext.issues)
+          ? activeReportContext.issues.map((issue) => sanitize(issue?.message || '')).filter(Boolean)
+          : [];
 
         reportContextBody = {
           repository: cleanRepoUrl,

@@ -113,7 +113,12 @@ export function cleanClientRepoUrl(repoUrl: string): string {
     return "https://github.com/";
   }
 
-  const normalized = parseUrlOrImplicitPath(trimmed);
+  let normalized = "";
+  try {
+    normalized = parseUrlOrImplicitPath(trimmed);
+  } catch {
+    return "https://github.com/";
+  }
   if (!normalized) return "https://github.com/";
 
   try {
