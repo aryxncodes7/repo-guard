@@ -109,13 +109,9 @@ GEMINI_API_KEY=your_gemini_api_key_here
 # Optional — GitHub PAT to access private repos and avoid rate limits
 GITHUB_TOKEN=your_github_personal_access_token
 
-# Allowed domains for email links (XSS/phishing prevention)
-VITE_ALLOWED_EMAIL_DOMAINS=github.com,gmail.com,outlook.com,hotmail.com,yahoo.com,protonmail.com,proton.me,google.com
-```
-
 ### Domain Access Restrictions
 
-The allowed email domains for markdown link sanitation can be configured via `VITE_ALLOWED_EMAIL_DOMAINS`. Ensure there are no spaces after commas since strict string matches are performed on the values. Domains are automatically trimmed upon loading.
+The allowed email domains for markdown link sanitation are strictly enforced by the `ALLOWED_EMAIL_DOMAINS` exported configuration constant defined inside `src/utils.ts`.
 
 ### Running Locally
 
@@ -171,10 +167,10 @@ RepoGuard enforces a multi-layer security model to protect developers and backen
 ### Threat Scenarios & Remediation
 - **Credential Leak Detection** — Identifies plain-text API keys, tokens, and certificates within the codebase. Remediated by prompting users to clean branch history before merging.
 - **Prompt Injection Defense** — Cleans user context and dynamic fields by stripping brackets, quotes, and HTML tag indicators to prevent model instruction overrides.
-- **XSS & Injection Protection** — HTML sanitization is applied during string clamping (`clampText`), and URL sanitization blocks path-traversal sequences and relative paths via `getSafeHref`.
+- **XSS & Injection Protection** — Markdown strings are safely compiled through a sanitized `DOMPurify` pipeline. A strict `Content-Security-Policy` header explicitly bans inline `eval()` executions or unauthorized script insertions to completely neutralize browser-side vulnerabilities.
 
 ### Scheme & Link Filtering Allowlists
-- **Dynamic Email Domain Validation** — Standardizes `mailto:` parsing by dropping all query parameters and checking domains against a strict allowlist loaded from the `VITE_ALLOWED_EMAIL_DOMAINS` environment variable.
+- **Dynamic Email Domain Validation** — Standardizes `mailto:` parsing by dropping all query parameters and checking domains against a strict global allowlist defined in `src/utils.ts`.
 - **Protocol Allowlist** — Only `http:`, `https:`, and valid `mailto:` protocols are allowed. `javascript:`, `data:`, and Windows backslash paths are completely blocked.
 
 ---
