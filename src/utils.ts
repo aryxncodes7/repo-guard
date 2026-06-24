@@ -4,8 +4,9 @@
  */
 
 export const MAX_PR_NUMBER = 1000000;
-export const ALLOWED_EMAIL_DOMAINS = import.meta.env?.VITE_ALLOWED_EMAIL_DOMAINS 
-  ? import.meta.env.VITE_ALLOWED_EMAIL_DOMAINS.split(',').map((d: string) => d.trim()) 
+const rawDomains = import.meta.env?.VITE_ALLOWED_EMAIL_DOMAINS;
+export const ALLOWED_EMAIL_DOMAINS = typeof rawDomains === 'string'
+  ? rawDomains.split(',').map((d: string) => d.trim()).filter((d: string) => /^[a-zA-Z0-9.-]+$/.test(d))
   : [];
 
 const MAX_REPO_URL_LENGTH = 200;
@@ -197,7 +198,7 @@ export function parseUrlOrImplicitPath(inputUrl: string): string {
   }
   
   // Explicitly support strictly formatted owner/repo strings
-  if (/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(inputUrl)) {
+  if (/^[A-Za-z0-9_-]+\/[A-Za-z0-9_.-]+$/.test(inputUrl) && !inputUrl.includes("..")) {
     return `https://github.com/${inputUrl}`;
   }
   
