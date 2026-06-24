@@ -84,10 +84,10 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       let reportContextBody: any = undefined;
 
       if (activeReportContext) {
-        const cleanRepoUrl = activeReportContext.repoUrl;
-        const cleanVerdict = activeReportContext.verdict;
+        const cleanRepoUrl = sanitize(String(activeReportContext.repoUrl || ''));
+        const cleanVerdict = sanitize(String(activeReportContext.verdict || ''));
         const cleanIssues = Array.isArray(activeReportContext.issues)
-          ? activeReportContext.issues.map((issue) => issue?.message || '').filter(Boolean)
+          ? activeReportContext.issues.map((issue) => sanitize(String(issue?.message || ''))).filter(Boolean)
           : [];
 
         reportContextBody = {

@@ -276,3 +276,18 @@ test("parseUrlOrImplicitPath correctly prefixes URLs", async () => {
   assert.strictEqual(parseUrlOrImplicitPath("facebook/react"), "https://github.com/facebook/react");
   assert.strictEqual(parseUrlOrImplicitPath("invalid...format"), "");
 });
+
+test("ChatbotCompanion serializes malformed reportContext without crashing", async () => {
+  const { default: ChatbotCompanion } = await import("./components/ChatbotCompanion.js");
+  const { renderToString } = await import("react-dom/server");
+  const React = await import("react");
+
+  const malformedContext = {
+    repoUrl: "<script>alert(1)</script>",
+    verdict: "request_changes",
+    issues: [{ message: "\x00\x01malicious" }]
+  };
+
+  const result = renderToString(React.createElement(ChatbotCompanion, { activeReportContext: malformedContext as any }));
+  assert.ok(typeof result === "string");
+});
