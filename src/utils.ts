@@ -32,8 +32,13 @@ export function normalizeGithubRepoUrl(rawUrl: unknown): string {
   try {
     // Basic fix to support input starting with 'github.com/owner/repo' or 'owner/repo'
     let normalizedInput = repoUrl;
-    if (!/^https?:\/\//i.test(repoUrl)) {
-      if (/^[a-zA-Z][a-zA-Z\d+\-.]*:/i.test(repoUrl)) return "";
+    const schemeMatch = repoUrl.match(/^([^:\/?#]+):/);
+    if (schemeMatch) {
+      const scheme = schemeMatch[1].toLowerCase();
+      if (scheme !== "http" && scheme !== "https") return "";
+    } else if (repoUrl.startsWith("//")) {
+      normalizedInput = "https:" + repoUrl;
+    } else {
       normalizedInput = "https://" + (repoUrl.toLowerCase().startsWith("github.com/") ? repoUrl : `github.com/${repoUrl}`);
     }
 
@@ -101,20 +106,21 @@ export function cleanClientRepoUrl(repoUrl: string): string {
   const trimmed = (repoUrl || "").trim();
   if (!trimmed) return "https://github.com/";
 
+  const decoded = decodeURIComponent(trimmed).toLowerCase();
   // Detect and reject relative path traversals and backslashes
-  if (trimmed.includes("..") || trimmed.includes("\\")) {
+  if (decoded.includes("..") || decoded.includes("\\") || decoded.includes("%2e%2e") || decoded.includes("%5c")) {
     return "https://github.com/";
   }
 
   // Handle protocol relative URLs or missing protocols safely
   let normalized = trimmed;
-  if (trimmed.startsWith("//")) {
+  const schemeMatch = trimmed.match(/^([^:\/?#]+):/);
+  if (schemeMatch) {
+    const scheme = schemeMatch[1].toLowerCase();
+    if (scheme !== "http" && scheme !== "https") return "https://github.com/";
+  } else if (trimmed.startsWith("//")) {
     normalized = `https:${trimmed}`;
-  } else if (!/^https?:\/\//i.test(trimmed)) {
-    // If it has a scheme that is not http/https, reject it
-    if (/^[a-zA-Z][a-zA-Z\d+\-.]*:/i.test(trimmed)) {
-      return "https://github.com/";
-    }
+  } else {
     normalized = "https://" + (trimmed.toLowerCase().startsWith("github.com/") ? trimmed : `github.com/${trimmed}`);
   }
 

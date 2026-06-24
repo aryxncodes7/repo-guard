@@ -98,6 +98,7 @@ test("cleanClientRepoUrl prevents protocol smuggling and malformed URL attacks",
   assert.strictEqual(cleanClientRepoUrl("intent://example.com#Intent;scheme=http;package=com.malicious.app;end"), "https://github.com/");
   assert.strictEqual(cleanClientRepoUrl("https://github.com/foo/bar?param=javascript:alert(1)"), "https://github.com/foo/bar");
   assert.strictEqual(cleanClientRepoUrl("https://github.com/foo/bar?param=%0a%0d%00bypass"), "https://github.com/foo/bar");
+  assert.strictEqual(cleanClientRepoUrl("https://github.com/foo/bar?query=%2e%2e%2finjection"), "https://github.com/");
 });
 
 test("getShortRepoName extracts standard text names", () => {
@@ -107,7 +108,7 @@ test("getShortRepoName extracts standard text names", () => {
 });
 
 test("MarkdownLite email regex prevents ReDoS and bypasses", () => {
-  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+$/;
   assert.strictEqual(emailRegex.test("valid@example.com"), true);
   assert.strictEqual(emailRegex.test("invalid@"), false);
   assert.strictEqual(emailRegex.test("invalid.com"), false);

@@ -94,7 +94,7 @@ export default function ChatbotCompanion({ activeReportContext, apiKey }: Chatbo
       // If active context is provided, we can prepend a small secret prompt block for the AI model
       let finalMessage = userMsg;
       if (activeReportContext && messages.length <= 2) {
-        const sanitize = (val: string) => (val || '').replace(/[<>]/g, '');
+        const sanitize = (val: string) => (val || '').replace(/[<>\x00-\x1F\x7F-\x9F]/g, '');
         const cleanRepoUrl = sanitize(activeReportContext.repoUrl);
         const cleanVerdict = sanitize(activeReportContext.verdict);
         const cleanIssues = activeReportContext.issues
