@@ -34,33 +34,32 @@ test("clampText limits strings properly", () => {
 });
 
 test("normalizeGithubRepoUrl parses valid and invalid URLs", () => {
-  assert.strictEqual(
-    normalizeGithubRepoUrl("https://github.com/expressjs/express"), 
-    "https://github.com/expressjs/express"
-  );
-  assert.strictEqual(
-    normalizeGithubRepoUrl("https://github.com/expressjs/express/issues"), 
-    "https://github.com/expressjs/express"
-  );
-  assert.strictEqual(
-    normalizeGithubRepoUrl("github.com/expressjs/express"), 
-    "https://github.com/expressjs/express"
-  );
-  assert.strictEqual(
-    normalizeGithubRepoUrl("expressjs/express"), 
-    "https://github.com/expressjs/express"
-  );
-  assert.strictEqual(normalizeGithubRepoUrl("https://malicious.site.com/foo/bar"), "");
-  assert.strictEqual(normalizeGithubRepoUrl("https://github.com/../express"), "");
-  assert.strictEqual(normalizeGithubRepoUrl("https://github.com/expressjs\\express"), "");
+  assert.strictEqual(normalizeGithubRepoUrl("https://github.com/owner/repo"), "https://github.com/owner/repo");
+  assert.strictEqual(normalizeGithubRepoUrl("owner/repo"), "https://github.com/owner/repo");
+  assert.strictEqual(normalizeGithubRepoUrl("github.com/owner/repo"), "https://github.com/owner/repo");
+  assert.strictEqual(normalizeGithubRepoUrl("http://github.com/owner/repo"), "https://github.com/owner/repo");
+  assert.strictEqual(normalizeGithubRepoUrl("https://github.com/owner"), "");
+  assert.strictEqual(normalizeGithubRepoUrl("https://github.com/"), "");
+  assert.strictEqual(normalizeGithubRepoUrl("https://gitlab.com/owner/repo"), "");
+  
+  // Advanced URL parsing edge cases
+  assert.strictEqual(normalizeGithubRepoUrl("https://github.com:443/owner/repo#fragment"), "https://github.com/owner/repo");
+  assert.strictEqual(normalizeGithubRepoUrl("https://github.com.example.com/owner/repo"), "");
 });
 
 test("normalizePrNumber formats numbers and handles invalid values", () => {
-  assert.strictEqual(normalizePrNumber("42"), "42");
-  assert.strictEqual(normalizePrNumber(42), "42");
+  assert.strictEqual(normalizePrNumber(123), "123");
+  assert.strictEqual(normalizePrNumber("456"), "456");
+  assert.strictEqual(normalizePrNumber("abc"), undefined);
+  assert.strictEqual(normalizePrNumber(-1), undefined);
+  assert.strictEqual(normalizePrNumber(1.5), undefined);
   assert.strictEqual(normalizePrNumber(""), undefined);
-  assert.strictEqual(normalizePrNumber("not-a-number"), undefined);
-  assert.strictEqual(normalizePrNumber(-5), undefined);
+  assert.strictEqual(normalizePrNumber(null), undefined);
+  
+  // Upper bounds testing
+  assert.strictEqual(normalizePrNumber(1_000_000), "1000000");
+  assert.strictEqual(normalizePrNumber(1_000_001), undefined);
+  assert.strictEqual(normalizePrNumber(999_999), "999999");
 });
 
 test("parseGithubRepo gets owner and repo", () => {

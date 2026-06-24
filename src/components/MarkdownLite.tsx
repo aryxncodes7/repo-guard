@@ -9,7 +9,8 @@ import ReactMarkdown from 'react-markdown';
 interface MarkdownLiteProps {
   text: string;
 }
-const ALLOWED_EMAIL_DOMAINS = ((import.meta.env?.VITE_ALLOWED_EMAIL_DOMAINS) || "").split(",").map((d: string) => d.trim()).filter(Boolean);
+const rawDomains = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_ALLOWED_EMAIL_DOMAINS) || "";
+const ALLOWED_EMAIL_DOMAINS = typeof rawDomains === 'string' ? rawDomains.split(",").map((d: string) => d.trim()).filter(Boolean) : [];
 
 function getSafeHref(href?: string) {
   if (!href) return undefined;
@@ -51,6 +52,7 @@ export default function MarkdownLite({ text }: MarkdownLiteProps) {
   return (
     <div className="space-y-3.5 text-sm leading-relaxed text-slate-800 dark:text-zinc-200">
       <ReactMarkdown
+        urlTransform={getSafeHref}
         components={{
           p: ({ children }) => (
             <p className="text-[13px] text-slate-600 dark:text-zinc-400 leading-relaxed mb-2 last:mb-0">

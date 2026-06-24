@@ -32,14 +32,21 @@ export function normalizeGithubRepoUrl(rawUrl: unknown): string {
   try {
     // Basic fix to support input starting with 'github.com/owner/repo' or 'owner/repo'
     let normalizedInput = repoUrl;
-    const schemeMatch = repoUrl.match(/^([^:\/?#]+):/);
-    if (schemeMatch) {
-      const scheme = schemeMatch[1].toLowerCase();
-      if (scheme !== "http" && scheme !== "https") return "";
-    } else if (repoUrl.startsWith("//")) {
-      normalizedInput = "https:" + repoUrl;
-    } else {
-      normalizedInput = "https://" + (repoUrl.toLowerCase().startsWith("github.com/") ? repoUrl : `github.com/${repoUrl}`);
+    try {
+      const parsed = new URL(repoUrl);
+      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return "";
+      normalizedInput = repoUrl.replace(/^http:/i, "https:");
+    } catch {
+      if (repoUrl.startsWith("//")) {
+        normalizedInput = "https:" + repoUrl;
+      } else {
+        const tempParsed = new URL("https://" + repoUrl);
+        if (tempParsed.hostname.toLowerCase() === "github.com") {
+          normalizedInput = "https://" + repoUrl;
+        } else {
+          normalizedInput = `https://github.com/${repoUrl}`;
+        }
+      }
     }
 
     const parsed = new URL(normalizedInput);
@@ -80,14 +87,21 @@ export function parseGithubRepo(repoUrl: string): { owner: string; repo: string 
     }
     
     let urlToParse = cleanedUrl;
-    const schemeMatch = cleanedUrl.match(/^([^:\/?#]+):/);
-    if (schemeMatch) {
-      const scheme = schemeMatch[1].toLowerCase();
-      if (scheme !== "http" && scheme !== "https") return null;
-    } else if (cleanedUrl.startsWith("//")) {
-      urlToParse = "https:" + cleanedUrl;
-    } else {
-      urlToParse = "https://" + (cleanedUrl.toLowerCase().startsWith("github.com/") ? cleanedUrl : `github.com/${cleanedUrl}`);
+    try {
+      const parsed = new URL(cleanedUrl);
+      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null;
+      urlToParse = cleanedUrl.replace(/^http:/i, "https:");
+    } catch {
+      if (cleanedUrl.startsWith("//")) {
+        urlToParse = "https:" + cleanedUrl;
+      } else {
+        const tempParsed = new URL("https://" + cleanedUrl);
+        if (tempParsed.hostname.toLowerCase() === "github.com") {
+          urlToParse = "https://" + cleanedUrl;
+        } else {
+          urlToParse = `https://github.com/${cleanedUrl}`;
+        }
+      }
     }
     const parsed = new URL(urlToParse);
     const pathParts = parsed.pathname.split("/").filter(Boolean);
@@ -119,16 +133,22 @@ export function cleanClientRepoUrl(repoUrl: string): string {
     return "https://github.com/";
   }
 
-  // Handle protocol relative URLs or missing protocols safely
   let normalized = trimmed;
-  const schemeMatch = trimmed.match(/^([^:\/?#]+):/);
-  if (schemeMatch) {
-    const scheme = schemeMatch[1].toLowerCase();
-    if (scheme !== "http" && scheme !== "https") return "https://github.com/";
-  } else if (trimmed.startsWith("//")) {
-    normalized = `https:${trimmed}`;
-  } else {
-    normalized = "https://" + (trimmed.toLowerCase().startsWith("github.com/") ? trimmed : `github.com/${trimmed}`);
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return "https://github.com/";
+    normalized = trimmed.replace(/^http:/i, "https:");
+  } catch {
+    if (trimmed.startsWith("//")) {
+      normalized = `https:${trimmed}`;
+    } else {
+      const tempParsed = new URL("https://" + trimmed);
+      if (tempParsed.hostname.toLowerCase() === "github.com") {
+        normalized = "https://" + trimmed;
+      } else {
+        normalized = `https://github.com/${trimmed}`;
+      }
+    }
   }
 
   try {
