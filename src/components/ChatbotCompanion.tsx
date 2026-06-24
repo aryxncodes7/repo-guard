@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
+import DOMPurify from 'dompurify';
 import { MessageSquare, Send } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { ALLOWED_EMAIL_DOMAINS, getSafeHref } from '../utils';
@@ -27,7 +28,7 @@ const INITIAL_MESSAGE: ChatMessage = {
   text: "Hello! I am RepoGuard's Resident Auditor. Ask me about your security scan results, fixing plain-text secrets, resolving vulnerabilities, or modifying repository code structures."
 };
 
-export const sanitize = (val: string) => (val || '').replace(/[<>\x00-\x1F\x7F-\x9F`$\\]/g, '');
+export const sanitize = (val: string) => DOMPurify.sanitize(val || '');
 
 
 export default function ChatbotCompanion({ activeReportContext }: ChatbotCompanionProps) {

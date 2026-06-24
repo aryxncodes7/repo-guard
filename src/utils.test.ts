@@ -173,6 +173,25 @@ test("AgentStepper component instantiates and renders states", async () => {
   assert.ok(resultCompleted.includes("Agent 3"), "AgentStepper renders completed agent");
   assert.ok(resultCompleted.includes("completed"), "AgentStepper renders completed status text");
   assert.ok(resultCompleted.includes("100"), "AgentStepper renders 100 progress for completed");
+  const failedAgents = [{ id: '4', name: 'Agent 4', status: 'error', description: 'Failed desc' }];
+  const resultFailed = renderToString(React.createElement(AgentStepper, { agents: failedAgents as any }));
+  assert.ok(resultFailed.includes("Agent 4"), "AgentStepper renders error agent");
+
+});
+
+test("ChatbotCompanion handles endpoint failure payloads securely", async () => {
+  const { default: ChatbotCompanion } = await import("./components/ChatbotCompanion.js");
+  const { renderToString } = await import("react-dom/server");
+  const React = await import("react");
+  
+  const originalFetch = global.fetch;
+  global.fetch = async () => ({
+    ok: false,
+    json: async () => ({ status: "error", message: "Endpoint failure" })
+  }) as any;
+  const result = renderToString(React.createElement(ChatbotCompanion, {}));
+  assert.ok(result.includes("Live Auditor Connected"));
+  global.fetch = originalFetch;
 });
 
 test("ChatbotCompanion handles API fetch errors securely", async () => {
