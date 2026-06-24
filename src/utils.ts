@@ -33,7 +33,7 @@ export function normalizeGithubRepoUrl(rawUrl: unknown): string {
     // Basic fix to support input starting with 'github.com/owner/repo' or 'owner/repo'
     let normalizedInput = repoUrl;
     if (!repoUrl.startsWith("http://") && !repoUrl.startsWith("https://")) {
-      normalizedInput = "https://" + repoUrl.replace(/^(github\.com\/)?/i, "github.com/");
+      normalizedInput = "https://" + (repoUrl.toLowerCase().startsWith("github.com/") ? repoUrl : `github.com/${repoUrl}`);
     }
 
     const parsed = new URL(normalizedInput);
@@ -100,7 +100,7 @@ export function cleanClientRepoUrl(repoUrl: string): string {
   if (!trimmed) return "https://github.com/";
 
   // Detect and reject relative path traversals, backslashes, or malicious schemes (XSS)
-  if (trimmed.includes("..") || trimmed.includes("\\") || /^(javascript|data|file|vbscript):/i.test(trimmed)) {
+  if (trimmed.includes("..") || trimmed.includes("\\") || /^(javascript|data|file|vbscript|android-app|intent):/i.test(trimmed)) {
     return "https://github.com/";
   }
 

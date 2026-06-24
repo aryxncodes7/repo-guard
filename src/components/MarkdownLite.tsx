@@ -9,7 +9,7 @@ import ReactMarkdown from 'react-markdown';
 interface MarkdownLiteProps {
   text: string;
 }
-const ALLOWED_EMAIL_DOMAINS = (((import.meta as any).env?.VITE_ALLOWED_EMAIL_DOMAINS) || "").split(",").map((d: string) => d.trim()).filter(Boolean);
+const ALLOWED_EMAIL_DOMAINS = ((import.meta.env?.VITE_ALLOWED_EMAIL_DOMAINS) || "").split(",").map((d: string) => d.trim()).filter(Boolean);
 
 function getSafeHref(href?: string) {
   if (!href) return undefined;

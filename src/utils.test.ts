@@ -94,6 +94,10 @@ test("cleanClientRepoUrl prevents protocol smuggling and malformed URL attacks",
   assert.strictEqual(cleanClientRepoUrl("file:///etc/passwd"), "https://github.com/");
   assert.strictEqual(cleanClientRepoUrl("javascript://%250Aalert(1)"), "https://github.com/");
   assert.strictEqual(cleanClientRepoUrl("data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg=="), "https://github.com/");
+  assert.strictEqual(cleanClientRepoUrl("android-app://com.malicious.app/http/example.com"), "https://github.com/");
+  assert.strictEqual(cleanClientRepoUrl("intent://example.com#Intent;scheme=http;package=com.malicious.app;end"), "https://github.com/");
+  assert.strictEqual(cleanClientRepoUrl("https://github.com/foo/bar?param=javascript:alert(1)"), "https://github.com/foo/bar");
+  assert.strictEqual(cleanClientRepoUrl("https://github.com/foo/bar?param=%0a%0d%00bypass"), "https://github.com/foo/bar");
 });
 
 test("getShortRepoName extracts standard text names", () => {
