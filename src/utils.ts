@@ -10,6 +10,31 @@ export const ALLOWED_EMAIL_DOMAINS = import.meta.env?.VITE_ALLOWED_EMAIL_DOMAINS
 
 const MAX_REPO_URL_LENGTH = 200;
 
+export function getSafeHref(href?: string) {
+  if (!href) return undefined;
+  try {
+    const isAbsolute = /^(?:[a-z]+:)?\/\//i.test(href);
+    const parsed = isAbsolute ? new URL(href) : new URL(href, 'https://github.com');
+    if (parsed.protocol === 'mailto:') {
+      const email = parsed.pathname.trim();
+      const domain = email.split('@').pop()?.toLowerCase();
+      if (!domain || !ALLOWED_EMAIL_DOMAINS.includes(domain)) {
+        return undefined;
+      }
+      if (email.length > 254) {
+        return undefined;
+      }
+      if (!/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+$/.test(email)) {
+        return undefined;
+      }
+      return `mailto:${email}`;
+    }
+    return ['http:', 'https:'].includes(parsed.protocol) ? href : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 function escapeHtml(str: string): string {
   return str
     .replace(/&/g, "&amp;")

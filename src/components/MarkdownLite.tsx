@@ -5,36 +5,12 @@
 
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
-import { ALLOWED_EMAIL_DOMAINS } from '../utils';
+import { ALLOWED_EMAIL_DOMAINS, getSafeHref } from '../utils';
 
 interface MarkdownLiteProps {
   text: string;
 }
 
-function getSafeHref(href?: string) {
-  if (!href) return undefined;
-  try {
-    const isAbsolute = /^(?:[a-z]+:)?\/\//i.test(href);
-    const parsed = isAbsolute ? new URL(href) : new URL(href, 'https://github.com');
-    if (parsed.protocol === 'mailto:') {
-      const email = parsed.pathname.trim();
-      const domain = email.split('@').pop()?.toLowerCase();
-      if (!domain || !ALLOWED_EMAIL_DOMAINS.includes(domain)) {
-        return undefined;
-      }
-      if (email.length > 254) {
-        return undefined;
-      }
-      if (!/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+$/.test(email)) {
-        return undefined;
-      }
-      return `mailto:${email}`;
-    }
-    return ['http:', 'https:'].includes(parsed.protocol) ? href : undefined;
-  } catch {
-    return undefined;
-  }
-}
 
 const HeadingComponent = ({ children, level, ...props }: React.HTMLAttributes<HTMLHeadingElement> & { level: 1 | 2 | 3 | 4 }) => {
   const headings: Record<1 | 2 | 3 | 4, any> = { 1: 'h1', 2: 'h2', 3: 'h3', 4: 'h4' };

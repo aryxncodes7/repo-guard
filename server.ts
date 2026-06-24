@@ -21,7 +21,7 @@ import {
 const app = express();
 const PORT = 3000;
 const MAX_CHAT_HISTORY_ITEMS = 12;
-const MAX_CHAT_MESSAGE_LENGTH = 2000;
+const MAX_CHAT_MESSAGE_LENGTH = 4000;
 const MAX_REPO_URL_LENGTH = 200;
 
 app.disable("x-powered-by");
@@ -599,6 +599,10 @@ app.post("/api/chat", async (req, res) => {
     delete (req.body as any).api_key;
   }
 
+  if (typeof message === "string" && message.length > MAX_CHAT_MESSAGE_LENGTH) {
+    return res.status(400).json({ status: "error", message: "Message exceeds maximum allowed length." });
+  }
+
   const cleanMessage = clampText(message, MAX_CHAT_MESSAGE_LENGTH);
   if (!cleanMessage) {
     return res.status(400).json({ status: "error", message: "Message is required." });
@@ -610,6 +614,9 @@ app.post("/api/chat", async (req, res) => {
       for (const msg of history.slice(-MAX_CHAT_HISTORY_ITEMS)) {
         if (!msg || typeof msg !== "object") continue;
         const { role, content } = msg as { role?: unknown; content?: unknown };
+        if (typeof content === "string" && content.length > MAX_CHAT_MESSAGE_LENGTH) {
+          return res.status(400).json({ status: "error", message: "History message exceeds maximum allowed length." });
+        }
         const cleanContent = clampText(content, MAX_CHAT_MESSAGE_LENGTH);
         if (!cleanContent) continue;
         chatContents.push({

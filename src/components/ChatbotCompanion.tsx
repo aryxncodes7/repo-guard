@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageSquare, Send } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { ALLOWED_EMAIL_DOMAINS } from '../utils';
+import { ALLOWED_EMAIL_DOMAINS, getSafeHref } from '../utils';
 import { CodeIssue, FinalSummary } from '../types';
 
 interface ChatbotCompanionProps {
@@ -27,30 +27,6 @@ const INITIAL_MESSAGE: ChatMessage = {
   text: "Hello! I am RepoGuard's Resident Auditor. Ask me about your security scan results, fixing plain-text secrets, resolving vulnerabilities, or modifying repository code structures."
 };
 
-function getSafeHref(href?: string) {
-  if (!href) return undefined;
-  try {
-    const isAbsolute = /^(?:[a-z]+:)?\/\//i.test(href);
-    const parsed = isAbsolute ? new URL(href) : new URL(href, 'https://github.com');
-    if (parsed.protocol === 'mailto:') {
-      const email = parsed.pathname.trim();
-      const domain = email.split('@').pop()?.toLowerCase();
-      if (!domain || !ALLOWED_EMAIL_DOMAINS.includes(domain)) {
-        return undefined;
-      }
-      if (email.length > 254) {
-        return undefined;
-      }
-      if (!/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+$/.test(email)) {
-        return undefined;
-      }
-      return `mailto:${email}`;
-    }
-    return ['http:', 'https:'].includes(parsed.protocol) ? href : undefined;
-  } catch {
-    return undefined;
-  }
-}
 
 export default function ChatbotCompanion({ activeReportContext }: ChatbotCompanionProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([INITIAL_MESSAGE]);

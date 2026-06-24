@@ -126,6 +126,8 @@ The app launches on **http://localhost:3000**.
 
 ### Production Build
 
+> **Note:** Any variables prefixed with `VITE_` (such as `VITE_ALLOWED_EMAIL_DOMAINS`) must be present in your environment *before* running the build step so Vite can bake them into the client bundle.
+
 ```bash
 npm run build    # Bundles client (Vite) + server (esbuild)
 npm run start    # Starts the production server
