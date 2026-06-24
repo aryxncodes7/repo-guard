@@ -28,7 +28,12 @@ const INITIAL_MESSAGE: ChatMessage = {
   text: "Hello! I am RepoGuard's Resident Auditor. Ask me about your security scan results, fixing plain-text secrets, resolving vulnerabilities, or modifying repository code structures."
 };
 
-export const sanitize = (val: string) => DOMPurify.sanitize(val || '');
+export const sanitize = (val: string) => {
+  if (typeof DOMPurify.sanitize === 'function') {
+    return DOMPurify.sanitize(val || '');
+  }
+  return (val || '').replace(/[<>\x00-\x1F\x7F-\x9F`$\\]/g, '');
+};
 
 
 export default function ChatbotCompanion({ activeReportContext }: ChatbotCompanionProps) {
