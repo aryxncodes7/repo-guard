@@ -31,7 +31,7 @@ export function getSafeHref(href?: string) {
       if (email.length > 254) {
         return undefined;
       }
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      if (!/^[^@\s]{1,64}@[^@\s]{1,255}\.[^@\s]{2,63}$/.test(email)) {
         return undefined;
       }
       return `mailto:${email}${parsed.search}`;

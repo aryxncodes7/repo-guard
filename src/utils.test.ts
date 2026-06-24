@@ -115,7 +115,7 @@ test("getShortRepoName extracts standard text names", () => {
 });
 
 test("MarkdownLite email regex prevents ReDoS and bypasses", () => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailRegex = /^[^@\s]{1,64}@[^@\s]{1,255}\.[^@\s]{2,63}$/;
   assert.strictEqual(emailRegex.test("valid@example.com"), true);
   assert.strictEqual(emailRegex.test("invalid@"), false);
   assert.strictEqual(emailRegex.test("invalid.com"), false);
@@ -204,6 +204,7 @@ test("AgentStepper component handles empty and extreme agent arrays safely", asy
 
   assert.ok(resultExtreme.includes("Agent 999"));
   
+
   const undefinedAgents = renderToString(React.createElement(AgentStepper, { agents: undefined as any }));
   assert.ok(typeof undefinedAgents === "string");
 });
@@ -231,6 +232,22 @@ test("ChatbotCompanion handles API fetch errors securely", async () => {
 
   const originalFetch = global.fetch;
   global.fetch = async () => { throw new Error("Network offline"); };
+  const result = renderToString(React.createElement(ChatbotCompanion, {}));
+  assert.ok(result.includes("Live Auditor Connected"));
+  global.fetch = originalFetch;
+});
+
+test("ChatbotCompanion handles non-JSON HTML error responses", async () => {
+  const { default: ChatbotCompanion } = await import("./components/ChatbotCompanion.js");
+  const { renderToString } = await import("react-dom/server");
+  const React = await import("react");
+
+  const originalFetch = global.fetch;
+  global.fetch = async () => ({
+    ok: false,
+    headers: { get: () => "text/html" },
+    json: async () => { throw new SyntaxError("Unexpected token < in JSON"); }
+  }) as any;
   const result = renderToString(React.createElement(ChatbotCompanion, {}));
   assert.ok(result.includes("Live Auditor Connected"));
   global.fetch = originalFetch;
