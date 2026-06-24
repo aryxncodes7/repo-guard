@@ -53,7 +53,8 @@ export function normalizeGithubRepoUrl(rawUrl: unknown): string {
       repo !== "." && repo !== "..";
 
     return isGithubRepo ? `https://github.com/${owner}/${repo}` : "";
-  } catch {
+  } catch (error) {
+    console.warn("[normalizeGithubRepoUrl] Failed to parse URL:", repoUrl, error);
     return "";
   }
 }

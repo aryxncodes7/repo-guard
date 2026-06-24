@@ -21,7 +21,7 @@ function getSafeHref(href?: string) {
       if (!domain || !ALLOWED_EMAIL_DOMAINS.includes(domain)) {
         return undefined;
       }
-      if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+      if (!/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/.test(email)) {
         return undefined;
       }
       return `mailto:${email}`;
@@ -31,6 +31,13 @@ function getSafeHref(href?: string) {
     return undefined;
   }
 }
+
+const HeadingComponent = ({ children }: { children: React.ReactNode }) => (
+  <h4 className="text-xs font-bold tracking-wider text-slate-900 dark:text-zinc-100 mt-6 mb-2 uppercase font-sans border-b border-slate-200/60 dark:border-zinc-800 pb-1 flex items-center gap-1.5">
+    <span className="w-1.5 h-1.5 bg-teal-500 dark:bg-teal-400 rounded-full" />
+    {children}
+  </h4>
+);
 
 export default function MarkdownLite({ text }: MarkdownLiteProps) {
   if (!text) return null;
@@ -44,30 +51,10 @@ export default function MarkdownLite({ text }: MarkdownLiteProps) {
               {children}
             </p>
           ),
-          h1: ({ children }) => (
-            <h4 className="text-xs font-bold tracking-wider text-slate-900 dark:text-zinc-100 mt-6 mb-2 uppercase font-sans border-b border-slate-200/60 dark:border-zinc-800 pb-1 flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 bg-teal-500 dark:bg-teal-400 rounded-full" />
-              {children}
-            </h4>
-          ),
-          h2: ({ children }) => (
-            <h4 className="text-xs font-bold tracking-wider text-slate-900 dark:text-zinc-100 mt-6 mb-2 uppercase font-sans border-b border-slate-200/60 dark:border-zinc-800 pb-1 flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 bg-teal-500 dark:bg-teal-400 rounded-full" />
-              {children}
-            </h4>
-          ),
-          h3: ({ children }) => (
-            <h4 className="text-xs font-bold tracking-wider text-slate-900 dark:text-zinc-100 mt-6 mb-2 uppercase font-sans border-b border-slate-200/60 dark:border-zinc-800 pb-1 flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 bg-teal-500 dark:bg-teal-400 rounded-full" />
-              {children}
-            </h4>
-          ),
-          h4: ({ children }) => (
-            <h4 className="text-xs font-bold tracking-wider text-slate-900 dark:text-zinc-100 mt-6 mb-2 uppercase font-sans border-b border-slate-200/60 dark:border-zinc-800 pb-1 flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 bg-teal-500 dark:bg-teal-400 rounded-full" />
-              {children}
-            </h4>
-          ),
+          h1: HeadingComponent,
+          h2: HeadingComponent,
+          h3: HeadingComponent,
+          h4: HeadingComponent,
           strong: ({ children }) => (
             <strong className="font-semibold text-teal-700 dark:text-teal-400 tracking-normal">
               {children}
