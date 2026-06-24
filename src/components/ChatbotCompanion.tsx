@@ -82,9 +82,9 @@ export default function ChatbotCompanion({ activeReportContext, apiKey }: Chatbo
     e.preventDefault();
     if (!input.trim() || isTyping) return;
 
-    const userMsg = input;
+    const safeUserMsg = input.replace(/[<>]/g, '');
     setInput('');
-    setMessages(prev => [...prev, { sender: 'user', text: userMsg }]);
+    setMessages(prev => [...prev, { sender: 'user', text: safeUserMsg }]);
     setIsTyping(true);
 
     try {
@@ -94,7 +94,6 @@ export default function ChatbotCompanion({ activeReportContext, apiKey }: Chatbo
         content: msg.text
       }));
 
-      const safeUserMsg = userMsg.replace(/[<>]/g, '');
       let finalMessage = safeUserMsg;
       
       const chatHeaders: Record<string, string> = {

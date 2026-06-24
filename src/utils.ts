@@ -47,7 +47,7 @@ export function normalizeGithubRepoUrl(rawUrl: unknown): string {
     const isGithubRepo =
       parsed.protocol === "https:" &&
       parsed.hostname.toLowerCase() === "github.com" &&
-      /^[A-Za-z0-9_.-]+$/.test(owner) &&
+      /^[A-Za-z0-9_-]+$/.test(owner) &&
       /^[A-Za-z0-9_.-]+$/.test(repo) &&
       owner !== "." && owner !== ".." &&
       repo !== "." && repo !== "..";
@@ -81,7 +81,7 @@ export function parseGithubRepo(repoUrl: string): { owner: string; repo: string 
       const owner = pathParts[0];
       const repo = pathParts[1];
       if (
-        /^[A-Za-z0-9_.-]+$/.test(owner) &&
+        /^[A-Za-z0-9_-]+$/.test(owner) &&
         /^[A-Za-z0-9_.-]+$/.test(repo) &&
         owner !== "." && owner !== ".." &&
         repo !== "." && repo !== ".."
@@ -99,7 +99,12 @@ export function cleanClientRepoUrl(repoUrl: string): string {
   const trimmed = (repoUrl || "").trim();
   if (!trimmed) return "https://github.com/";
 
-  const decoded = decodeURIComponent(trimmed).toLowerCase();
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(trimmed).toLowerCase();
+  } catch {
+    return "https://github.com/";
+  }
   // Detect and reject relative path traversals and backslashes
   if (decoded.includes("..") || decoded.includes("\\") || decoded.includes("%2e%2e") || decoded.includes("%5c")) {
     return "https://github.com/";
