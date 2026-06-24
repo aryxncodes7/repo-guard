@@ -89,6 +89,13 @@ test("cleanClientRepoUrl adds https prefix if missing", () => {
   assert.strictEqual(cleanClientRepoUrl("//github.com/foo/bar"), "https://github.com/foo/bar");
 });
 
+test("cleanClientRepoUrl prevents protocol smuggling and malformed URL attacks", () => {
+  assert.strictEqual(cleanClientRepoUrl("vbscript:msgbox(1)"), "https://github.com/");
+  assert.strictEqual(cleanClientRepoUrl("file:///etc/passwd"), "https://github.com/");
+  assert.strictEqual(cleanClientRepoUrl("javascript://%250Aalert(1)"), "https://github.com/");
+  assert.strictEqual(cleanClientRepoUrl("data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg=="), "https://github.com/");
+});
+
 test("getShortRepoName extracts standard text names", () => {
   assert.strictEqual(getShortRepoName("https://github.com/owner/repo"), "owner/repo");
   assert.strictEqual(getShortRepoName("https://github.com/owner/repo/"), "owner/repo");

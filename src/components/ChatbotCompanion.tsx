@@ -101,7 +101,7 @@ export default function ChatbotCompanion({ activeReportContext, apiKey }: Chatbo
           .map((issue) => sanitize(issue.message))
           .filter(Boolean);
 
-        finalMessage = `[System Context: Inspecting repository "${cleanRepoUrl}". Predominant verdict: "${cleanVerdict}". Issues: ${JSON.stringify(cleanIssues)}. Guide: "${cleanVerdict === 'request_changes' ? 'Wipe secrets using BFG Repo Cleaner or rotate keys.' : 'None.'}"]\n\n<user_input>\n${userMsg}\n</user_input>`;
+        finalMessage = `<system_context>\nInspecting repository: ${cleanRepoUrl}\nPredominant verdict: ${cleanVerdict}\n<issues>\n${cleanIssues.map(i => `<issue>${i}</issue>`).join('\n')}\n</issues>\nGuide: ${cleanVerdict === 'request_changes' ? 'Wipe secrets using BFG Repo Cleaner or rotate keys.' : 'None.'}\n</system_context>\n\n<user_input>\n${userMsg}\n</user_input>`;
       }
 
       const chatHeaders: Record<string, string> = {
