@@ -627,8 +627,15 @@ app.post("/api/chat", async (req, res) => {
     }
     chatContents.push({ role: 'user', parts: [{ text: cleanMessage }] });
 
+    let activeSystemInstruction = "You are RepoGuard Security AI, a friendly, intelligent companion and secure code advisor built by Aryan Raj (link: github.com/aryxncodes7). You specialize in finding leaked passwords, API keys, logic bugs, and documentation fixes in repos. Keep your tone helpful, concise, engaging, and clear.";
+    const reportContext = (req.body as any)?.reportContext;
+    if (reportContext) {
+      const issuesList = Array.isArray(reportContext.issues) ? reportContext.issues.slice(0, 50).join("\n- ") : "None";
+      activeSystemInstruction += `\n\nCurrent Report Context:\nRepository: ${reportContext.repository || "Unknown"}\nVerdict: ${reportContext.verdict || "Unknown"}\nGuide: ${reportContext.guide || "None"}\nIssues:\n- ${issuesList}`;
+    }
+
     const response = await generateContentWithFallback(chatContents, {
-      systemInstruction: "You are RepoGuard Security AI, a friendly, intelligent companion and secure code advisor built by Aryan Raj (link: github.com/aryxncodes7). You specialize in finding leaked passwords, API keys, logic bugs, and documentation fixes in repos. Keep your tone helpful, concise, engaging, and clear.",
+      systemInstruction: activeSystemInstruction,
     }, typeof api_key === "string" ? api_key : undefined);
 
     const reply = response.text || "I was able to process that but generated empty suggestions. How else can I assist with your repository audit?";
