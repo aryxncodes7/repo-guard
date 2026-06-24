@@ -135,14 +135,8 @@ export default function App() {
   const [githubAvatar, setGithubAvatar] = useState<string>(() => {
     return localStorage.getItem('repoguard-github-avatar') || '';
   });
-  const [customKey, setCustomKey] = useState<string>(() => {
-    return localStorage.getItem('repoguard-custom-key') || '';
-  });
   const [scanDepth, setScanDepth] = useState<string>(() => {
     return localStorage.getItem('repoguard-scan-depth') || 'standard';
-  });
-  const [githubToken, setGithubToken] = useState<string>(() => {
-    return localStorage.getItem('repoguard-github-token') || '';
   });
 
   const [repoUrl, setRepoUrl] = useState<string>('https://github.com/');
@@ -240,12 +234,6 @@ export default function App() {
     const reviewHeaders: Record<string, string> = {
       'Content-Type': 'application/json'
     };
-    if (customKey) {
-      reviewHeaders['x-api-key'] = customKey;
-    }
-    if (githubToken) {
-      reviewHeaders['x-github-token'] = githubToken;
-    }
 
     const requestBody = {
       repo_url: repoUrl.trim(),
@@ -328,11 +316,6 @@ export default function App() {
     const [linkError, setLinkError] = useState('');
 
     if (!settingsOpen) return null;
-
-    const handleSaveKey = (val: string) => {
-      setCustomKey(val);
-      localStorage.setItem('repoguard-custom-key', val);
-    };
 
     const handleSaveDepth = (val: string) => {
       setScanDepth(val);
@@ -812,7 +795,7 @@ export default function App() {
 
                   {/* Right column: Chatbot Companion Panel (Spans 5 on md+) */}
                   <div className="md:col-span-5 w-full flex flex-col justify-start">
-                    <ChatbotCompanion apiKey={customKey} />
+                    <ChatbotCompanion />
                   </div>
                 </motion.div>
               )}
@@ -849,7 +832,6 @@ export default function App() {
                     activeReviewResult={activeReviewResult} 
                     repoUrl={repoUrl}
                     onBack={() => setReviewState('idle')}
-                    apiKey={customKey}
                   />
                 </motion.div>
               )}

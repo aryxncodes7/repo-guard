@@ -28,10 +28,9 @@ interface ReportViewProps {
   activeReviewResult: ReviewResponse;
   repoUrl: string;
   onBack: () => void;
-  apiKey?: string;
 }
 
-export default function ReportView({ activeReviewResult, repoUrl, onBack, apiKey }: ReportViewProps) {
+export default function ReportView({ activeReviewResult, repoUrl, onBack }: ReportViewProps) {
   
   // Group code issues by file for visual structuring
   const getGroupedIssues = (issues: CodeIssue[]) => {
@@ -285,7 +284,7 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack, apiKey
 
           {/* Chatbot Companion fills empty space underneath the metrics cards sidebar */}
           <div className="pt-2">
-            <ChatbotCompanion apiKey={apiKey} activeReportContext={{ repoUrl, verdict: activeReviewResult.final_summary.verdict, issues: activeReviewResult.code_review.issues }} />
+            <ChatbotCompanion activeReportContext={{ repoUrl, verdict: activeReviewResult.final_summary.verdict, issues: activeReviewResult.code_review.issues }} />
           </div>
 
         </motion.aside>

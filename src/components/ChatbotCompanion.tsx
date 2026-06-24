@@ -11,7 +11,6 @@ import { ALLOWED_EMAIL_DOMAINS } from '../utils';
 import { CodeIssue, FinalSummary } from '../types';
 
 interface ChatbotCompanionProps {
-  apiKey?: string;
   activeReportContext?: {
     repoUrl: string;
     verdict: FinalSummary['verdict'];
@@ -53,7 +52,7 @@ function getSafeHref(href?: string) {
   }
 }
 
-export default function ChatbotCompanion({ activeReportContext, apiKey }: ChatbotCompanionProps) {
+export default function ChatbotCompanion({ activeReportContext }: ChatbotCompanionProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([INITIAL_MESSAGE]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -99,9 +98,6 @@ export default function ChatbotCompanion({ activeReportContext, apiKey }: Chatbo
       const chatHeaders: Record<string, string> = {
         'Content-Type': 'application/json'
       };
-      if (apiKey) {
-        chatHeaders['x-api-key'] = apiKey;
-      }
 
       let reportContextBody: any = undefined;
 
