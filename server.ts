@@ -9,6 +9,18 @@ import { GoogleGenAI, Type } from "@google/genai";
 import type { GenerateContentConfig } from "@google/genai";
 import dotenv from "dotenv";
 
+import { 
+  getErrorMessage, 
+  parseJsonSafe, 
+  generateContentWithFallback 
+} from "./agents/agentUtils.js";
+import type { GeminiConfig, GeminiChatContent } from "./agents/agentUtils.js";
+
+import { runTriageAgent } from "./agents/triageAgent.js";
+import { runCodeReviewAgent } from "./agents/codeReviewAgent.js";
+import { runDocsAgent } from "./agents/docsAgent.js";
+import { runSynthesizerAgent } from "./agents/synthesizerAgent.js";
+
 dotenv.config();
 
 import { 
@@ -55,142 +67,7 @@ app.use((req, res, next) => {
   }
 });
 
-type GeminiContentPart = { text: string };
-type GeminiChatContent = { role: "user" | "model"; parts: GeminiContentPart[] };
-type GeminiPrompt = string | GeminiChatContent[];
-type GeminiConfig = GenerateContentConfig;
 
-interface ReviewRequestBody {
-  repo_url?: unknown;
-  pr_number?: unknown;
-  github_token?: unknown;
-  api_key?: unknown;
-}
-
-interface ChatRequestBody {
-  message?: unknown;
-  history?: unknown;
-  api_key?: unknown;
-}
-
-function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : String(error);
-}
-
-
-// Helper utility to safely parse JSON text, even if wrapped in markdown code blocks
-function parseJsonSafe(text: string) {
-  let cleaned = text.trim();
-  if (cleaned.startsWith("```")) {
-    cleaned = cleaned.replace(/^```(?:json)?\n?/i, "").replace(/\n?```$/, "").trim();
-  }
-  return JSON.parse(cleaned);
-}
-
-// Helper utility to instantiate GoogleGenAI dynamically with custom or fallback API key
-function getGeminiClient(customApiKey?: string) {
-  const apiKey = customApiKey || process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error("Gemini API Key is not configured. Please add it in settings or environment.");
-  }
-  return new GoogleGenAI({
-    apiKey,
-    httpOptions: {
-      headers: {
-        'User-Agent': 'aistudio-build',
-      }
-    }
-  });
-}
-
-// Helper utility with robust fallback models, transient retries, & safe parameter pruning
-async function generateContentWithFallback(modelPrompt: GeminiPrompt, config: GeminiConfig, customApiKey?: string) {
-  // A clean tier of models to try under various API quota levels
-  const modelsToTry = [
-    "gemini-3.5-flash",
-    "gemini-flash-latest",
-    "gemini-3.1-flash-lite",
-    "gemini-3.1-pro-preview"
-  ];
-
-  let lastError: unknown = null;
-  const client = getGeminiClient(customApiKey);
-
-  for (const model of modelsToTry) {
-    let delay = 1000; // start with 1s delay
-    const maxRetries = 2; // Keep attempts lower to avoid long user-facing blocking delays
-    
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        const activeConfig = { ...config };
-        
-        // If we fall back from Gemini 3.5 Flash, remove Search Grounding tools to bypass Google Search API quotas
-        if (model !== "gemini-3.5-flash") {
-          if (activeConfig.tools) {
-            delete activeConfig.tools;
-          }
-          if (activeConfig.toolConfig) {
-            delete activeConfig.toolConfig;
-          }
-        }
-
-        console.log(`[Gemini Pipeline] Prompting model: ${model} (attempt ${attempt}/${maxRetries})`);
-        const response = await client.models.generateContent({
-          model: model,
-          contents: modelPrompt,
-          config: activeConfig
-        });
-
-        if (response && response.text) {
-          console.log(`[Gemini Pipeline] Successfully completed call using model: ${model}`);
-          return response;
-        }
-      } catch (err: unknown) {
-        lastError = err;
-        const errMessage = getErrorMessage(err);
-        
-        const isQuotaLimit = 
-          errMessage.includes("429") || 
-          errMessage.includes("quota") || 
-          errMessage.includes("RESOURCE_EXHAUSTED");
-          
-        const isTransientUnavailable =
-          errMessage.includes("503") || 
-          errMessage.includes("UNAVAILABLE") ||
-          errMessage.includes("overloaded");
-
-        // Sanitize messages of "error" and "fail" substrings to protect logs from log-checkers
-        const cleanMessage = errMessage
-          .replace(/error/gi, "issue")
-          .replace(/failed/gi, "unresolved")
-          .replace(/exception/gi, "warning");
-
-        if (isQuotaLimit) {
-          // Hard quota hit. Proceed to next fallback immediately without retrying to keep performance snappy.
-          console.log(`[Gemini Pipeline] Model ${model} quota threshold met. Proceeding immediately to fallback.`);
-          break;
-        } else if (isTransientUnavailable && attempt < maxRetries) {
-          // Transient/high-demand error. Retry with backoff.
-          console.log(`[Gemini Pipeline] Model ${model} busy (attempt ${attempt}/${maxRetries}). Retrying in ${delay}ms...`);
-          await new Promise((resolve) => setTimeout(resolve, delay));
-          delay *= 1.5;
-        } else {
-          // All other errors or reached retry limit
-          console.log(`[Gemini Pipeline] Model ${model} finished attempt ${attempt} with status: ${cleanMessage.substring(0, 120)}`);
-          break;
-        }
-      }
-    }
-  }
-
-  // Sanitize thrown error so the main catch-block doesn't output raw exception words
-  const cleanLastErrorMsg = getErrorMessage(lastError || "All models busy")
-    .replace(/error/gi, "issue")
-    .replace(/failed/gi, "unresolved")
-    .replace(/exception/gi, "warning");
-    
-  throw new Error(`Fallback sequence complete: ${cleanLastErrorMsg}`);
-}
 
 
 
@@ -467,109 +344,20 @@ ${repoFilesText}
   try {
     const prDetailsPrompt = normalizedPrNumber ? `PR #${normalizedPrNumber}` : "the latest commits";
     
-    const prompt = `
-You are a team of senior AI staff software engineer reviewers running a multi-agent pipeline:
-1. Triage Agent: Analyzes the target codebase size, changes, initial risks, and general domain classification.
-2. Code Review Agent: Scans for real code issues, logic bugs, test gaps, and secret leaks.
-3. Docs Agent: Checks if existing document files/README are outdated relative to updates, highlighting missing categories.
-4. Synthesizer Agent: Generates final status verdicts and compiles top optimization fixes.
-
-Please analyze the following GitHub repository and changes:
-Repository URL: ${normalizedRepoUrl}
-Target Pull Request / Version: ${prDetailsPrompt}
-
-${promptContext}
-
-Conduct a highly comprehensive, technically concrete, and premium review of this project. Identify real code issues, logic bugs, test gaps, and secret leaks in the provided files or diffs.
-Make sure you cite actual file paths and line numbers from the provided files or diffs. Do NOT hallucinate files or issues that are not present.
-
-Return the unified report output strictly conforming to the requested JSON response schema. Make sure each severity level is exactly 'info', 'warning', or 'critical'. Make sure risk_levels are 'low', 'medium', or 'high', and verdicts are 'approve', 'request_changes', or 'needs_discussion'. All categories must be one of: 'security', 'style', 'logic', 'missing_tests'. Code issue file lines can be any positive integer. Keep it highly realistic and detailed.
-`;
-
-    const reviewConfig: GeminiConfig = {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          status: { type: Type.STRING },
-          pr_title: { type: Type.STRING },
-          pr_author: { type: Type.STRING },
-          files_changed: { type: Type.INTEGER },
-          triage: {
-            type: Type.OBJECT,
-            properties: {
-              risk_level: { type: Type.STRING, description: "Must be 'low', 'medium', or 'high'" },
-              size_category: { type: Type.STRING, description: "Must be 'small', 'medium', or 'large'" },
-              summary: { type: Type.STRING }
-            },
-            required: ["risk_level", "size_category", "summary"]
-          },
-          code_review: {
-            type: Type.OBJECT,
-            properties: {
-              issues: {
-                type: Type.ARRAY,
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    file: { type: Type.STRING },
-                    line: { type: Type.INTEGER },
-                    severity: { type: Type.STRING, description: "Must be 'info', 'warning', or 'critical'" },
-                    category: { type: Type.STRING, description: "Must be 'security', 'style', 'logic', or 'missing_tests'" },
-                    message: { type: Type.STRING }
-                  },
-                  required: ["file", "line", "severity", "category", "message"]
-                }
-              },
-              secrets_detected: {
-                type: Type.ARRAY,
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    file: { type: Type.STRING },
-                    line: { type: Type.INTEGER },
-                    snippet_redacted: { type: Type.STRING }
-                  },
-                  required: ["file", "line", "snippet_redacted"]
-                }
-              }
-            },
-            required: ["issues", "secrets_detected"]
-          },
-          docs_review: {
-            type: Type.OBJECT,
-            properties: {
-              docs_outdated: { type: Type.BOOLEAN },
-              missing_sections: {
-                type: Type.ARRAY,
-                items: { type: Type.STRING }
-              },
-              suggested_readme_diff: { type: Type.STRING, description: "A patch diff string of README modifications or suggested file enhancements" }
-            },
-            required: ["docs_outdated", "missing_sections", "suggested_readme_diff"]
-          },
-          final_summary: {
-            type: Type.OBJECT,
-            properties: {
-              verdict: { type: Type.STRING, description: "Must be 'approve', 'request_changes', or 'needs_discussion'" },
-              summary_markdown: { type: Type.STRING },
-              top_priority_fixes: {
-                type: Type.ARRAY,
-                items: { type: Type.STRING }
-              }
-            },
-            required: ["verdict", "summary_markdown", "top_priority_fixes"]
-          }
-        },
-        required: ["status", "pr_title", "pr_author", "files_changed", "triage", "code_review", "docs_review", "final_summary"]
-      }
-    };
-
-    const response = await generateContentWithFallback(prompt, reviewConfig, activeApiKey);
-
-    const textOutput = response.text?.trim() || "{}";
-    const parsedData = parseJsonSafe(textOutput);
+    console.log(`[API Review] Starting multi-agent pipeline for ${normalizedRepoUrl}`);
     
+    console.log(`[API Review] Running Triage Agent...`);
+    const triageOutput = await runTriageAgent(normalizedRepoUrl, prDetailsPrompt, promptContext, activeApiKey);
+    
+    console.log(`[API Review] Running Code Review Agent...`);
+    const codeReviewOutput = await runCodeReviewAgent(triageOutput, promptContext, activeApiKey);
+    
+    console.log(`[API Review] Running Docs Agent...`);
+    const docsOutput = await runDocsAgent(codeReviewOutput, promptContext, activeApiKey);
+    
+    console.log(`[API Review] Running Synthesizer Agent...`);
+    const parsedData = await runSynthesizerAgent(triageOutput, codeReviewOutput, docsOutput, activeApiKey);
+
     // Ensure success state
     parsedData.status = "success";
     // Force actual metadata fields in returned review response
