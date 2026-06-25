@@ -26,6 +26,7 @@ type ChatMessage = {
 // Security utility to redact secrets directly on the client to prevent accidental UI persistence
 const REDACTION_PATTERNS = [
   /gh[pousr](?:_|%5F)[a-zA-Z0-9]{36}/gi,
+  /github_pat_[a-zA-Z0-9_]{82}/gi,
   /AIza[0-9A-Za-z_\-]{35}/gi,
   /AKIA[0-9A-Z]{16}/gi,
   /(?:sk|rk)_(?:live|test)(?:_|%5F)[0-9a-zA-Z]{24}/gi,

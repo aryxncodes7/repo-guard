@@ -109,7 +109,7 @@ export default function MarkdownLite({ text }: MarkdownLiteProps) {
           tagNames: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'ul', 'li', 'a', 'code', 'pre', 'span', 'div'],
           attributes: {
             ...defaultSchema.attributes,
-            'code': [...(defaultSchema.attributes?.code || []), 'className'],
+            'code': [...(defaultSchema.attributes?.code || []), ['className', /^language-[a-zA-Z0-9_-]+$/]],
             'span': [...(defaultSchema.attributes?.span || []), 'className'],
             'a': [...(defaultSchema.attributes?.a || []), 'href', 'target', 'rel']
           },

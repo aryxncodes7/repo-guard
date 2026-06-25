@@ -19,7 +19,7 @@ const DEC_ENTITY_REGEX = /&#(\d+);?/g;
 const COLON_ENTITY_REGEX = /&colon;?/gi;
 const TAB_ENTITY_REGEX = /&tab;?/gi;
 const NEWLINE_ENTITY_REGEX = /&newline;?/gi;
-const STRIP_CHARS_REGEX = /[\s\x00-\x1F\x7F-\x9F]+/g;
+const STRIP_CHARS_REGEX = /[\s\x00-\x1F\x7F-\x9F]/g;
 
 export function getSafeHref(href?: string) {
   if (!href) return undefined;
