@@ -145,7 +145,7 @@ export default function App() {
   });
 
   const [repoSearchQuery, setRepoSearchQuery] = useState('');
-  
+
   // Real OAuth flow handler
   const handleConnectGithub = () => {
     window.location.href = 'https://github.com/login/oauth/authorize?client_id=Ov23liLdii0jEwXkFp9d&scope=repo&redirect_uri=https://repo-guard-io.vercel.app/';
@@ -395,9 +395,17 @@ export default function App() {
       setGithubConnectedUser('');
       setGithubAvatar('');
       setUsernameInput('');
-      localStorage.setItem('repoguard-github-linked', 'false');
+      setGithubToken('');
+      setRepoSearchQuery('');
+      setRepoUrl('https://github.com/');
+      
+      localStorage.removeItem('repoguard-github-linked');
       localStorage.removeItem('repoguard-github-user');
       localStorage.removeItem('repoguard-github-avatar');
+      localStorage.removeItem('repoguard-github-token-custom');
+      
+      // Sanitize URL to prevent re-login loop
+      window.history.replaceState({}, document.title, window.location.pathname);
     };
 
     return (
@@ -726,7 +734,6 @@ export default function App() {
                     onClick={handleConnectGithub}
                     className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-white dark:text-zinc-200 rounded-xl font-bold text-xs shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all border border-emerald-500/50 cursor-pointer"
                   >
-                    <span className="text-sm leading-none -mt-0.5">🔐</span>
                     <Github className="w-3.5 h-3.5" />
                     <span>Connect GitHub</span>
                   </button>
@@ -883,7 +890,6 @@ export default function App() {
                             onClick={handleConnectGithub}
                             className="w-full bg-slate-900 hover:bg-slate-800 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-white dark:text-zinc-200 font-sans font-semibold py-2.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.3)] border border-emerald-500/50 hover:translate-y-[-0.5px] active:translate-y-[0.5px]"
                           >
-                            <span className="text-[15px] leading-none">🔐</span>
                             <Github className="w-4 h-4 fill-current opacity-80" />
                             <span>Connect GitHub Account</span>
                           </button>
@@ -893,7 +899,7 @@ export default function App() {
                           <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-100 mb-4 flex items-center gap-2 font-sans">
                             <span className="text-lg">👋</span> Welcome back, {githubConnectedUser}! Select a repository to audit
                           </h3>
-                          
+
                           <div className="relative mb-4">
                             <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
                             <input
