@@ -33,6 +33,23 @@ const INITIAL_MESSAGE: ChatMessage = {
 
 const generateId = () => typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2);
 
+const SAFE_REDACTION_PATTERNS = [
+  /gh[pousr](?:_|%5F)[a-zA-Z0-9]{36}/gi,
+  /github_pat_[a-zA-Z0-9_]{82}/gi,
+  /AIza[0-9A-Za-z_\-]{35}/gi,
+  /AKIA[0-9A-Z]{16}/gi,
+  /(?:sk|rk)_(?:live|test)(?:_|%5F)[0-9a-zA-Z]{24}/gi,
+  /xox[baprs](?:-|%2D)[0-9a-zA-Z]{10,48}/gi
+];
+
+function redactSecrets(text: string): string {
+  if (!text) return text;
+  let result = text;
+  for (const pattern of SAFE_REDACTION_PATTERNS) {
+    result = result.replace(pattern, '***REDACTED***');
+  }
+  return result;
+}
 const markdownComponents = {
   p: ({ children, node, ...props }: React.HTMLAttributes<HTMLParagraphElement> & { node?: unknown }) => <p className="mb-1.5 last:mb-0 leading-relaxed" {...props}>{children}</p>,
   ul: ({ children, node, ...props }: React.HTMLAttributes<HTMLUListElement> & { node?: unknown }) => <ul className="list-disc pl-4 mb-1.5 space-y-0.5" {...props}>{children}</ul>,
@@ -144,7 +161,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
     const currentController = new AbortController();
     abortControllerRef.current = currentController;
 
-    const safeUserMsg = input.slice(0, 2048);
+    const safeUserMsg = redactSecrets(input.slice(0, 2048));
     setInput('');
     setMessages(prev => [...prev, { id: generateId(), sender: 'user', text: safeUserMsg }]);
     setIsTyping(true);
@@ -156,10 +173,10 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       const historyToKeep = messages.length > 20 ? [messages[0], ...messages.slice(-19)] : messages;
       const formattedHistory = historyToKeep.map(msg => ({
         role: msg.sender === 'user' ? 'user' : 'model',
-        content: String(msg.text).trim().slice(0, 4000)
+        content: redactSecrets(String(msg.text).trim().slice(0, 4000))
       }));
 
-      let finalMessage = String(safeUserMsg).trim().slice(0, 4000);
+      let finalMessage = redactSecrets(String(safeUserMsg).trim().slice(0, 4000));
       
       const chatHeaders: Record<string, string> = {
         'Content-Type': 'application/json'
@@ -168,10 +185,10 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       let reportContextBody: any = undefined;
 
       if (activeReportContext) {
-        const cleanRepoUrl = String(activeReportContext.repoUrl || '');
+        const cleanRepoUrl = redactSecrets(String(activeReportContext.repoUrl || ''));
         const cleanVerdict = String(activeReportContext.verdict || '');
         const cleanIssues = Array.isArray(activeReportContext.issues)
-          ? activeReportContext.issues.map((issue) => String(issue?.message || '')).filter(Boolean)
+          ? activeReportContext.issues.map((issue) => redactSecrets(String(issue?.message || ''))).filter(Boolean)
           : [];
 
         reportContextBody = {
