@@ -59,7 +59,10 @@ const markdownComponents = {
   ),
   a: ({ children, href, node, siblingIndex, index, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { node?: unknown; siblingIndex?: unknown; index?: unknown }) => {
     const safeUrl = getSafeHref(href);
-    const isExternal = safeUrl?.startsWith('http') || safeUrl?.startsWith('//');
+    if (!safeUrl) {
+      return <span className="text-teal-700 dark:text-teal-400 font-semibold">{children}</span>;
+    }
+    const isExternal = safeUrl.startsWith('http') || safeUrl.startsWith('//');
     return (
       <a href={safeUrl} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noopener noreferrer" : undefined} className="text-teal-700 dark:text-teal-400 hover:underline font-semibold">
         {children}

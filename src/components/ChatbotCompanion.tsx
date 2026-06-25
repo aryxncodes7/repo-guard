@@ -156,6 +156,9 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
         mode: 'cors',
         signal: abortControllerRef.current.signal
       });
+      if (!response.ok) {
+        throw new Error(`HTTP Error: ${response.status}`);
+      }
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
         throw new Error("Invalid content type");
