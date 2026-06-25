@@ -27,6 +27,12 @@ Synthesize these reports into a final structured JSON output.
 Make sure each severity level is exactly 'info', 'warning', or 'critical'. 
 Make sure risk_levels are 'low', 'medium', or 'high'.
 Verdicts must be 'approve', 'request_changes', or 'needs_discussion'. 
+
+CRITICAL GRADING RULES FOR VERDICT:
+- Output 'request_changes' ONLY if there is at least one 'critical' severity issue, OR if a 'security' vulnerability is present.
+- Output 'needs_discussion' if there are only 'warning' or 'info' issues (e.g. style, minor logic, or docs issues).
+- Output 'approve' if the code is perfectly clean or only has negligible stylistic notes.
+
 All categories must be one of: 'security', 'style', 'logic', 'missing_tests'. 
 Code issue file lines can be any positive integer.
   `.trim();
