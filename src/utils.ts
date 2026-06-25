@@ -25,7 +25,7 @@ export const ALLOWED_EMAIL_DOMAINS = parsedDomains.length > 0
 
 const MAX_REPO_URL_LENGTH = 200;
 
-const ENTITY_REGEX = /&(?:#x([0-9a-fA-F]+);?|#(\d+);?|colon;?|tab;?|newline;?)/gi;
+const ENTITY_REGEX = /&(?:#x([0-9a-fA-F]{1,6});?|#(\d{1,7});?|colon;?|tab;?|newline;?)/gi;
 const STRIP_CHARS_REGEX = /[\s\x00-\x1F\x7F-\x9F]/g;
 
 export function getSafeHref(href?: string) {
@@ -117,20 +117,14 @@ export function normalizeGithubRepoUrl(rawUrl: unknown): string {
   const repoUrl = rawUrl.slice(0, MAX_REPO_URL_LENGTH).trim();
   if (!repoUrl) return "";
 
-  // Reject relative paths, double dots, or backslashes
-  let decodedUrl: string;
-  try {
-    decodedUrl = getNormalizedUrl(repoUrl).toLowerCase();
-  } catch {
-    // Malformed percent-encoding — reject the input
-    return "";
-  }
-  if (decodedUrl.includes("../") || decodedUrl.includes("%2e%2e%2f") || decodedUrl.includes("\\") || decodedUrl.includes("%5c")) {
+  const decodedUrl = safeDecode(repoUrl);
+  const lowerDecoded = decodedUrl.toLowerCase();
+  if (lowerDecoded.includes("..") || lowerDecoded.includes("%2e") || lowerDecoded.includes("\\") || lowerDecoded.includes("%5c")) {
     return "";
   }
 
   try {
-    const normalizedInput = parseUrlOrImplicitPath(repoUrl);
+    const normalizedInput = parseUrlOrImplicitPath(decodedUrl);
     if (!normalizedInput) return "";
 
     const parsed = new URL(normalizedInput);
@@ -172,18 +166,14 @@ export function parseGithubRepo(repoUrl: string): { owner: string; repo: string 
   try {
     const cleanedUrl = repoUrl.trim().replace(/\/$/, "");
     if (cleanedUrl.startsWith("//")) return null;
-    let decodedCleaned: string;
-    try {
-      decodedCleaned = getNormalizedUrl(cleanedUrl).toLowerCase();
-    } catch {
+    
+    const decodedUrl = safeDecode(cleanedUrl);
+    const lowerDecoded = decodedUrl.toLowerCase();
+    if (lowerDecoded.includes("..") || lowerDecoded.includes("%2e") || lowerDecoded.includes("\\") || lowerDecoded.includes("%5c")) {
       return null;
     }
     
-    if (decodedCleaned.includes("../") || decodedCleaned.includes("\\")) {
-      return null;
-    }
-    
-    const urlToParse = parseUrlOrImplicitPath(cleanedUrl.normalize('NFKC'));
+    const urlToParse = parseUrlOrImplicitPath(decodedUrl.normalize('NFKC'));
     if (!urlToParse) return null;
     const parsed = new URL(urlToParse);
     if (parsed.hostname.toLowerCase() !== "github.com" && parsed.hostname.toLowerCase() !== "www.github.com") {
@@ -213,21 +203,15 @@ export function cleanClientRepoUrl(repoUrl: string): string {
   if (!trimmed) return "https://github.com/";
 
   let decoded = safeDecode(trimmed);
-  // Detect and reject relative path traversals and backslashes
   const lowerDecoded = decoded.toLowerCase();
   if (lowerDecoded.includes("..") || lowerDecoded.includes("%2e") || lowerDecoded.includes("\\") || lowerDecoded.includes("%5c")) {
     return "https://github.com/";
   }
 
-  let normalized = "";
   try {
-    normalized = parseUrlOrImplicitPath(decoded);
-  } catch {
-    return "https://github.com/";
-  }
-  if (!normalized) return "https://github.com/";
+    const normalized = parseUrlOrImplicitPath(decoded);
+    if (!normalized) return "https://github.com/";
 
-  try {
     const parsed = new URL(normalized);
     if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
       return "https://github.com/";
@@ -280,10 +264,10 @@ export function parseUrlOrImplicitPath(inputUrl: string): string {
   
   if (inputUrl.startsWith("//")) {
     try {
-      const parsed = new URL(inputUrl, "https://github.com");
-      if (isLoopbackOrPrivate(parsed.hostname)) return "";
-      if (!ALLOWED_DOMAINS.includes(parsed.hostname.toLowerCase())) return "";
-      return parsed.href;
+      const parsedUrl = new URL(inputUrl, "https://github.com");
+      if (isLoopbackOrPrivate(parsedUrl.hostname)) return "";
+      if (!ALLOWED_DOMAINS.includes(parsedUrl.hostname.toLowerCase())) return "";
+      return parsedUrl.href;
     } catch { return ""; }
   }
   
@@ -297,7 +281,7 @@ export function parseUrlOrImplicitPath(inputUrl: string): string {
   } catch {}
   
   // Explicitly support strictly formatted owner/repo strings
-  if (/^[A-Za-z0-9_-]+\/[A-Za-z0-9_.-]+$/.test(inputUrl) && !inputUrl.includes("../")) {
+  if (/^[A-Za-z0-9_-]+\/[A-Za-z0-9_.-]+$/.test(inputUrl) && !inputUrl.includes("..")) {
     try { return new URL(inputUrl, "https://github.com").href; } catch { return ""; }
   }
   
