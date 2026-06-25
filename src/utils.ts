@@ -34,31 +34,23 @@ export function getSafeHref(href?: string) {
   // Iteratively decode HTML entities and URI components until stable to prevent nested encoding bypass
   // Capped at 10 iterations with length guard to prevent ReDoS amplification and bounds violations
   let decodedHref = href;
-  for (let i = 0; i < 10; i++) {
-    if (decodedHref.length > 2048) return undefined;
-    const prev = decodedHref;
+  if (decodedHref.length > 2048) return undefined;
+  
+  decodedHref = decodedHref
+    .replace(HEX_ENTITY_REGEX_1, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+    .replace(HEX_ENTITY_REGEX_2, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+    .replace(DEC_ENTITY_REGEX_1, (_, dec) => String.fromCharCode(parseInt(dec, 10)))
+    .replace(DEC_ENTITY_REGEX_2, (_, dec) => String.fromCharCode(parseInt(dec, 10)))
+    .replace(COLON_ENTITY_REGEX_1, ':')
+    .replace(COLON_ENTITY_REGEX_2, ':')
+    .replace(TAB_ENTITY_REGEX_1, '\t')
+    .replace(TAB_ENTITY_REGEX_2, '\t')
+    .replace(NEWLINE_ENTITY_REGEX_1, '\n')
+    .replace(NEWLINE_ENTITY_REGEX_2, '\n');
     
-    decodedHref = decodedHref
-      .replace(HEX_ENTITY_REGEX_1, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
-      .replace(HEX_ENTITY_REGEX_2, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
-      .replace(DEC_ENTITY_REGEX_1, (_, dec) => String.fromCharCode(parseInt(dec, 10)))
-      .replace(DEC_ENTITY_REGEX_2, (_, dec) => String.fromCharCode(parseInt(dec, 10)))
-      .replace(COLON_ENTITY_REGEX_1, ':')
-      .replace(COLON_ENTITY_REGEX_2, ':')
-      .replace(TAB_ENTITY_REGEX_1, '\t')
-      .replace(TAB_ENTITY_REGEX_2, '\t')
-      .replace(NEWLINE_ENTITY_REGEX_1, '\n')
-      .replace(NEWLINE_ENTITY_REGEX_2, '\n');
-      
-    try {
-      decodedHref = decodeURIComponent(decodedHref);
-    } catch (e) {
-      // Ignore malformed URI sequences during recursive unwrap
-    }
-    
-    if (decodedHref === prev) break;
-    if (decodedHref.length > 2048) return undefined;
-  }
+  try {
+    decodedHref = decodeURIComponent(decodedHref);
+  } catch (e) {}
   try {
     const strippedHref = decodedHref.replace(STRIP_CHARS_REGEX, '');
     if (/^(?:javascript|vbscript|data):/i.test(strippedHref)) {
@@ -155,9 +147,7 @@ export function normalizeGithubRepoUrl(rawUrl: unknown): string {
       parsed.protocol === "https:" &&
       (parsed.hostname.toLowerCase() === "github.com" || parsed.hostname.toLowerCase() === "www.github.com") &&
       /^[A-Za-z0-9_-]+$/.test(owner) &&
-      /^[A-Za-z0-9_.-]+$/.test(repo) &&
-      owner !== "." && owner !== ".." &&
-      repo !== "." && repo !== "..";
+      /^[A-Za-z0-9_.-]+$/.test(repo);
 
     return isGithubRepo ? `https://${parsed.host}/${owner}/${repo}` : "";
   } catch (error) {
