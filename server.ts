@@ -179,8 +179,10 @@ async function getPullRequestDetails(owner: string, repo: string, prNumber: stri
   const prUrl = `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}`;
   const filesUrl = `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}/files`;
 
-  const prData = await fetchFromGithub(prUrl, token) as any;
-  const filesData = await fetchFromGithub(filesUrl, token) as any[];
+  const [prData, filesData] = await Promise.all([
+    fetchFromGithub(prUrl, token) as Promise<any>,
+    fetchFromGithub(filesUrl, token) as Promise<any[]>
+  ]);
 
   const files: PullRequestFile[] = filesData.map((f: any) => ({
     filename: f.filename,
@@ -231,19 +233,20 @@ async function getRepositoryDetails(owner: string, repo: string, token?: string)
 
   // Limit to top 8 files
   const selectedFiles = allFiles.slice(0, 8);
-  const files: { path: string; content: string }[] = [];
-
-  for (const file of selectedFiles) {
+  const fetchPromises = selectedFiles.map(async (file: any) => {
     try {
       const content = await fetchFileContent(owner, repo, defaultBranch, file.path, token);
-      // Truncate file content if it is exceptionally large (30K characters)
       const maxCharLimit = 30000;
       const truncatedContent = content.length > maxCharLimit ? content.substring(0, maxCharLimit) + "\n\n[Content truncated due to size limits...]" : content;
-      files.push({ path: file.path, content: truncatedContent });
+      return { path: file.path, content: truncatedContent };
     } catch (err) {
       console.warn(`[Github Fetch] Could not fetch content for ${file.path}:`, err);
+      return null;
     }
-  }
+  });
+  
+  const resolvedFiles = await Promise.all(fetchPromises);
+  const files = resolvedFiles.filter((f): f is {path: string, content: string} => f !== null);
 
   return {
     defaultBranch,
