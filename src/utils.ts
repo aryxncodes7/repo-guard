@@ -16,11 +16,16 @@ export const ALLOWED_EMAIL_DOMAINS = parsedDomains.length > 0
 
 const MAX_REPO_URL_LENGTH = 200;
 
-const HEX_ENTITY_REGEX = /&#x([0-9a-fA-F]+);?/gi;
-const DEC_ENTITY_REGEX = /&#(\d+);?/g;
-const COLON_ENTITY_REGEX = /&colon;?/gi;
-const TAB_ENTITY_REGEX = /&tab;?/gi;
-const NEWLINE_ENTITY_REGEX = /&newline;?/gi;
+const HEX_ENTITY_REGEX_1 = /&#x([0-9a-fA-F]+);/gi;
+const HEX_ENTITY_REGEX_2 = /&#x([0-9a-fA-F]+)/gi;
+const DEC_ENTITY_REGEX_1 = /&#(\d+);/g;
+const DEC_ENTITY_REGEX_2 = /&#(\d+)/g;
+const COLON_ENTITY_REGEX_1 = /&colon;/gi;
+const COLON_ENTITY_REGEX_2 = /&colon/gi;
+const TAB_ENTITY_REGEX_1 = /&tab;/gi;
+const TAB_ENTITY_REGEX_2 = /&tab/gi;
+const NEWLINE_ENTITY_REGEX_1 = /&newline;/gi;
+const NEWLINE_ENTITY_REGEX_2 = /&newline/gi;
 const STRIP_CHARS_REGEX = /[\s\x00-\x1F\x7F-\x9F]/g;
 
 export function getSafeHref(href?: string) {
@@ -34,11 +39,16 @@ export function getSafeHref(href?: string) {
     const prev = decodedHref;
     
     decodedHref = decodedHref
-      .replace(HEX_ENTITY_REGEX, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
-      .replace(DEC_ENTITY_REGEX, (_, dec) => String.fromCharCode(parseInt(dec, 10)))
-      .replace(COLON_ENTITY_REGEX, ':')
-      .replace(TAB_ENTITY_REGEX, '\t')
-      .replace(NEWLINE_ENTITY_REGEX, '\n');
+      .replace(HEX_ENTITY_REGEX_1, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+      .replace(HEX_ENTITY_REGEX_2, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+      .replace(DEC_ENTITY_REGEX_1, (_, dec) => String.fromCharCode(parseInt(dec, 10)))
+      .replace(DEC_ENTITY_REGEX_2, (_, dec) => String.fromCharCode(parseInt(dec, 10)))
+      .replace(COLON_ENTITY_REGEX_1, ':')
+      .replace(COLON_ENTITY_REGEX_2, ':')
+      .replace(TAB_ENTITY_REGEX_1, '\t')
+      .replace(TAB_ENTITY_REGEX_2, '\t')
+      .replace(NEWLINE_ENTITY_REGEX_1, '\n')
+      .replace(NEWLINE_ENTITY_REGEX_2, '\n');
       
     try {
       decodedHref = decodeURIComponent(decodedHref);
@@ -271,30 +281,24 @@ export function parseUrlOrImplicitPath(inputUrl: string): string {
   }
   
   if (inputUrl.startsWith("//")) {
-    const testUrl = `https:${inputUrl}`;
     try {
-      const parsed = new URL(testUrl);
+      const parsed = new URL(inputUrl, "https://github.com");
       if (!ALLOWED_DOMAINS.includes(parsed.hostname.toLowerCase())) return "";
+      return parsed.href;
     } catch { return ""; }
-    return testUrl;
   }
   
-  const httpsUrl = `https://${inputUrl}`;
-  let canParseHttps = false;
   try {
-    new URL(httpsUrl);
-    canParseHttps = true;
-  } catch {}
-  if (canParseHttps) {
+    const httpsUrl = new URL(`https://${inputUrl}`).href;
     const tempParsed = new URL(httpsUrl);
     if (tempParsed.hostname.toLowerCase() === "github.com" || tempParsed.hostname.toLowerCase() === "www.github.com") {
       return httpsUrl;
     }
-  }
+  } catch {}
   
   // Explicitly support strictly formatted owner/repo strings
   if (/^[A-Za-z0-9_-]+\/[A-Za-z0-9_.-]+$/.test(inputUrl) && !inputUrl.includes("../")) {
-    return `https://github.com/${inputUrl}`;
+    try { return new URL(inputUrl, "https://github.com").href; } catch { return ""; }
   }
   
   return "";

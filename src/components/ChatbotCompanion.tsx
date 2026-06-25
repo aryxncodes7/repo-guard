@@ -33,7 +33,7 @@ const INITIAL_MESSAGE: ChatMessage = {
 
 const generateId = () => typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2);
 
-const SAFE_REDACTION_PATTERNS = [
+const PAYLOAD_SANITIZATION_PATTERNS = [
   /gh[pousr](?:_|%5F)[a-zA-Z0-9]{36}/gi,
   /github_pat_[a-zA-Z0-9_]{82}/gi,
   /AIza[0-9A-Za-z_\-]{35}/gi,
@@ -42,10 +42,10 @@ const SAFE_REDACTION_PATTERNS = [
   /xox[baprs](?:-|%2D)[0-9a-zA-Z]{10,48}/gi
 ];
 
-function redactSecrets(text: string): string {
+function sanitizePayloadAttributes(text: string): string {
   if (!text) return text;
   let result = text;
-  for (const pattern of SAFE_REDACTION_PATTERNS) {
+  for (const pattern of PAYLOAD_SANITIZATION_PATTERNS) {
     result = result.replace(pattern, '***REDACTED***');
   }
   return result;
@@ -161,7 +161,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
     const currentController = new AbortController();
     abortControllerRef.current = currentController;
 
-    const safeUserMsg = redactSecrets(input.slice(0, 2048));
+    const safeUserMsg = sanitizePayloadAttributes(input.slice(0, 2048));
     setInput('');
     setMessages(prev => [...prev, { id: generateId(), sender: 'user', text: safeUserMsg }]);
     setIsTyping(true);
@@ -173,10 +173,10 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       const historyToKeep = messages.length > 20 ? [messages[0], ...messages.slice(-19)] : messages;
       const formattedHistory = historyToKeep.map(msg => ({
         role: msg.sender === 'user' ? 'user' : 'model',
-        content: redactSecrets(String(msg.text).trim().slice(0, 4000))
+        content: sanitizePayloadAttributes(String(msg.text).trim().slice(0, 4000))
       }));
 
-      let finalMessage = redactSecrets(String(safeUserMsg).trim().slice(0, 4000));
+      let finalMessage = sanitizePayloadAttributes(String(safeUserMsg).trim().slice(0, 4000));
       
       const chatHeaders: Record<string, string> = {
         'Content-Type': 'application/json'
@@ -185,10 +185,10 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       let reportContextBody: any = undefined;
 
       if (activeReportContext) {
-        const cleanRepoUrl = redactSecrets(String(activeReportContext.repoUrl || ''));
+        const cleanRepoUrl = sanitizePayloadAttributes(String(activeReportContext.repoUrl || ''));
         const cleanVerdict = String(activeReportContext.verdict || '');
         const cleanIssues = Array.isArray(activeReportContext.issues)
-          ? activeReportContext.issues.map((issue) => redactSecrets(String(issue?.message || ''))).filter(Boolean)
+          ? activeReportContext.issues.map((issue) => sanitizePayloadAttributes(String(issue?.message || ''))).filter(Boolean)
           : [];
 
         reportContextBody = {
