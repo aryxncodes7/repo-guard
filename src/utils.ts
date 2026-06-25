@@ -4,7 +4,7 @@
  */
 
 export const MAX_PR_NUMBER = 1000000;
-const rawDomains = import.meta.env?.VITE_ALLOWED_EMAIL_DOMAINS;
+const rawDomains = import.meta.env?.VITE_ALLOWED_EMAIL_DOMAINS || (typeof process !== 'undefined' ? process.env.VITE_ALLOWED_EMAIL_DOMAINS : undefined);
 const parsedDomains = typeof rawDomains === 'string'
   ? rawDomains.split(',').map((d: string) => d.trim()).filter((d: string) => /^[a-zA-Z0-9.-]+$/.test(d))
   : [];
@@ -17,7 +17,11 @@ const MAX_REPO_URL_LENGTH = 200;
 export function getSafeHref(href?: string) {
   if (!href) return undefined;
   if (href.length > 2048) return undefined;
-  const decodedHref = href.replace(/&#(?:x0*3a|0*58);?|&colon;?/gi, ':');
+  const decodedHref = href.replace(/&#x([0-9a-fA-F]+);?/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+                          .replace(/&#(\d+);?/g, (_, dec) => String.fromCharCode(parseInt(dec, 10)))
+                          .replace(/&colon;?/gi, ':')
+                          .replace(/&tab;?/gi, '\t')
+                          .replace(/&newline;?/gi, '\n');
   if (/^(javascript|data|vbscript|file):/i.test(decodedHref.replace(/[\s\x00-\x1F\x7F-\x9F]+/g, ''))) {
     return undefined;
   }

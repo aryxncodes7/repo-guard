@@ -54,7 +54,7 @@ const markdownComponents = {
   li: ({ children, node, ...props }: React.HTMLAttributes<HTMLLIElement> & { node?: unknown }) => (
     <li className="flex items-start gap-2.5 my-1 translate-x-1" {...props}>
       <span className="text-teal-500 dark:text-teal-400 font-bold text-xs mt-1 select-none" aria-hidden="true">&bull;</span>
-      <span className="flex-1 text-[13px] text-slate-700 dark:text-zinc-300">{children}</span>
+      <div className="flex-1 text-[13px] text-slate-700 dark:text-zinc-300">{children}</div>
     </li>
   ),
   a: ({ children, href, node, siblingIndex, index, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { node?: unknown; siblingIndex?: unknown; index?: unknown }) => {
