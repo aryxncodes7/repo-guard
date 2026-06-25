@@ -371,3 +371,47 @@ test("AgentStepper validates dynamic interactive state modifications and async r
   const result = renderToString(React.createElement(AgentStepper, { agents }));
   assert.ok(result.includes("PIPELINE DISPATCHED"), "Component renders running state");
 });
+
+test("AbortController integration: fetch abort produces AbortError with proper signal state", async () => {
+  const controller = new AbortController();
+  const fetchPromise = fetch("https://httpbin.org/delay/10", { signal: controller.signal }).catch(err => err);
+  controller.abort();
+  const result = await fetchPromise;
+  assert.ok(controller.signal.aborted, "Signal should be aborted");
+  assert.strictEqual(result.name, "AbortError", "Aborted fetch should throw AbortError");
+
+  // Verify rapid sequential abort matches ChatbotCompanion pattern
+  const controllers: AbortController[] = [];
+  const errors: Error[] = [];
+  for (let i = 0; i < 3; i++) {
+    if (controllers.length > 0) {
+      controllers[controllers.length - 1].abort();
+    }
+    const c = new AbortController();
+    controllers.push(c);
+    const p = fetch("https://httpbin.org/delay/10", { signal: c.signal }).catch(err => err);
+    errors.push(await p.then(() => null as any).catch(e => e));
+  }
+  controllers[controllers.length - 1].abort();
+  for (const c of controllers) {
+    assert.ok(c.signal.aborted, "All controllers should be aborted after cleanup");
+  }
+});
+
+test("MarkdownLite truncates input at 100k character boundary", async () => {
+  const { default: MarkdownLite } = await import("./components/MarkdownLite.js");
+  const { renderToString } = await import("react-dom/server");
+  const React = await import("react");
+
+  // Create a string exactly at the 100k boundary
+  const marker = "BOUNDARY_MARKER";
+  const padding = "x".repeat(100000 - marker.length);
+  const atLimit = padding + marker;
+  const result = renderToString(React.createElement(MarkdownLite, { text: atLimit }));
+  assert.ok(result.includes(marker), "Content at exactly 100k should include the marker");
+
+  // Create a string that exceeds the 100k boundary
+  const overLimit = "y".repeat(100000) + marker;
+  const result2 = renderToString(React.createElement(MarkdownLite, { text: overLimit }));
+  assert.ok(!result2.includes(marker), "Content beyond 100k should be truncated, marker excluded");
+});

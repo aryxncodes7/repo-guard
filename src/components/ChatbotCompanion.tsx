@@ -201,7 +201,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       const errorMessage = err?.message || 'Network offline';
       setMessages(prev => [...prev, { id: generateId(), sender: 'assistant', text: `Backend Error: ${errorMessage}. Please retry in a few moments.` }]);
     } finally {
-      if (abortControllerRef.current === currentController) {
+      if (!currentController.signal.aborted) {
         setIsTyping(false);
       }
     }

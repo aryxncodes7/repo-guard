@@ -25,8 +25,9 @@ export function getSafeHref(href?: string) {
   if (!href) return undefined;
   if (href.length > 2048) return undefined;
   // Iteratively decode HTML entities until stable to prevent nested encoding bypass
+  // Capped at 3 iterations with length guard to prevent ReDoS amplification
   let decodedHref = href;
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 3; i++) {
     const prev = decodedHref;
     decodedHref = decodedHref
       .replace(HEX_ENTITY_REGEX, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
@@ -35,6 +36,7 @@ export function getSafeHref(href?: string) {
       .replace(TAB_ENTITY_REGEX, '\t')
       .replace(NEWLINE_ENTITY_REGEX, '\n');
     if (decodedHref === prev) break;
+    if (decodedHref.length > 2048) return undefined;
   }
   try {
     const strippedHref = decodedHref.replace(STRIP_CHARS_REGEX, '');
@@ -152,9 +154,23 @@ export function parseGithubRepo(repoUrl: string): { owner: string; repo: string 
   try {
     const cleanedUrl = repoUrl.trim().replace(/\/$/, "");
     let decodedCleaned = cleanedUrl.toLowerCase();
-    try { decodedCleaned = decodeURIComponent(decodedCleaned); } catch {}
+    try {
+      decodedCleaned = decodeURIComponent(decodedCleaned);
+    } catch {
+      return null;
+    }
+    // Check traversal patterns both before and after canonicalization
     if (decodedCleaned.includes("../") || decodedCleaned.includes("%2e%2e%2f") || decodedCleaned.includes("\\") || decodedCleaned.includes("%5c")) {
       return null;
+    }
+    // Double-decode to catch double-encoded bypasses
+    try {
+      const doubleDecoded = decodeURIComponent(decodedCleaned);
+      if (doubleDecoded.includes("../") || doubleDecoded.includes("\\")) {
+        return null;
+      }
+    } catch {
+      // Single decode was sufficient
     }
     
     const urlToParse = parseUrlOrImplicitPath(cleanedUrl);
