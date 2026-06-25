@@ -11,8 +11,12 @@ if (typeof DOMPurify.sanitize !== 'function') {
   (DOMPurify as any).sanitize = (val: string) => val;
 }
 
-if (typeof process !== "undefined" && process.env) {
-  process.env.VITE_ALLOWED_EMAIL_DOMAINS = "gmail.com, yahoo.com, outlook.com, hotmail.com, example.com";
+// @ts-ignore
+if (typeof import.meta !== 'undefined') {
+  // @ts-ignore
+  if (!import.meta.env) { (import.meta as any).env = {}; }
+  // @ts-ignore
+  (import.meta as any).env.VITE_ALLOWED_EMAIL_DOMAINS = "gmail.com, yahoo.com, outlook.com, hotmail.com, example.com";
 }
 const {
   clampText,

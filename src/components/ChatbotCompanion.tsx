@@ -153,7 +153,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
         method: 'POST',
         headers: chatHeaders,
         body: JSON.stringify(requestBody),
-        mode: 'same-origin',
+        mode: 'cors',
         signal: abortControllerRef.current.signal
       });
       const contentType = response.headers.get("content-type");

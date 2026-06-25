@@ -32,27 +32,27 @@ const HeadingComponent = ({ children, level, node, siblingIndex, index, ...props
 };
 
 const markdownComponents = {
-  p: ({ children }: any) => (
-    <p className="text-[13px] text-slate-600 dark:text-zinc-400 leading-relaxed mb-2 last:mb-0">
+  p: ({ children, node, ...props }: React.HTMLAttributes<HTMLParagraphElement> & { node?: unknown }) => (
+    <p className="text-[13px] text-slate-600 dark:text-zinc-400 leading-relaxed mb-2 last:mb-0" {...props}>
       {children}
     </p>
   ),
-  h1: (props: any) => <HeadingComponent level={1} {...props} />,
-  h2: (props: any) => <HeadingComponent level={2} {...props} />,
-  h3: (props: any) => <HeadingComponent level={3} {...props} />,
-  h4: (props: any) => <HeadingComponent level={4} {...props} />,
-  strong: ({ children }: any) => (
-    <strong className="font-semibold text-teal-700 dark:text-teal-400 tracking-normal">
+  h1: (props: React.HTMLAttributes<HTMLHeadingElement> & { node?: unknown }) => <HeadingComponent level={1} {...props} />,
+  h2: (props: React.HTMLAttributes<HTMLHeadingElement> & { node?: unknown }) => <HeadingComponent level={2} {...props} />,
+  h3: (props: React.HTMLAttributes<HTMLHeadingElement> & { node?: unknown }) => <HeadingComponent level={3} {...props} />,
+  h4: (props: React.HTMLAttributes<HTMLHeadingElement> & { node?: unknown }) => <HeadingComponent level={4} {...props} />,
+  strong: ({ children, node, ...props }: React.HTMLAttributes<HTMLElement> & { node?: unknown }) => (
+    <strong className="font-semibold text-teal-700 dark:text-teal-400 tracking-normal" {...props}>
       {children}
     </strong>
   ),
-  ul: ({ children }: any) => (
-    <ul className="space-y-1.5 my-2">
+  ul: ({ children, node, ...props }: React.HTMLAttributes<HTMLUListElement> & { node?: unknown }) => (
+    <ul className="space-y-1.5 my-2" {...props}>
       {children}
     </ul>
   ),
-  li: ({ children }: any) => (
-    <li className="flex items-start gap-2.5 my-1 translate-x-1">
+  li: ({ children, node, ...props }: React.HTMLAttributes<HTMLLIElement> & { node?: unknown }) => (
+    <li className="flex items-start gap-2.5 my-1 translate-x-1" {...props}>
       <span className="text-teal-500 dark:text-teal-400 font-bold text-xs mt-1 select-none" aria-hidden="true">&bull;</span>
       <span className="flex-1 text-[13px] text-slate-700 dark:text-zinc-300">{children}</span>
     </li>
