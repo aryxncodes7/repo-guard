@@ -33,7 +33,7 @@ Code issue file lines can be any positive integer.
 
   const config: GeminiConfig = {
     responseMimeType: "application/json",
-    maxOutputTokens: 600,
+    maxOutputTokens: 2048,
     responseSchema: {
       type: Type.OBJECT,
       properties: {
