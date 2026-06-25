@@ -129,6 +129,10 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       const chatHeaders: Record<string, string> = {
         'Content-Type': 'application/json'
       };
+      const customApiKey = localStorage.getItem('repoguard-gemini-key');
+      if (customApiKey) {
+        chatHeaders['x-api-key'] = customApiKey;
+      }
 
       let reportContextBody: any = undefined;
 
@@ -153,6 +157,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       }
 
       const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+      
       const response = await fetch(`${baseUrl}/api/chat`, {
         method: 'POST',
         headers: chatHeaders,

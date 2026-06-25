@@ -138,6 +138,12 @@ export default function App() {
   const [scanDepth, setScanDepth] = useState<string>(() => {
     return localStorage.getItem('repoguard-scan-depth') || 'standard';
   });
+  const [geminiKey, setGeminiKey] = useState<string>(() => {
+    return localStorage.getItem('repoguard-gemini-key') || '';
+  });
+  const [githubToken, setGithubToken] = useState<string>(() => {
+    return localStorage.getItem('repoguard-github-token-custom') || '';
+  });
 
   const [repoUrl, setRepoUrl] = useState<string>('https://github.com/');
   const [prNumber, setPrNumber] = useState<string>('');
@@ -234,6 +240,8 @@ export default function App() {
     const reviewHeaders: Record<string, string> = {
       'Content-Type': 'application/json'
     };
+    if (geminiKey) reviewHeaders['x-api-key'] = geminiKey;
+    if (githubToken) reviewHeaders['x-github-token'] = githubToken;
 
     const requestBody = {
       repo_url: repoUrl.trim(),
@@ -412,6 +420,47 @@ export default function App() {
                 <option value="standard">Standard - Full Scope Engine</option>
                 <option value="deep">Deep Audit - Cryptographic Trace</option>
               </select>
+            </div>
+
+            {/* Custom API Keys Configuration */}
+            <div className="p-4 rounded-xl border border-dashed border-slate-200 dark:border-zinc-700 bg-slate-50/50 dark:bg-zinc-950/10 space-y-3.5">
+              <div className="flex items-center gap-2">
+                <Lock className="w-4 h-4 text-slate-800 dark:text-zinc-200" />
+                <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 font-sans">API Key Configuration (BYOK)</span>
+              </div>
+              <p className="text-[10.5px] text-slate-500 dark:text-zinc-400 leading-relaxed font-sans">
+                Enter your own Gemini API Key and GitHub PAT to bypass server rate limits. Keys are stored locally in your browser.
+              </p>
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <label htmlFor="settings-gemini-key" className="text-[9px] font-sans text-slate-500 dark:text-zinc-400 uppercase font-extrabold ml-1">Gemini API Key</label>
+                  <input 
+                    id="settings-gemini-key"
+                    type="password"
+                    placeholder="AIzaSy..."
+                    value={geminiKey}
+                    onChange={(e) => {
+                      setGeminiKey(e.target.value);
+                      localStorage.setItem('repoguard-gemini-key', e.target.value);
+                    }}
+                    className="w-full px-3 py-1.5 text-xs bg-white dark:bg-zinc-900 dark:text-zinc-200 border border-slate-300 dark:border-zinc-700 focus:border-emerald-500 rounded-lg text-slate-800 focus:outline-none transition font-sans"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label htmlFor="settings-github-token" className="text-[9px] font-sans text-slate-500 dark:text-zinc-400 uppercase font-extrabold ml-1">GitHub PAT (Optional)</label>
+                  <input 
+                    id="settings-github-token"
+                    type="password"
+                    placeholder="ghp_..."
+                    value={githubToken}
+                    onChange={(e) => {
+                      setGithubToken(e.target.value);
+                      localStorage.setItem('repoguard-github-token-custom', e.target.value);
+                    }}
+                    className="w-full px-3 py-1.5 text-xs bg-white dark:bg-zinc-900 dark:text-zinc-200 border border-slate-300 dark:border-zinc-700 focus:border-emerald-500 rounded-lg text-slate-800 focus:outline-none transition font-sans"
+                  />
+                </div>
+              </div>
             </div>
 
             {/* GitHub Account Connection */}
