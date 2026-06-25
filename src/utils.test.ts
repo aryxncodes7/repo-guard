@@ -373,28 +373,44 @@ test("AgentStepper validates dynamic interactive state modifications and async r
 });
 
 test("AbortController integration: fetch abort produces AbortError with proper signal state", async () => {
-  const controller = new AbortController();
-  const fetchPromise = fetch("https://httpbin.org/delay/10", { signal: controller.signal }).catch(err => err);
-  controller.abort();
-  const result = await fetchPromise;
-  assert.ok(controller.signal.aborted, "Signal should be aborted");
-  assert.strictEqual(result.name, "AbortError", "Aborted fetch should throw AbortError");
+  // Mock fetch to simulate a long-running request without external network
+  const originalFetch = global.fetch;
+  global.fetch = ((_url: any, init?: any) => {
+    return new Promise((_resolve, reject) => {
+      if (init?.signal) {
+        if (init.signal.aborted) {
+          reject(new DOMException("The operation was aborted.", "AbortError"));
+          return;
+        }
+        init.signal.addEventListener("abort", () => {
+          reject(new DOMException("The operation was aborted.", "AbortError"));
+        });
+      }
+    });
+  }) as any;
 
-  // Verify rapid sequential abort matches ChatbotCompanion pattern
-  const controllers: AbortController[] = [];
-  const errors: Error[] = [];
-  for (let i = 0; i < 3; i++) {
-    if (controllers.length > 0) {
-      controllers[controllers.length - 1].abort();
+  try {
+    const controller = new AbortController();
+    const fetchPromise = fetch("http://localhost/fake-delay", { signal: controller.signal }).catch(err => err);
+    controller.abort();
+    const result = await fetchPromise;
+    assert.ok(controller.signal.aborted, "Signal should be aborted");
+    assert.strictEqual(result.name, "AbortError", "Aborted fetch should throw AbortError");
+
+    // Verify rapid sequential abort matches ChatbotCompanion pattern
+    const controllers: AbortController[] = [];
+    for (let i = 0; i < 3; i++) {
+      if (controllers.length > 0) {
+        controllers[controllers.length - 1].abort();
+      }
+      controllers.push(new AbortController());
     }
-    const c = new AbortController();
-    controllers.push(c);
-    const p = fetch("https://httpbin.org/delay/10", { signal: c.signal }).catch(err => err);
-    errors.push(await p.then(() => null as any).catch(e => e));
-  }
-  controllers[controllers.length - 1].abort();
-  for (const c of controllers) {
-    assert.ok(c.signal.aborted, "All controllers should be aborted after cleanup");
+    controllers[controllers.length - 1].abort();
+    for (const c of controllers) {
+      assert.ok(c.signal.aborted, "All controllers should be aborted after cleanup");
+    }
+  } finally {
+    global.fetch = originalFetch;
   }
 });
 
@@ -414,4 +430,43 @@ test("MarkdownLite truncates input at 100k character boundary", async () => {
   const overLimit = "y".repeat(100000) + marker;
   const result2 = renderToString(React.createElement(MarkdownLite, { text: overLimit }));
   assert.ok(!result2.includes(marker), "Content beyond 100k should be truncated, marker excluded");
+});
+
+test("URL normalization rejects decompression bomb payloads", async () => {
+  const { normalizeGithubRepoUrl, getSafeHref } = await import("./utils.js");
+
+  // Extremely long URL should be rejected
+  const bombUrl = "https://github.com/" + "a".repeat(5000) + "/" + "b".repeat(5000);
+  assert.strictEqual(normalizeGithubRepoUrl(bombUrl), "", "Bomb URL exceeding max length should be rejected");
+
+  // Deeply nested entity-encoded payload
+  const nestedEntity = "&#x26;".repeat(500) + "#58;alert(1)";
+  assert.strictEqual(getSafeHref(nestedEntity), undefined, "Nested entity bomb should be rejected");
+
+  // Extremely long href should be rejected by getSafeHref
+  const longHref = "https://example.com/" + "x".repeat(3000);
+  assert.strictEqual(getSafeHref(longHref), undefined, "Href exceeding 2048 chars should be rejected");
+
+  // Repeated percent-encoded traversal
+  const traversalBomb = "https://github.com/" + "%2e%2e%2f".repeat(200) + "etc/passwd";
+  assert.strictEqual(normalizeGithubRepoUrl(traversalBomb), "", "Traversal bomb should be rejected");
+});
+
+test("AgentStepper handles malformed AgentProgress objects gracefully", async () => {
+  const { default: AgentStepper } = await import("./components/AgentStepper.js");
+  const { renderToString } = await import("react-dom/server");
+  const React = await import("react");
+
+  // Missing fields
+  const malformedAgents = [
+    { id: 'triage', name: '', description: '', status: 'running' },
+    { id: 'code_review', name: undefined, description: null, status: 'completed' },
+  ];
+  const result = renderToString(React.createElement(AgentStepper, { agents: malformedAgents as any }));
+  assert.ok(typeof result === "string", "Should render without crashing on malformed agents");
+
+  // Agent with unexpected status value
+  const badStatus = [{ id: 'triage', name: 'Agent', description: 'Test', status: 'unknown_status' }];
+  const result2 = renderToString(React.createElement(AgentStepper, { agents: badStatus as any }));
+  assert.ok(typeof result2 === "string", "Should render without crashing on unexpected status");
 });

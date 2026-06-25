@@ -13,19 +13,22 @@ interface MarkdownLiteProps {
   text: string;
 }
 
+const HEADING_TAGS: Record<1 | 2 | 3 | 4 | 5 | 6, 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'> = {
+  1: 'h1', 2: 'h2', 3: 'h3', 4: 'h4', 5: 'h5', 6: 'h6'
+};
+
+const HEADING_STYLES: Record<1 | 2 | 3 | 4 | 5 | 6, string> = {
+  1: 'text-lg text-slate-800 dark:text-zinc-100 font-bold mt-5 mb-2.5',
+  2: 'text-base text-slate-800 dark:text-zinc-100 font-bold mt-4 mb-2',
+  3: 'text-sm text-slate-700 dark:text-zinc-200 font-bold mt-3 mb-1.5',
+  4: 'text-xs text-slate-600 dark:text-zinc-300 font-bold mt-2 mb-1 uppercase tracking-wide',
+  5: 'text-[11px] text-slate-500 dark:text-zinc-400 font-bold mt-2 mb-1 uppercase tracking-wider',
+  6: 'text-[10px] text-slate-400 dark:text-zinc-500 font-bold mt-1.5 mb-1 uppercase tracking-widest'
+};
 
 const HeadingComponent = ({ children, level, node, siblingIndex, index, ...props }: React.HTMLAttributes<HTMLHeadingElement> & { level: 1 | 2 | 3 | 4 | 5 | 6; node?: unknown; siblingIndex?: unknown; index?: unknown }) => {
-  const headings: Record<1 | 2 | 3 | 4 | 5 | 6, 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'> = { 1: 'h1', 2: 'h2', 3: 'h3', 4: 'h4', 5: 'h5', 6: 'h6' };
-  const sizes: Record<1 | 2 | 3 | 4 | 5 | 6, string> = {
-    1: 'text-lg text-slate-800 dark:text-zinc-100 font-bold mt-5 mb-2.5',
-    2: 'text-base text-slate-800 dark:text-zinc-100 font-bold mt-4 mb-2',
-    3: 'text-sm text-slate-700 dark:text-zinc-200 font-bold mt-3 mb-1.5',
-    4: 'text-xs text-slate-600 dark:text-zinc-300 font-bold mt-2 mb-1 uppercase tracking-wide',
-    5: 'text-[11px] text-slate-500 dark:text-zinc-400 font-bold mt-2 mb-1 uppercase tracking-wider',
-    6: 'text-[10px] text-slate-400 dark:text-zinc-500 font-bold mt-1.5 mb-1 uppercase tracking-widest'
-  };
-  const Tag = headings[level] || 'h4';
-  const sizeClass = sizes[level] || 'text-xs';
+  const Tag = HEADING_TAGS[level] || 'h4';
+  const sizeClass = HEADING_STYLES[level] || 'text-xs';
   return (
     <Tag {...props} className={`${sizeClass} font-sans`}>
       {children}

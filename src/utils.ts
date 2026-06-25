@@ -28,6 +28,7 @@ export function getSafeHref(href?: string) {
   // Capped at 3 iterations with length guard to prevent ReDoS amplification
   let decodedHref = href;
   for (let i = 0; i < 3; i++) {
+    if (decodedHref.length > 2048) return undefined;
     const prev = decodedHref;
     decodedHref = decodedHref
       .replace(HEX_ENTITY_REGEX, (_, hex) => String.fromCharCode(parseInt(hex, 16)))

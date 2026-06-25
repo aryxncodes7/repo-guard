@@ -80,6 +80,21 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
     };
   }, []);
 
+  // Clear chat state between audit sessions to prevent privacy leaks
+  const prevContextRef = useRef(activeReportContext);
+  useEffect(() => {
+    if (prevContextRef.current !== activeReportContext && prevContextRef.current !== undefined) {
+      setMessages([INITIAL_MESSAGE]);
+      setInput('');
+      setIsTyping(false);
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+    }
+    prevContextRef.current = activeReportContext;
+  }, [activeReportContext]);
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
