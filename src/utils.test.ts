@@ -275,6 +275,10 @@ test("getSafeHref transforms and validates URLs properly", async () => {
   assert.strictEqual(getSafeHref("javascript&#58;alert(1)"), undefined);
   assert.strictEqual(getSafeHref("javascript&#x3a;alert(1)"), undefined);
   assert.strictEqual(getSafeHref("javascript&colonalert(1)"), undefined);
+
+  // Mailto parameter injection attacks
+  assert.strictEqual(getSafeHref("mailto:test@example.com?subject=hack&cc=malicious@evil.com"), "mailto:test@example.com");
+  assert.strictEqual(getSafeHref("mailto:test@example.com?to=another@evil.com"), "mailto:test@example.com");
 });
 
 test("parseUrlOrImplicitPath correctly prefixes URLs", async () => {

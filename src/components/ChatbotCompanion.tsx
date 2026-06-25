@@ -39,23 +39,26 @@ const markdownComponents = {
   strong: ({ children, node, ...props }: React.HTMLAttributes<HTMLElement> & { node?: unknown }) => <strong className="font-bold text-slate-900 dark:text-white" {...props}>{children}</strong>,
   a: ({ children, href, node, siblingIndex, index, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { node?: unknown; siblingIndex?: unknown; index?: unknown }) => {
     const safeUrl = getSafeHref(href);
-    const isExternal = safeUrl?.startsWith('http') || safeUrl?.startsWith('//');
+    if (!safeUrl) {
+      return <span className="text-emerald-600 dark:text-emerald-400 font-semibold" {...props}>{children}</span>;
+    }
+    const isExternal = safeUrl.startsWith('http') || safeUrl.startsWith('//');
     return (
-      <a href={safeUrl} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noopener noreferrer" : undefined} className="text-emerald-600 dark:text-emerald-400 hover:underline font-semibold">
+      <a href={safeUrl} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noopener noreferrer" : undefined} className="text-emerald-600 dark:text-emerald-400 hover:underline font-semibold" {...props}>
         {children}
       </a>
     );
   },
   code: ({ inline, className, children, node, siblingIndex, index, ...props }: React.HTMLAttributes<HTMLElement> & { inline?: boolean; node?: unknown; siblingIndex?: number; index?: number }) => {
     const codeString = String(children || '').replace(/\n$/, '');
-    const isInline = !codeString.includes('\n');
+    const isInline = typeof inline === 'boolean' ? inline : !codeString.includes('\n');
     return isInline ? (
-      <code className="bg-slate-100 dark:bg-zinc-700/60 px-1 py-0.5 rounded text-[10px] font-sans font-bold text-emerald-600 dark:text-emerald-400" {...props}>
+      <code className={className || "bg-slate-100 dark:bg-zinc-700/60 px-1 py-0.5 rounded text-[10px] font-sans font-bold text-emerald-600 dark:text-emerald-400"} {...props}>
         {codeString}
       </code>
     ) : (
       <pre className="bg-slate-950 text-slate-100 p-2.5 rounded-lg text-[10px] font-sans overflow-x-auto my-1.5 border border-slate-800 w-full whitespace-pre-wrap break-all">
-        <code className="block" {...props}>{codeString}</code>
+        <code className={`block ${className || ''}`} {...props}>{codeString}</code>
       </pre>
     );
   }
