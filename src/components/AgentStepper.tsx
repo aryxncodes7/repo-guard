@@ -12,7 +12,7 @@ interface AgentStepperProps {
   agents: AgentProgress[];
 }
 
-export default function AgentStepper({ agents }: AgentStepperProps) {
+export default function AgentStepper({ agents = [] }: AgentStepperProps) {
   const completedCount = agents.filter(a => a.status === 'completed').length;
   const progressPercent = agents.length > 0 ? (completedCount / agents.length) * 100 : 0;
 

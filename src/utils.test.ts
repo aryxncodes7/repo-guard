@@ -293,3 +293,10 @@ test("ChatbotCompanion serializes malformed reportContext without crashing", asy
   const result = renderToString(React.createElement(ChatbotCompanion, { activeReportContext: malformedContext as any }));
   assert.ok(typeof result === "string");
 });
+
+test("Environment variable parsing falls back securely for ALLOWED_EMAIL_DOMAINS", async () => {
+  const { ALLOWED_EMAIL_DOMAINS } = await import("./utils.js");
+  assert.ok(Array.isArray(ALLOWED_EMAIL_DOMAINS), "ALLOWED_EMAIL_DOMAINS should be an array");
+  assert.ok(ALLOWED_EMAIL_DOMAINS.length > 0, "ALLOWED_EMAIL_DOMAINS should not be empty even if env is missing");
+  assert.ok(ALLOWED_EMAIL_DOMAINS.includes("example.com"), "Should contain fallback domains");
+});

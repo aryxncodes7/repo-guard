@@ -5,14 +5,18 @@
 
 export const MAX_PR_NUMBER = 1000000;
 const rawDomains = import.meta.env?.VITE_ALLOWED_EMAIL_DOMAINS;
-export const ALLOWED_EMAIL_DOMAINS = typeof rawDomains === 'string'
+const parsedDomains = typeof rawDomains === 'string'
   ? rawDomains.split(',').map((d: string) => d.trim()).filter((d: string) => /^[a-zA-Z0-9.-]+$/.test(d))
   : [];
+export const ALLOWED_EMAIL_DOMAINS = parsedDomains.length > 0 
+  ? parsedDomains 
+  : ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'example.com'];
 
 const MAX_REPO_URL_LENGTH = 200;
 
 export function getSafeHref(href?: string) {
   if (!href) return undefined;
+  if (href.length > 2048) return undefined;
   if (/^(javascript|data|vbscript|file):/i.test(href.trim())) {
     return undefined;
   }
@@ -64,7 +68,8 @@ export function normalizeGithubRepoUrl(rawUrl: unknown): string {
   if (!repoUrl) return "";
 
   // Reject relative paths, double dots, or backslashes
-  if (repoUrl.includes("..") || repoUrl.includes("\\")) {
+  const lowerUrl = repoUrl.toLowerCase();
+  if (lowerUrl.includes("..") || lowerUrl.includes("\\") || lowerUrl.includes("%2e%2e") || lowerUrl.includes("%5c") || lowerUrl.includes("%2f")) {
     return "";
   }
 
@@ -105,7 +110,8 @@ export function normalizePrNumber(rawPrNumber: unknown): string | undefined {
 export function parseGithubRepo(repoUrl: string): { owner: string; repo: string } | null {
   try {
     const cleanedUrl = repoUrl.trim().replace(/\/$/, "");
-    if (cleanedUrl.includes("..") || cleanedUrl.includes("\\")) {
+    const lowerCleaned = cleanedUrl.toLowerCase();
+    if (lowerCleaned.includes("..") || lowerCleaned.includes("\\") || lowerCleaned.includes("%2e%2e") || lowerCleaned.includes("%5c") || lowerCleaned.includes("%2f")) {
       return null;
     }
     

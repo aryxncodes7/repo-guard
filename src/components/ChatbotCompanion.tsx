@@ -36,6 +36,15 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -62,6 +71,11 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isTyping) return;
+
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
 
     const safeUserMsg = sanitize(input);
     setInput('');
@@ -108,7 +122,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
         headers: chatHeaders,
         body: JSON.stringify(requestBody),
         mode: 'same-origin',
-        credentials: 'same-origin'
+        signal: abortControllerRef.current.signal
       });
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
@@ -121,7 +135,8 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       } else {
         setMessages(prev => [...prev, { sender: 'assistant', text: "I ran into a minor connection problem. Please confirm your local API server configuration is running." }]);
       }
-    } catch (err) {
+    } catch (err: any) {
+      if (err.name === 'AbortError') return;
       setMessages(prev => [...prev, { sender: 'assistant', text: "Our backend audit network seems offline. Please retry in a few moments." }]);
     } finally {
       setIsTyping(false);
