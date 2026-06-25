@@ -697,6 +697,16 @@ export default function App() {
 
               {/* Actions segment right */}
               <div className="flex items-center gap-3">
+                {!githubConnected && (
+                  <button
+                    type="button"
+                    onClick={() => setSettingsOpen(true)}
+                    className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-white dark:text-zinc-200 rounded-xl font-bold text-xs shadow-sm transition-all border border-slate-700 dark:border-zinc-700 hover:border-slate-600 cursor-pointer"
+                  >
+                    <span className="text-sm leading-none -mt-0.5">🔐</span>
+                    <span>Connect GitHub</span>
+                  </button>
+                )}
                 {githubConnected && (
                   <motion.div
                     whileHover={{ scale: 1.02, y: -0.5 }}
@@ -797,8 +807,9 @@ export default function App() {
 
                         {/* Repo Endpoint Input */}
                         <div className="space-y-1.5">
-                          <label className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-zinc-400 font-sans block font-bold">
-                            GitHub Repo URL
+                          <label className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-zinc-400 font-sans flex items-center gap-1.5 font-bold">
+                            <span className="text-[13px] leading-none -mt-0.5">🔗</span>
+                            Paste Public Repository URL
                           </label>
                           <input
                             type="url"
@@ -830,6 +841,25 @@ export default function App() {
                           <span>Run Security Audit</span>
                         </button>
                       </form>
+
+                      {/* Divider */}
+                      <div className="relative flex items-center py-2" aria-hidden="true">
+                        <div className="flex-grow border-t border-slate-200 dark:border-zinc-800"></div>
+                        <span className="flex-shrink-0 mx-4 text-[10px] text-slate-400 dark:text-zinc-500 font-extrabold uppercase tracking-widest bg-white dark:bg-zinc-900 px-2 rounded-full border border-slate-200 dark:border-zinc-800 shadow-sm relative">
+                          OR
+                        </span>
+                        <div className="flex-grow border-t border-slate-200 dark:border-zinc-800"></div>
+                      </div>
+
+                      {/* Path B: GitHub Import */}
+                      <button
+                        type="button"
+                        onClick={() => setSettingsOpen(true)}
+                        className="w-full bg-slate-900 hover:bg-slate-800 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-white dark:text-zinc-200 font-sans font-semibold py-2.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm border border-slate-700 dark:border-zinc-700 hover:shadow-slate-900/20 hover:translate-y-[-0.5px] active:translate-y-[0.5px]"
+                      >
+                        <span className="text-[15px] leading-none">🤝</span>
+                        <span>Import directly from GitHub</span>
+                      </button>
                     </div>
 
 
