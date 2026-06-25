@@ -188,7 +188,12 @@ export function getShortRepoName(repoUrl: string): string {
 }
 
 export function parseUrlOrImplicitPath(inputUrl: string): string {
-  if (URL.canParse(inputUrl)) {
+  let canParseInput = false;
+  try {
+    new URL(inputUrl);
+    canParseInput = true;
+  } catch {}
+  if (canParseInput) {
     const parsed = new URL(inputUrl);
     if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return "";
     return inputUrl.replace(/^http:/i, "https:");
@@ -199,7 +204,12 @@ export function parseUrlOrImplicitPath(inputUrl: string): string {
   }
   
   const httpsUrl = "https://" + inputUrl;
-  if (URL.canParse(httpsUrl)) {
+  let canParseHttps = false;
+  try {
+    new URL(httpsUrl);
+    canParseHttps = true;
+  } catch {}
+  if (canParseHttps) {
     const tempParsed = new URL(httpsUrl);
     if (tempParsed.hostname.toLowerCase() === "github.com" || tempParsed.hostname.toLowerCase() === "www.github.com") {
       return httpsUrl;

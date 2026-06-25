@@ -37,7 +37,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
-  const csrfTokenRef = useRef(crypto.randomUUID());
+  const csrfTokenRef = useRef(typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2));
 
   useEffect(() => {
     return () => {
@@ -60,7 +60,8 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
     if (repoUrl && repoUrl !== prevRepoUrlRef.current) {
       prevRepoUrlRef.current = repoUrl;
       const shortName = repoUrl.replace(/https?:\/\/(www\.)?github\.com\//, '') || 'this repository';
-      setMessages([
+      setMessages(prev => [
+        ...prev,
         { 
           sender: 'assistant', 
           text: `I've loaded the security context for ${shortName}. Ask me anything about the identified vulnerabilities, files scanned, or recommended resolution guides!` 
@@ -204,7 +205,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
                           {children}
                         </a>
                       ),
-                      code: ({ children, ...props }: React.HTMLAttributes<HTMLElement>) => {
+                      code: ({ inline, className, children, node, siblingIndex, index, ...props }: any) => {
                         const codeString = String(children || '').replace(/\n$/, '');
                         const isInline = !codeString.includes('\n');
                         return isInline ? (
