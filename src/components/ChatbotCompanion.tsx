@@ -110,7 +110,8 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-    abortControllerRef.current = new AbortController();
+    const currentController = new AbortController();
+    abortControllerRef.current = currentController;
 
     const safeUserMsg = input;
     setInput('');
@@ -187,7 +188,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       const errorMessage = err?.message || 'Network offline';
       setMessages(prev => [...prev, { id: generateId(), sender: 'assistant', text: `Backend Error: ${errorMessage}. Please retry in a few moments.` }]);
     } finally {
-      if (!abortControllerRef.current?.signal.aborted) {
+      if (abortControllerRef.current === currentController) {
         setIsTyping(false);
       }
     }

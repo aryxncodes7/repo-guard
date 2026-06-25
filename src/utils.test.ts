@@ -107,6 +107,8 @@ test("cleanClientRepoUrl prevents protocol smuggling and malformed URL attacks",
   assert.strictEqual(cleanClientRepoUrl("https://github.com/foo/bar?query=%2e%2e%2finjection"), "https://github.com/");
   assert.strictEqual(cleanClientRepoUrl(" java\0script:alert(1)"), "https://github.com/");
   assert.strictEqual(cleanClientRepoUrl(" \x00 javascript:alert(1)"), "https://github.com/");
+  assert.strictEqual(cleanClientRepoUrl("https://gith\u0443b.com/owner/repo"), "https://github.com/");
+  assert.strictEqual(cleanClientRepoUrl("https://github.com/owner/repo\u200B"), "https://github.com/owner/repo%E2%80%8B");
 });
 
 test("getShortRepoName extracts standard text names", () => {

@@ -22,17 +22,20 @@ export function getSafeHref(href?: string) {
                           .replace(/&colon;?/gi, ':')
                           .replace(/&tab;?/gi, '\t')
                           .replace(/&newline;?/gi, '\n');
-  if (/^(javascript|data|vbscript|file):/i.test(decodedHref.replace(/[\s\x00-\x1F\x7F-\x9F]+/g, ''))) {
-    return undefined;
-  }
   try {
-    let absoluteHref = href;
-    if (href.startsWith('//')) {
-      absoluteHref = 'https:' + href;
+    const strippedHref = decodedHref.replace(/[\s\x00-\x1F\x7F-\x9F]+/g, '');
+    let absoluteHref = strippedHref;
+    if (strippedHref.startsWith('//')) {
+      absoluteHref = 'https:' + strippedHref;
     }
-    const isAbsolute = /^(?:[a-z]+:)?\/\//i.test(absoluteHref);
+    
     const fallbackOrigin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
-    const parsed = isAbsolute ? new URL(absoluteHref) : new URL(absoluteHref, fallbackOrigin);
+    const parsed = new URL(absoluteHref, fallbackOrigin);
+    
+    if (['javascript:', 'data:', 'vbscript:', 'file:'].includes(parsed.protocol)) {
+      return undefined;
+    }
+
     if (parsed.protocol === 'mailto:') {
       const email = parsed.pathname.trim();
       const domain = email.split('@').pop()?.toLowerCase();
