@@ -593,7 +593,7 @@ export default function App() {
                   Repo<span className="text-[#2DD4BF]">Guard</span>
                 </h1>
                 <p className="text-[10px] font-bold tracking-wider text-slate-400 uppercase font-sans">
-                  Repository Defending Companion
+                  Smart Repository Security
                 </p>
               </div>
             </motion.div>
