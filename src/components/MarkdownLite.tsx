@@ -46,6 +46,8 @@ const markdownComponents = {
   h2: (props: React.HTMLAttributes<HTMLHeadingElement> & { node?: unknown }) => <HeadingComponent level={2} {...props} />,
   h3: (props: React.HTMLAttributes<HTMLHeadingElement> & { node?: unknown }) => <HeadingComponent level={3} {...props} />,
   h4: (props: React.HTMLAttributes<HTMLHeadingElement> & { node?: unknown }) => <HeadingComponent level={4} {...props} />,
+  h5: (props: React.HTMLAttributes<HTMLHeadingElement> & { node?: unknown }) => <HeadingComponent level={5} {...props} />,
+  h6: (props: React.HTMLAttributes<HTMLHeadingElement> & { node?: unknown }) => <HeadingComponent level={6} {...props} />,
   strong: ({ children, node, ...props }: React.HTMLAttributes<HTMLElement> & { node?: unknown }) => (
     <strong className="font-semibold text-teal-700 dark:text-teal-400 tracking-normal" {...props}>
       {children}

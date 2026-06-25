@@ -13,7 +13,7 @@ interface AgentStepperProps {
 }
 
 export default function AgentStepper({ agents = [] }: AgentStepperProps) {
-  const { completedCount, progressPercent, hasError } = React.useMemo(() => {
+  const { uniqueAgents, completedCount, progressPercent, hasError } = React.useMemo(() => {
     const safeAgents = agents || [];
     const uniqueAgentsMap = new Map();
     for (const a of safeAgents) {
@@ -21,11 +21,11 @@ export default function AgentStepper({ agents = [] }: AgentStepperProps) {
         uniqueAgentsMap.set(a.id, a);
       }
     }
-    const uniqueAgents = Array.from(uniqueAgentsMap.values());
-    const errorCount = uniqueAgents.filter(a => a.status === 'error').length;
-    const count = uniqueAgents.filter(a => a.status === 'completed').length;
-    const percent = uniqueAgents.length > 0 ? (count / uniqueAgents.length) * 100 : 0;
-    return { completedCount: count, progressPercent: percent, hasError: errorCount > 0 };
+    const unique = Array.from(uniqueAgentsMap.values());
+    const errorCount = unique.filter(a => a.status === 'error').length;
+    const count = unique.filter(a => a.status === 'completed').length;
+    const percent = unique.length > 0 ? (count / unique.length) * 100 : 0;
+    return { uniqueAgents: unique, completedCount: count, progressPercent: percent, hasError: errorCount > 0 };
   }, [agents]);
 
   return (
@@ -62,7 +62,7 @@ export default function AgentStepper({ agents = [] }: AgentStepperProps) {
         <div className="absolute top-0 right-0 w-24 h-[1px] bg-gradient-to-r from-transparent to-emerald-500/20" />
         
         <div className="space-y-3.5" role="list" aria-label="Analysis agent progress" aria-live="polite">
-          {agents.map((agent, i) => {
+          {uniqueAgents.map((agent, i) => {
             let statusClass = 'border-slate-100 dark:border-zinc-800 text-slate-400 dark:text-zinc-500 opacity-60 bg-slate-50/30 dark:bg-zinc-950/20';
             let statusIcon = <div className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-zinc-600" />;
             let borderHighlight = 'border-slate-200/60 dark:border-zinc-800/60';

@@ -144,13 +144,13 @@ export function normalizeGithubRepoUrl(rawUrl: unknown): string {
 
 export function normalizePrNumber(rawPrNumber: unknown): string | undefined {
   if (typeof rawPrNumber === 'number') {
-    return Number.isInteger(rawPrNumber) && rawPrNumber > 0 && rawPrNumber <= 1_000_000 ? String(rawPrNumber) : undefined;
+    return Number.isInteger(rawPrNumber) && rawPrNumber > 0 && rawPrNumber <= MAX_PR_NUMBER ? String(rawPrNumber) : undefined;
   }
   if (typeof rawPrNumber === 'string') {
     const trimmed = rawPrNumber.trim();
     if (trimmed === "" || !/^\d+$/.test(trimmed)) return undefined;
     const numeric = Number(trimmed);
-    return Number.isInteger(numeric) && numeric > 0 && numeric <= 1_000_000 ? String(numeric) : undefined;
+    return Number.isInteger(numeric) && numeric > 0 && numeric <= MAX_PR_NUMBER ? String(numeric) : undefined;
   }
   return undefined;
 }

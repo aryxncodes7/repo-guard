@@ -54,7 +54,9 @@ const markdownComponents = {
     );
   },
   code: ({ inline, className, children, node, siblingIndex, index, ...props }: React.HTMLAttributes<HTMLElement> & { inline?: boolean; node?: unknown; siblingIndex?: number; index?: number }) => {
-    const codeString = String(children || '').replace(/\n$/, '');
+    const codeString = String(children || '')
+      .replace(/\n$/, '')
+      .replace(/[\u200B-\u200D\uFEFF\u202A-\u202E]/g, '');
     const isInline = typeof inline === 'boolean' ? inline : !codeString.includes('\n');
     return isInline ? (
       <code className={className || "bg-slate-100 dark:bg-zinc-700/60 px-1 py-0.5 rounded text-[10px] font-sans font-bold text-emerald-600 dark:text-emerald-400"} {...props}>
@@ -86,11 +88,13 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
 
   // Clear chat state between audit sessions to prevent privacy leaks
   const prevContextRef = useRef(activeReportContext);
+  const initialized = useRef(false);
   useEffect(() => {
     if (prevContextRef.current !== activeReportContext && prevContextRef.current !== undefined) {
       setMessages([INITIAL_MESSAGE]);
       setInput('');
       setIsTyping(false);
+      initialized.current = false;
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
         abortControllerRef.current = null;
@@ -107,12 +111,17 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
 
   // If there is context and the chat just opened, we can customize the greeting
   const repoUrl = activeReportContext?.repoUrl;
-  const initialized = useRef(false);
   
   useEffect(() => {
     if (!initialized.current && repoUrl) {
       initialized.current = true;
-      let shortName = repoUrl.replace(/https?:\/\/(www\.)?github\.com\//, '') || 'this repository';
+      let shortName = 'this repository';
+      try {
+        const parsedUrl = new URL(repoUrl);
+        shortName = parsedUrl.pathname.replace(/^\//, '');
+      } catch (e) {
+        shortName = repoUrl.replace(/https?:\/\/[^\/]+\//, '');
+      }
       try { shortName = decodeURIComponent(shortName); } catch (e) { /* ignore */ }
       shortName = shortName.replace(SECRET_REDACTION_REGEX, '***REDACTED***');
       setMessages(prev => {
@@ -161,10 +170,10 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       let reportContextBody: any = undefined;
 
       if (activeReportContext) {
-        const cleanRepoUrl = String(activeReportContext.repoUrl || '');
+        const cleanRepoUrl = String(activeReportContext.repoUrl || '').replace(SECRET_REDACTION_REGEX, '***REDACTED***');
         const cleanVerdict = String(activeReportContext.verdict || '');
         const cleanIssues = Array.isArray(activeReportContext.issues)
-          ? activeReportContext.issues.map((issue) => String(issue?.message || '')).filter(Boolean)
+          ? activeReportContext.issues.map((issue) => String(issue?.message || '').replace(SECRET_REDACTION_REGEX, '***REDACTED***')).filter(Boolean)
           : [];
 
         reportContextBody = {
