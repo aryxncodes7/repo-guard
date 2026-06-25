@@ -148,7 +148,7 @@ export default function App() {
   
   // Real OAuth flow handler
   const handleConnectGithub = () => {
-    window.location.href = 'https://github.com/login/oauth/authorize?client_id=Ov23liLdii0jEwXkFp9d&scope=repo&redirect_uri=https://repo-guard-io.vercel.app/api/auth/callback/github';
+    window.location.href = 'https://github.com/login/oauth/authorize?client_id=Ov23liLdii0jEwXkFp9d&scope=repo&redirect_uri=https://repo-guard-io.vercel.app/';
   };
 
   // Check for session/token on mount
