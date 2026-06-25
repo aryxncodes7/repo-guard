@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageSquare, Send, Copy, XCircle, Check } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { getSafeHref } from '../utils';
+import { getSafeHref, safeDecode } from '../utils';
 import rehypeSanitize from 'rehype-sanitize';
 import { CodeIssue, FinalSummary } from '../types';
 
@@ -118,7 +118,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       } catch (e) {
         shortName = repoUrl.replace(/https?:\/\/[^\/]+\//, '');
       }
-      try { shortName = decodeURIComponent(shortName); } catch (e) { /* ignore */ }
+      shortName = safeDecode(shortName);
 
       if (isActive) {
         setMessages(prev => {

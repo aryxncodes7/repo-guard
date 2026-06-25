@@ -6,9 +6,18 @@
 import { getNormalizedUrl } from './sanitizeRepoUrl.js';
 
 export const MAX_PR_NUMBER = 1000000;
+
+export function safeDecode(str: string): string {
+  try { return decodeURIComponent(str); }
+  catch (e) { return str; }
+}
+
 const rawDomains = import.meta.env?.VITE_ALLOWED_EMAIL_DOMAINS || (typeof process !== 'undefined' ? process.env.VITE_ALLOWED_EMAIL_DOMAINS : undefined);
 const parsedDomains = typeof rawDomains === 'string'
-  ? rawDomains.split(',').map((d: string) => d.trim()).filter((d: string) => /^[a-zA-Z0-9.-]+$/.test(d))
+  ? rawDomains.split(',').map((d: string) => d.trim()).filter((d: string) => {
+      try { return new URL(`https://${d}`).hostname === d; }
+      catch { return false; }
+    })
   : [];
 export const ALLOWED_EMAIL_DOMAINS = parsedDomains.length > 0 
   ? parsedDomains 
@@ -49,7 +58,7 @@ export function getSafeHref(href?: string) {
     .replace(NEWLINE_ENTITY_REGEX_2, '\n');
     
   try {
-    decodedHref = decodeURIComponent(decodedHref);
+    decodedHref = safeDecode(decodedHref);
   } catch (e) {}
   try {
     const strippedHref = decodedHref.replace(STRIP_CHARS_REGEX, '');
@@ -211,12 +220,7 @@ export function cleanClientRepoUrl(repoUrl: string): string {
   const trimmed = (repoUrl || "").trim();
   if (!trimmed) return "https://github.com/";
 
-  let decoded: string;
-  try {
-    decoded = decodeURIComponent(trimmed);
-  } catch {
-    return "https://github.com/";
-  }
+  let decoded = safeDecode(trimmed);
   // Detect and reject relative path traversals and backslashes
   const lowerDecoded = decoded.toLowerCase();
   if (lowerDecoded.includes("../") || lowerDecoded.includes("%2e%2e%2f") || lowerDecoded.includes("\\") || lowerDecoded.includes("%5c")) {
@@ -252,6 +256,18 @@ export function getShortRepoName(repoUrl: string): string {
   return repoUrl;
 }
 
+function isLoopbackOrPrivate(hostname: string): boolean {
+  if (!hostname) return false;
+  const lower = hostname.toLowerCase();
+  return lower === 'localhost' ||
+    lower === '127.0.0.1' ||
+    lower === '0.0.0.0' ||
+    lower === '::1' ||
+    lower.startsWith('10.') ||
+    lower.startsWith('192.168.') ||
+    /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(lower);
+}
+
 export function parseUrlOrImplicitPath(inputUrl: string): string {
   if (inputUrl.includes("..")) return "";
   const secureUrl = inputUrl.replace(/^http:/i, "https:");
@@ -265,6 +281,7 @@ export function parseUrlOrImplicitPath(inputUrl: string): string {
   if (canParseInput) {
     const parsed = new URL(secureUrl);
     if (parsed.protocol !== "https:") return "";
+    if (isLoopbackOrPrivate(parsed.hostname)) return "";
     if (!ALLOWED_DOMAINS.includes(parsed.hostname.toLowerCase())) return "";
     return secureUrl;
   }
@@ -272,6 +289,7 @@ export function parseUrlOrImplicitPath(inputUrl: string): string {
   if (inputUrl.startsWith("//")) {
     try {
       const parsed = new URL(inputUrl, "https://github.com");
+      if (isLoopbackOrPrivate(parsed.hostname)) return "";
       if (!ALLOWED_DOMAINS.includes(parsed.hostname.toLowerCase())) return "";
       return parsed.href;
     } catch { return ""; }
@@ -280,6 +298,7 @@ export function parseUrlOrImplicitPath(inputUrl: string): string {
   try {
     const httpsUrl = new URL(`https://${inputUrl}`).href;
     const tempParsed = new URL(httpsUrl);
+    if (isLoopbackOrPrivate(tempParsed.hostname)) return "";
     if (tempParsed.hostname.toLowerCase() === "github.com" || tempParsed.hostname.toLowerCase() === "www.github.com") {
       return httpsUrl;
     }

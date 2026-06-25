@@ -1,3 +1,5 @@
+import { safeDecode } from './utils.js';
+
 export const getNormalizedUrl = (url: string): string => {
-    return decodeURIComponent(url.trim());
+    return safeDecode(url.trim());
 };
