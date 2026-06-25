@@ -48,8 +48,12 @@ export function getSafeHref(href?: string) {
       
       const safeParams = new URLSearchParams();
       const originalParams = new URLSearchParams(parsed.search);
-      if (originalParams.has('subject')) safeParams.set('subject', originalParams.get('subject')!);
-      if (originalParams.has('body')) safeParams.set('body', originalParams.get('body')!);
+      if (originalParams.has('subject')) {
+        safeParams.set('subject', originalParams.get('subject')!.replace(/[\r\n]/g, ''));
+      }
+      if (originalParams.has('body')) {
+        safeParams.set('body', originalParams.get('body')!.replace(/[\r\n]/g, ''));
+      }
       
       const searchStr = safeParams.toString();
       return searchStr ? `mailto:${email}?${searchStr}` : `mailto:${email}`;
