@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageSquare, Send } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { ALLOWED_EMAIL_DOMAINS, getSafeHref } from '../utils';
+import { getSafeHref } from '../utils';
 import { CodeIssue, FinalSummary } from '../types';
 
 interface ChatbotCompanionProps {

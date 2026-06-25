@@ -14,14 +14,14 @@ if (typeof DOMPurify.sanitize !== 'function') {
 if (typeof process !== "undefined" && process.env) {
   process.env.VITE_ALLOWED_EMAIL_DOMAINS = "gmail.com, yahoo.com, outlook.com, hotmail.com, example.com";
 }
-import {
+const {
   clampText,
   normalizeGithubRepoUrl,
   normalizePrNumber,
   parseGithubRepo,
   cleanClientRepoUrl,
   getShortRepoName
-} from "./utils.js";
+} = await import("./utils.js");
 
 test("clampText limits strings properly", () => {
   assert.strictEqual(clampText("hello world", 5), "hello");

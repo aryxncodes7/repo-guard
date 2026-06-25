@@ -47,15 +47,15 @@ const markdownComponents = {
     </strong>
   ),
   ul: ({ children }: any) => (
-    <div className="space-y-1.5 my-2">
+    <ul className="space-y-1.5 my-2">
       {children}
-    </div>
+    </ul>
   ),
   li: ({ children }: any) => (
-    <div className="flex items-start gap-2.5 my-1 translate-x-1">
+    <li className="flex items-start gap-2.5 my-1 translate-x-1">
       <span className="text-teal-500 dark:text-teal-400 font-bold text-xs mt-1 select-none" aria-hidden="true">&bull;</span>
       <span className="flex-1 text-[13px] text-slate-700 dark:text-zinc-300">{children}</span>
-    </div>
+    </li>
   ),
   a: ({ children, href, node, siblingIndex, index, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { node?: unknown; siblingIndex?: unknown; index?: unknown }) => {
     const safeUrl = getSafeHref(href);

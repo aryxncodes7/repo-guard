@@ -86,7 +86,7 @@ export default function AgentStepper({ agents = [] }: AgentStepperProps) {
               >
                 {/* Visual line step badge - no preview step numbers */}
                 <div className="mt-0.5 flex-shrink-0 w-6 h-6 rounded-full border border-slate-200 dark:border-zinc-800 flex items-center justify-center text-xs bg-slate-50 dark:bg-zinc-950 font-semibold text-slate-600 dark:text-zinc-400">
-                  {agent.status === 'pending' ? <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-zinc-600" /> : statusIcon}
+                  {statusIcon}
                 </div>
 
                 {/* Info block */}
