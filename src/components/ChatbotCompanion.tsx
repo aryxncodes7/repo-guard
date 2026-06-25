@@ -122,7 +122,8 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
 
     try {
       // Clean up messages format for backend history
-      const formattedHistory = messages.slice(-20).map(msg => ({
+      const historyToKeep = messages.length > 20 ? [messages[0], ...messages.slice(-19)] : messages;
+      const formattedHistory = historyToKeep.map(msg => ({
         role: msg.sender === 'user' ? 'user' : 'model',
         content: String(msg.text).trim().slice(0, 4000).replace(/(gh[pousr]_[a-zA-Z0-9]{36}|AIza[0-9A-Za-z-_]{35})/g, '***REDACTED***')
       }));
@@ -155,7 +156,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
         requestBody.reportContext = reportContextBody;
       }
 
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || window.location.origin;
       
       const response = await fetch(`${baseUrl}/api/chat`, {
         method: 'POST',
@@ -182,7 +183,10 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
         setMessages(prev => [...prev, { id: generateId(), sender: 'assistant', text: data.message || "I ran into a minor connection problem. Please confirm your local API server configuration is running." }]);
       }
     } catch (err: any) {
-      if (err.name === 'AbortError') return;
+      if (err.name === 'AbortError') {
+        setMessages(prev => [...prev, { id: generateId(), sender: 'assistant', text: 'Chat request was cancelled.' }]);
+        return;
+      }
       const errorMessage = err?.message || 'Network offline';
       setMessages(prev => [...prev, { id: generateId(), sender: 'assistant', text: `Backend Error: ${errorMessage}. Please retry in a few moments.` }]);
     } finally {

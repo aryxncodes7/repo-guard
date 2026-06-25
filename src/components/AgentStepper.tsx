@@ -54,7 +54,7 @@ export default function AgentStepper({ agents = [] }: AgentStepperProps) {
       >
         <div className="absolute top-0 right-0 w-24 h-[1px] bg-gradient-to-r from-transparent to-emerald-500/20" />
         
-        <div className="space-y-3.5" role="list" aria-label="Analysis agent progress">
+        <div className="space-y-3.5" role="list" aria-label="Analysis agent progress" aria-live="polite">
           {agents.map((agent, i) => {
             let statusClass = 'border-slate-100 dark:border-zinc-800 text-slate-400 dark:text-zinc-500 opacity-60 bg-slate-50/30 dark:bg-zinc-950/20';
             let statusIcon = <div className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-zinc-600" />;

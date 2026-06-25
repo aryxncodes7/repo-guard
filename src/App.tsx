@@ -4,12 +4,12 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  GitPullRequest, 
-  Terminal as TerminalIcon, 
-  AlertCircle, 
-  Cpu, 
-  Layers, 
+import {
+  GitPullRequest,
+  Terminal as TerminalIcon,
+  AlertCircle,
+  Cpu,
+  Layers,
   Clock,
   Play,
   RotateCcw,
@@ -43,23 +43,23 @@ import ChatbotCompanion from './components/ChatbotCompanion';
 const RepoGuardOctocatLogo = ({ className = "w-10 h-10", animate = true }: { className?: string; animate?: boolean }) => {
   return (
     <div className="relative flex items-center justify-center">
-      <svg 
+      <svg
         className={`${className} text-emerald-500 dark:text-emerald-400 hover:text-emerald-400 dark:hover:text-emerald-300 transition-colors`}
-        viewBox="0 0 24 24" 
-        fill="none" 
-        stroke="currentColor" 
-        strokeWidth="1.5" 
-        strokeLinecap="round" 
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
         strokeLinejoin="round"
       >
         {/* Smart hybrid shield border outline */}
-        <path 
-          d="M12 21.5s7-3.5 7-9V5l-7-3-7 3v7.5c0 5.5 7 9 7 9z" 
-          className="fill-emerald-500/5 dark:fill-emerald-400/5 stroke-emerald-500 dark:stroke-emerald-400" 
+        <path
+          d="M12 21.5s7-3.5 7-9V5l-7-3-7 3v7.5c0 5.5 7 9 7 9z"
+          className="fill-emerald-500/5 dark:fill-emerald-400/5 stroke-emerald-500 dark:stroke-emerald-400"
           strokeWidth="1.5"
         />
         {/* Authentic GitHub Logo Mark Path, perfectly scale-proportioned and centered inside the shield structure */}
-        <path 
+        <path
           d="M12 6.2c-2.7 0-4.9 2.2-4.9 4.9 0 2.2 1.4 4.1 3.4 4.7.25.04.35-.11.35-.24 0-.12-.004-.45-.006-.88-1.37.3-1.66-.66-1.66-.66-.22-.57-.55-.73-.55-.73-.45-.31.03-.3.03-.3.5.03.76.51.76.51.44 1.01 1.14.75 1.43.61 0-.31.13-.53.26-.65-1.1-.12-2.25-.55-2.25-2.43 0-.54.19-.98.51-1.32-.05-.13-.22-.63.05-1.3 0 0 .41-.13 1.36.51.39-.11.82-.17 1.23-.17.41 0 .84.06 1.23.17.95-.64 1.36-.51 1.36-.51.27.67.1 1.17.05 1.3.32.34.51.78.51 1.32 0 1.88-1.15 2.3-2.25 2.43.18.15.34.46.34.93 0 .67-.006 1.2-.006 1.37 0 .13.09.29.35.24 2-0.66 3.4-2.5 3.4-4.7 0-2.7-2.2-4.9-4.9-4.9z"
           className="fill-emerald-500 dark:fill-emerald-400 stroke-none"
         />
@@ -91,10 +91,10 @@ const RepoGuardLogoBig = () => (
         className="w-full h-full rounded-full border border-emerald-500/35 border-dotted"
       />
     </motion.div>
-    
+
     {/* The core high-tech solid badge */}
     <div className="absolute inset-5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 flex items-center justify-center shadow-md transition-all duration-300">
-      
+
       {/* Laser scanner sweeping line animation */}
       <motion.div
         animate={{ y: [-24, 24, -24] }}
@@ -108,7 +108,7 @@ const RepoGuardLogoBig = () => (
     </div>
 
     {/* Floating status satellite node */}
-    <motion.div 
+    <motion.div
       animate={{ y: [-4, 4, -4] }}
       transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
       className="absolute top-1 right-1 w-4 h-4 rounded-full bg-emerald-500/20 border border-emerald-400/50 flex items-center justify-center"
@@ -145,7 +145,7 @@ export default function App() {
 
   const [repoUrl, setRepoUrl] = useState<string>('https://github.com/');
   const [prNumber, setPrNumber] = useState<string>('');
-  
+
   // UI Flow state machine: idle | reviewing | report | error
   const [reviewState, setReviewState] = useState<ReviewState>('idle');
   const [activeReviewResult, setActiveReviewResult] = useState<ReviewResponse | null>(null);
@@ -159,15 +159,15 @@ export default function App() {
     if (showSplash) {
       setSplashProgress(0);
       setSplashLoading(true);
-      
+
       const startTime = Date.now();
       const duration = 3800; // 3.8 seconds for progress, 200ms pause to auto-advance (4 seconds total)
-      
+
       const interval = setInterval(() => {
         const elapsed = Date.now() - startTime;
         const progress = Math.min(100, Math.floor((elapsed / duration) * 100));
         setSplashProgress(progress);
-        
+
         if (progress >= 100) {
           clearInterval(interval);
           setTimeout(() => {
@@ -176,7 +176,7 @@ export default function App() {
           }, 200);
         }
       }, 30);
-      
+
       return () => clearInterval(interval);
     }
   }, [showSplash]);
@@ -202,13 +202,13 @@ export default function App() {
   // Trigger server-side multi-agent REST analysis
   const handleRunReview = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const trimmedUrl = repoUrl.trim();
     if (!trimmedUrl || trimmedUrl === 'https://github.com/' || !trimmedUrl.startsWith('https://github.com/')) {
       setFormValidationError('Please specify a valid GitHub repository URL (e.g. https://github.com/owner/repository)');
       return;
     }
-    
+
     const urlPath = trimmedUrl.replace('https://github.com/', '').replace(/\/$/, '');
     const parts = urlPath.split('/');
     if (parts.length < 2 || !parts[0] || !parts[1]) {
@@ -370,7 +370,7 @@ export default function App() {
 
     return (
       <div className="fixed inset-0 bg-slate-950/60 dark:bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 selection:bg-emerald-500/30 font-sans">
-        <div 
+        <div
           className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-xl max-w-md w-full overflow-hidden animate-fade-in"
           role="dialog"
           aria-modal="true"
@@ -382,7 +382,7 @@ export default function App() {
               <Settings className="w-4 h-4 text-emerald-600" />
               <span id="settings-modal-title" className="text-xs font-bold text-slate-800 dark:text-zinc-100 uppercase tracking-wide font-sans">Audit System Settings</span>
             </div>
-            <button 
+            <button
               onClick={() => setSettingsOpen(false)}
               type="button"
               className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-zinc-300 transition cursor-pointer"
@@ -408,7 +408,7 @@ export default function App() {
               <label htmlFor="settings-scan-depth" className="text-[10px] font-sans text-slate-500 dark:text-zinc-400 uppercase font-extrabold flex items-center gap-1">
                 <Sliders className="w-3 h-3 text-emerald-600" /> ANALYSIS TYPE SELECTION
               </label>
-              <select 
+              <select
                 id="settings-scan-depth"
                 value={scanDepth}
                 onChange={(e) => handleSaveDepth(e.target.value)}
@@ -432,7 +432,7 @@ export default function App() {
               <div className="space-y-3">
                 <div className="space-y-1">
                   <label htmlFor="settings-gemini-key" className="text-[9px] font-sans text-slate-500 dark:text-zinc-400 uppercase font-extrabold ml-1">Gemini API Key</label>
-                  <input 
+                  <input
                     id="settings-gemini-key"
                     type="password"
                     placeholder="AIzaSy..."
@@ -444,14 +444,14 @@ export default function App() {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ apiKey: val })
-                      }).catch(() => {});
+                      }).catch(() => { });
                     }}
                     className="w-full px-3 py-1.5 text-xs bg-white dark:bg-zinc-900 dark:text-zinc-200 border border-slate-300 dark:border-zinc-700 focus:border-emerald-500 rounded-lg text-slate-800 focus:outline-none transition font-sans"
                   />
                 </div>
                 <div className="space-y-1">
                   <label htmlFor="settings-github-token" className="text-[9px] font-sans text-slate-500 dark:text-zinc-400 uppercase font-extrabold ml-1">GitHub PAT (Optional)</label>
-                  <input 
+                  <input
                     id="settings-github-token"
                     type="password"
                     placeholder="ghp_..."
@@ -480,9 +480,9 @@ export default function App() {
                 <div className="p-3 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-800 rounded-xl flex items-center justify-between shadow-sm animate-fade-in group">
                   <div className="flex items-center gap-2.5">
                     {githubAvatar ? (
-                      <img 
-                        src={githubAvatar} 
-                        alt={githubConnectedUser} 
+                      <img
+                        src={githubAvatar}
+                        alt={githubConnectedUser}
                         referrerPolicy="no-referrer"
                         className="w-8 h-8 rounded-full border border-slate-200 dark:border-zinc-700 shadow-sm"
                       />
@@ -492,9 +492,9 @@ export default function App() {
                       </div>
                     )}
                     <div>
-                      <a 
-                        href={`https://github.com/${githubConnectedUser}`} 
-                        target="_blank" 
+                      <a
+                        href={`https://github.com/${githubConnectedUser}`}
+                        target="_blank"
                         rel="noreferrer"
                         className="text-xs font-bold text-slate-800 dark:text-zinc-200 hover:text-emerald-600 transition flex items-center gap-1 font-sans"
                       >
@@ -518,7 +518,7 @@ export default function App() {
                 <form onSubmit={handleLinkGithub} className="space-y-3">
                   <div className="space-y-1">
                     <label htmlFor="github-username-input" className="sr-only">GitHub username</label>
-                    <input 
+                    <input
                       id="github-username-input"
                       type="text"
                       placeholder="Enter GitHub username (e.g. aryxncodes7)"
@@ -567,7 +567,7 @@ export default function App() {
 
           {/* Combined Brand Header with Logo & Big Title */}
           <div className="max-w-md w-full text-center space-y-7 relative z-10">
-            
+
             {/* The Dedicated RepoGuard Logo Badge */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
@@ -578,7 +578,7 @@ export default function App() {
               <div className="scale-[0.8] origin-center -my-3">
                 <RepoGuardLogoBig />
               </div>
-              
+
               <div className="space-y-1.5 text-center">
                 <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white font-sans">
                   Repo<span className="text-[#2DD4BF]">Guard</span>
@@ -600,7 +600,7 @@ export default function App() {
             </motion.p>
 
             {/* Simplified Benefit Cards */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.25 }}
@@ -630,15 +630,15 @@ export default function App() {
                   <span className="flex items-center gap-1.5 font-bold uppercase text-[9px] text-zinc-500">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#2DD4BF] animate-pulse" />
                     {splashProgress < 30 ? 'Orchestrating security agents...' :
-                     splashProgress < 60 ? 'Decrypting threat catalogs...' :
-                     splashProgress < 90 ? 'Resolving security sandbox proxy...' :
-                     'Finalizing dashboard workspace...'}
+                      splashProgress < 60 ? 'Decrypting threat catalogs...' :
+                        splashProgress < 90 ? 'Resolving security sandbox proxy...' :
+                          'Finalizing dashboard workspace...'}
                   </span>
                   <span className="text-[#2DD4BF] font-sans font-bold text-[10px]">{splashProgress}%</span>
                 </div>
                 <div className="w-full bg-zinc-950 rounded-full h-1.5 overflow-hidden border border-zinc-800 relative">
-                  <motion.div 
-                    className="bg-[#2DD4BF] h-full rounded-full absolute left-0 top-0 bottom-0 right-0 origin-left" 
+                  <motion.div
+                    className="bg-[#2DD4BF] h-full rounded-full absolute left-0 top-0 bottom-0 right-0 origin-left"
                     initial={{ scaleX: 0 }}
                     animate={{ scaleX: splashProgress / 100 }}
                     transition={{ type: "spring", stiffness: 80, damping: 15 }}
@@ -667,9 +667,9 @@ export default function App() {
           {/* Main sticky header banner */}
           <header className="border-b border-slate-200/80 dark:border-zinc-800/80 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md sticky top-0 z-40 px-6 py-3.5 transition-all duration-300 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05),0_10px_20px_-2px_rgba(0,0,0,0.02)]">
             <div className="max-w-[1500px] mx-auto flex items-center justify-between">
-              
+
               {/* Logo brand styling - acts as home button */}
-              <button 
+              <button
                 onClick={() => setReviewState('idle')}
                 className="flex items-center gap-3 group/brand select-none cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 rounded-xl p-1 -m-1"
                 title="Go to Home"
@@ -689,7 +689,7 @@ export default function App() {
               {/* Actions segment right */}
               <div className="flex items-center gap-3">
                 {githubConnected && (
-                  <motion.div 
+                  <motion.div
                     whileHover={{ scale: 1.02, y: -0.5 }}
                     whileTap={{ scale: 0.98 }}
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50/50 dark:bg-emerald-950/15 border border-emerald-100 dark:border-emerald-900/30 hover:border-emerald-250 dark:hover:border-emerald-800 rounded-xl shadow-[0_1px_2px_rgba(0,0,0,0.02)] cursor-pointer transition-all duration-300"
@@ -697,9 +697,9 @@ export default function App() {
                     title={`Aligned with GitHub user @${githubConnectedUser}`}
                   >
                     {githubAvatar ? (
-                      <img 
-                        src={githubAvatar} 
-                        alt={githubConnectedUser} 
+                      <img
+                        src={githubAvatar}
+                        alt={githubConnectedUser}
                         referrerPolicy="no-referrer"
                         className="w-4.5 h-4.5 rounded-full border border-emerald-500/30 shadow-sm"
                       />
@@ -748,7 +748,7 @@ export default function App() {
               {/* =========================================================================
                    1. IDLE STATE: CHROME PLATINUM HOME LAYOUT
                  ========================================================================= */}
-                {reviewState === 'idle' && (
+              {reviewState === 'idle' && (
                 <motion.div
                   key="idle"
                   initial={{ opacity: 0, x: -60, scale: 0.98 }}
@@ -758,96 +758,77 @@ export default function App() {
                   className="max-w-[1500px] w-full mx-auto py-4 md:py-8 grid grid-cols-1 md:grid-cols-12 gap-8 items-start"
                 >
                   <div className="md:col-span-7 space-y-8 w-full">
-                  
-                  {/* Visual Head section description */}
-                  <div className="text-center space-y-3.5 animate-fade-in">
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-200 rounded-full text-emerald-700 text-[10px] font-sans tracking-wider font-bold">
-                      <Shield className="w-3.5 h-3.5" />
-                      <span>Security Analysis</span>
+
+                    {/* Visual Head section description */}
+                    <div className="text-center space-y-3.5 animate-fade-in">
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-200 rounded-full text-emerald-700 text-[10px] font-sans tracking-wider font-bold">
+                        <Shield className="w-3.5 h-3.5" />
+                        <span>Security Analysis</span>
+                      </div>
+                      <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-zinc-100 leading-tight">
+                        Find Bugs. Secure Secrets.
+                      </h1>
+                      <p className="text-xs text-slate-500 dark:text-zinc-400 max-w-sm mx-auto leading-relaxed">
+                        Enter a GitHub link below to perform a quick security check, look for exposed passwords or keys, and keep your files clean.
+                      </p>
                     </div>
-                    <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-zinc-100 leading-tight">
-                      Find Bugs. Secure Secrets.
-                    </h1>
-                    <p className="text-xs text-slate-500 dark:text-zinc-400 max-w-sm mx-auto leading-relaxed">
-                      Enter a GitHub link below to perform a quick security check, look for exposed passwords or keys, and keep your files clean.
-                    </p>
-                  </div>
 
-                  {/* Input Form structure */}
-                  <div className="p-6 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:border-emerald-300/40 dark:hover:border-emerald-500/30 shadow-md focus-within:shadow-emerald-500/5 transition-all duration-300 space-y-5 relative">
-                    <div className="absolute top-0 right-0 w-24 h-[1px] bg-gradient-to-r from-transparent to-emerald-500/20" />
-                    
-                    <form onSubmit={handleRunReview} className="space-y-4" id="repo-review-form">
-                       
-                      {formValidationError && (
-                        <div id="repo-form-error" className="p-3 rounded-lg bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 text-xs font-sans font-semibold animate-fade-in flex items-start gap-2.5" role="alert">
-                          <span className="text-sm select-none leading-none -mt-0.5" aria-hidden="true">!</span>
-                          <span>{formValidationError}</span>
-                        </div>
-                      )}
+                    {/* Input Form structure */}
+                    <div className="p-6 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:border-emerald-300/40 dark:hover:border-emerald-500/30 shadow-md focus-within:shadow-emerald-500/5 transition-all duration-300 space-y-5 relative">
+                      <div className="absolute top-0 right-0 w-24 h-[1px] bg-gradient-to-r from-transparent to-emerald-500/20" />
 
-                      {/* Repo Endpoint Input */}
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-zinc-400 font-sans block font-bold">
-                          GitHub Repo URL
-                        </label>
-                        <input
-                          type="url"
-                          required
-                          value={repoUrl}
-                          onChange={(e) => {
-                            setRepoUrl(e.target.value);
-                            if (formValidationError) setFormValidationError('');
-                          }}
-                          placeholder="https://github.com/owner/repository"
-                          aria-invalid={Boolean(formValidationError)}
-                          aria-describedby={formValidationError ? 'repo-form-error' : undefined}
-                          className={`w-full px-3.5 py-2.5 rounded-lg border text-sm transition-all font-sans focus:outline-none ${
-                            formValidationError 
-                              ? 'bg-rose-50/50 dark:bg-rose-950/15 border-rose-300 dark:border-rose-900 focus:border-rose-500 dark:focus:border-rose-400 focus:bg-white dark:focus:bg-zinc-900 focus:ring-4 focus:ring-rose-100 dark:focus:ring-rose-950 text-slate-800 dark:text-zinc-100'
-                              : 'bg-slate-50 dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:border-emerald-500 dark:focus:border-emerald-400 focus:bg-white dark:focus:bg-zinc-900 focus:ring-4 focus:ring-emerald-50 dark:focus:ring-emerald-950/50'
-                          }`}
-                          id="repo-endpoint-input"
-                        />
-                      </div>
+                      <form onSubmit={handleRunReview} className="space-y-4" id="repo-review-form">
 
-                      {/* Optional PR Indicator */}
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between">
+                        {formValidationError && (
+                          <div id="repo-form-error" className="p-3 rounded-lg bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 text-xs font-sans font-semibold animate-fade-in flex items-start gap-2.5" role="alert">
+                            <span className="text-sm select-none leading-none -mt-0.5" aria-hidden="true">!</span>
+                            <span>{formValidationError}</span>
+                          </div>
+                        )}
+
+                        {/* Repo Endpoint Input */}
+                        <div className="space-y-1.5">
                           <label className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-zinc-400 font-sans block font-bold">
-                            Pull Request Number
+                            GitHub Repo URL
                           </label>
-                          <span className="text-[9px] text-slate-400 dark:text-zinc-500 font-sans uppercase font-bold">Optional</span>
+                          <input
+                            type="url"
+                            required
+                            value={repoUrl}
+                            onChange={(e) => {
+                              setRepoUrl(e.target.value);
+                              if (formValidationError) setFormValidationError('');
+                            }}
+                            placeholder="https://github.com/owner/repository"
+                            aria-invalid={Boolean(formValidationError)}
+                            aria-describedby={formValidationError ? 'repo-form-error' : undefined}
+                            className={`w-full px-3.5 py-2.5 rounded-lg border text-sm transition-all font-sans focus:outline-none ${formValidationError
+                                ? 'bg-rose-50/50 dark:bg-rose-950/15 border-rose-300 dark:border-rose-900 focus:border-rose-500 dark:focus:border-rose-400 focus:bg-white dark:focus:bg-zinc-900 focus:ring-4 focus:ring-rose-100 dark:focus:ring-rose-950 text-slate-800 dark:text-zinc-100'
+                                : 'bg-slate-50 dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:border-emerald-500 dark:focus:border-emerald-400 focus:bg-white dark:focus:bg-zinc-900 focus:ring-4 focus:ring-emerald-50 dark:focus:ring-emerald-950/50'
+                              }`}
+                            id="repo-endpoint-input"
+                          />
                         </div>
-                        <input
-                          type="number"
-                          min="1"
-                          placeholder="e.g. 42"
-                          value={prNumber}
-                          onChange={(e) => setPrNumber(e.target.value)}
-                          className="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-sm text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:border-emerald-500 dark:focus:border-emerald-400 focus:bg-white dark:focus:bg-zinc-900 focus:ring-4 focus:ring-emerald-50 dark:focus:ring-emerald-950/50 transition-all font-sans"
-                          id="pr-target-input"
-                        />
-                      </div>
 
-                      {/* Submit Action Button */}
-                      <button
-                        type="submit"
-                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-sans font-semibold py-2.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm hover:shadow-emerald-600/15 hover:translate-y-[-0.5px] active:translate-y-[0.5px]"
-                        id="start-review-action"
-                      >
-                        <Play className="w-3.5 h-3.5 fill-current" />
-                        <span>Run Security Audit</span>
-                      </button>
-                    </form>
-                  </div>
+
+                        {/* Submit Action Button */}
+                        <button
+                          type="submit"
+                          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-sans font-semibold py-2.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm hover:shadow-emerald-600/15 hover:translate-y-[-0.5px] active:translate-y-[0.5px]"
+                          id="start-review-action"
+                        >
+                          <Play className="w-3.5 h-3.5 fill-current" />
+                          <span>Run Security Audit</span>
+                        </button>
+                      </form>
+                    </div>
 
 
                   </div>
 
                   {/* Right column: Chatbot Companion Panel (Spans 5 on md+) */}
                   <div className="md:col-span-5 w-full flex flex-col justify-start">
-                    <ChatbotCompanion 
+                    <ChatbotCompanion
                       activeReportContext={activeReviewResult ? {
                         repoUrl: repoUrl,
                         verdict: activeReviewResult.final_summary.verdict,
@@ -886,8 +867,8 @@ export default function App() {
                   transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                   className="w-full"
                 >
-                  <ReportView 
-                    activeReviewResult={activeReviewResult} 
+                  <ReportView
+                    activeReviewResult={activeReviewResult}
                     repoUrl={repoUrl}
                     onBack={() => setReviewState('idle')}
                   />
@@ -924,7 +905,7 @@ export default function App() {
                       </div>
                       <span>{errorTimestamp || 'UTC ERROR_LOG'}</span>
                     </div>
-                    
+
                     <div className="p-4 space-y-3 overflow-x-auto leading-relaxed font-sans">
                       <div className="flex gap-2">
                         <span className="text-rose-500 select-none">[FATAL_ERROR]</span>

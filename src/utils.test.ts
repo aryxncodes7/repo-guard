@@ -266,6 +266,9 @@ test("ChatbotCompanion handles non-JSON HTML error responses", async () => {
 
 test("getSafeHref transforms and validates URLs properly", async () => {
   const { getSafeHref } = await import("./utils.js");
+  assert.strictEqual(getSafeHref(null as any), undefined);
+  assert.strictEqual(getSafeHref(undefined), undefined);
+  assert.strictEqual(getSafeHref(""), undefined);
   assert.strictEqual(getSafeHref("https://github.com/aryxncodes7"), "https://github.com/aryxncodes7");
   assert.strictEqual(getSafeHref("http://example.com"), "http://example.com/");
   assert.strictEqual(getSafeHref("https://secure.com/path?q=1#hash"), "https://secure.com/path?q=1#hash");
