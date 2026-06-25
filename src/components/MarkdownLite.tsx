@@ -12,8 +12,8 @@ interface MarkdownLiteProps {
 }
 
 
-const HeadingComponent = ({ children, level, node, siblingIndex, index, ...props }: React.HTMLAttributes<HTMLHeadingElement> & { level: 1 | 2 | 3 | 4 | 5 | 6; node?: any; siblingIndex?: any; index?: any }) => {
-  const headings: Record<1 | 2 | 3 | 4 | 5 | 6, any> = { 1: 'h1', 2: 'h2', 3: 'h3', 4: 'h4', 5: 'h5', 6: 'h6' };
+const HeadingComponent = ({ children, level, node, siblingIndex, index, ...props }: React.HTMLAttributes<HTMLHeadingElement> & { level: 1 | 2 | 3 | 4 | 5 | 6; node?: unknown; siblingIndex?: unknown; index?: unknown }) => {
+  const headings: Record<1 | 2 | 3 | 4 | 5 | 6, keyof JSX.IntrinsicElements> = { 1: 'h1', 2: 'h2', 3: 'h3', 4: 'h4', 5: 'h5', 6: 'h6' };
   const sizes: Record<1 | 2 | 3 | 4 | 5 | 6, string> = {
     1: 'text-lg text-slate-800 dark:text-zinc-100 font-bold mt-5 mb-2.5',
     2: 'text-base text-slate-800 dark:text-zinc-100 font-bold mt-4 mb-2',
@@ -64,7 +64,7 @@ export default function MarkdownLite({ text }: MarkdownLiteProps) {
               <span className="flex-1 text-[13px] text-slate-700 dark:text-zinc-300">{children}</span>
             </div>
           ),
-          a: ({ children, href, ...props }: any) => {
+          a: ({ children, href, node, siblingIndex, index, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { node?: unknown; siblingIndex?: unknown; index?: unknown }) => {
             const safeUrl = getSafeHref(href);
             const isExternal = safeUrl?.startsWith('http');
             return (
@@ -73,7 +73,7 @@ export default function MarkdownLite({ text }: MarkdownLiteProps) {
               </a>
             );
           },
-          code: ({ inline, className, children, node, siblingIndex, index, ...props }: React.HTMLAttributes<HTMLElement> & { inline?: boolean; node?: any; siblingIndex?: number; index?: number }) => {
+          code: ({ inline, className, children, node, siblingIndex, index, ...props }: React.HTMLAttributes<HTMLElement> & { inline?: boolean; node?: unknown; siblingIndex?: number; index?: number }) => {
             const codeString = String(children || '').replace(/\n$/, '');
             const isInline = typeof inline === 'boolean' ? inline : !codeString.includes('\n');
             return isInline ? (

@@ -115,7 +115,7 @@ test("getShortRepoName extracts standard text names", () => {
 });
 
 test("MarkdownLite email regex prevents ReDoS and bypasses", () => {
-  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$/;
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+$/;
   assert.strictEqual(emailRegex.test("valid@example.com"), true);
   assert.strictEqual(emailRegex.test("invalid@"), false);
   assert.strictEqual(emailRegex.test("invalid.com"), false);

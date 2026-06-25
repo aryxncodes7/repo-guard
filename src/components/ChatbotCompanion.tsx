@@ -19,14 +19,18 @@ interface ChatbotCompanionProps {
 }
 
 type ChatMessage = {
+  id: string;
   sender: 'user' | 'assistant';
   text: string;
 };
 
 const INITIAL_MESSAGE: ChatMessage = {
+  id: 'initial',
   sender: 'assistant',
   text: "Hello! I am RepoGuard's Resident Auditor. Ask me about your security scan results, fixing plain-text secrets, resolving vulnerabilities, or modifying repository code structures."
 };
+
+const generateId = () => typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2);
 
 export const sanitize = (val: string) => DOMPurify.sanitize(val || '', { ALLOWED_TAGS: ['pre', 'code', 'p'], ALLOWED_ATTR: [] });
 
@@ -62,6 +66,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       setMessages(prev => [
         ...prev,
         { 
+          id: generateId(),
           sender: 'assistant', 
           text: `I've loaded the security context for ${shortName}. Ask me anything about the identified vulnerabilities, files scanned, or recommended resolution guides!` 
         }
@@ -80,7 +85,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
 
     const safeUserMsg = sanitize(input);
     setInput('');
-    setMessages(prev => [...prev, { sender: 'user', text: safeUserMsg }]);
+    setMessages(prev => [...prev, { id: generateId(), sender: 'user', text: safeUserMsg }]);
     setIsTyping(true);
 
     try {
@@ -132,13 +137,13 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       const data = await response.json();
       
       if (data.status === 'success') {
-        setMessages(prev => [...prev, { sender: 'assistant', text: data.reply }]);
+        setMessages(prev => [...prev, { id: generateId(), sender: 'assistant', text: data.reply }]);
       } else {
-        setMessages(prev => [...prev, { sender: 'assistant', text: "I ran into a minor connection problem. Please confirm your local API server configuration is running." }]);
+        setMessages(prev => [...prev, { id: generateId(), sender: 'assistant', text: "I ran into a minor connection problem. Please confirm your local API server configuration is running." }]);
       }
     } catch (err: any) {
       if (err.name === 'AbortError') return;
-      setMessages(prev => [...prev, { sender: 'assistant', text: "Our backend audit network seems offline. Please retry in a few moments." }]);
+      setMessages(prev => [...prev, { id: generateId(), sender: 'assistant', text: "Our backend audit network seems offline. Please retry in a few moments." }]);
     } finally {
       setIsTyping(false);
     }
@@ -164,7 +169,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
         </div>
         <button 
           type="button"
-          onClick={() => setMessages([{ sender: 'assistant', text: "Conversational logs purged. Ready for new security inquiries!" }])}
+          onClick={() => setMessages([{ id: generateId(), sender: 'assistant', text: "Conversational logs purged. Ready for new security inquiries!" }])}
           className="p-1 px-2 text-[10px] bg-white hover:bg-slate-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-500 dark:text-zinc-400 rounded-lg border border-slate-200 dark:border-zinc-700 transition font-bold"
           title="Clear Chat Logs"
           aria-label="Clear chat logs"
@@ -180,8 +185,8 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
         aria-live="polite"
         aria-relevant="additions"
       >
-        {messages.map((m, idx) => (
-          <div key={idx} className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}>
+        {messages.map((m) => (
+          <div key={m.id} className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}>
             <div className={`max-w-[85%] rounded-xl px-3.5 py-2.5 text-xs leading-relaxed font-sans ${
               m.sender === 'user' 
                 ? 'bg-emerald-600 text-white rounded-br-none shadow-sm'
@@ -198,7 +203,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
                       ol: ({ children }) => <ol className="list-decimal pl-4 mb-1.5 space-y-0.5">{children}</ol>,
                       li: ({ children }) => <li className="mb-0.5">{children}</li>,
                       strong: ({ children }) => <strong className="font-bold text-slate-900 dark:text-white">{children}</strong>,
-                      a: ({ children, href, ...props }: any) => {
+                      a: ({ children, href, node, siblingIndex, index, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { node?: unknown; siblingIndex?: unknown; index?: unknown }) => {
                         const safeUrl = getSafeHref(href);
                         const isExternal = safeUrl?.startsWith('http');
                         return (
@@ -207,7 +212,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
                           </a>
                         );
                       },
-                      code: ({ inline, className, children, node, siblingIndex, index, ...props }: any) => {
+                      code: ({ inline, className, children, node, siblingIndex, index, ...props }: React.HTMLAttributes<HTMLElement> & { inline?: boolean; node?: unknown; siblingIndex?: number; index?: number }) => {
                         const codeString = String(children || '').replace(/\n$/, '');
                         const isInline = !codeString.includes('\n');
                         return isInline ? (
