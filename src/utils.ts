@@ -188,7 +188,7 @@ export function parseGithubRepo(repoUrl: string): { owner: string; repo: string 
       return null;
     }
     
-    const urlToParse = parseUrlOrImplicitPath(cleanedUrl);
+    const urlToParse = parseUrlOrImplicitPath(cleanedUrl.normalize('NFKC'));
     if (!urlToParse) return null;
     const parsed = new URL(urlToParse);
     if (parsed.hostname.toLowerCase() !== "github.com" && parsed.hostname.toLowerCase() !== "www.github.com") {

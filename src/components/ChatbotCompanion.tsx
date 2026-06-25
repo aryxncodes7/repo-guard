@@ -26,7 +26,7 @@ type ChatMessage = {
 // Security utility to redact secrets directly on the client to prevent accidental UI persistence
 const REDACTION_PATTERNS = [
   /gh[pousr](?:_|%5F)[a-zA-Z0-9]{36}/gi,
-  /AIza[0-9A-Za-z-_]{35}/gi,
+  /AIza[0-9A-Za-z_\-]{35}/gi,
   /AKIA[0-9A-Z]{16}/gi,
   /(?:sk|rk)_(?:live|test)(?:_|%5F)[0-9a-zA-Z]{24}/gi,
   /xox[baprs](?:-|%2D)[0-9a-zA-Z]{10,48}/gi
@@ -160,7 +160,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
     const currentController = new AbortController();
     abortControllerRef.current = currentController;
 
-    const safeUserMsg = redactSecrets(input);
+    const safeUserMsg = redactSecrets(input.slice(0, 2048));
     setInput('');
     setMessages(prev => [...prev, { id: generateId(), sender: 'user', text: safeUserMsg }]);
     setIsTyping(true);
