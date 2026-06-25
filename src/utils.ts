@@ -141,6 +141,7 @@ export function normalizeGithubRepoUrl(rawUrl: unknown): string {
     
     const isGithubRepo =
       parsed.protocol === "https:" &&
+      (parsed.hostname.toLowerCase() === "github.com" || parsed.hostname.toLowerCase() === "www.github.com") &&
       /^[A-Za-z0-9_-]+$/.test(owner) &&
       /^[A-Za-z0-9_.-]+$/.test(repo) &&
       owner !== "." && owner !== ".." &&

@@ -127,6 +127,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
   const repoUrl = activeReportContext?.repoUrl;
   
   useEffect(() => {
+    let isActive = true;
     if (!initialized.current && repoUrl) {
       initialized.current = true;
       let shortName = 'this repository';
@@ -138,16 +139,19 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       }
       try { shortName = decodeURIComponent(shortName); } catch (e) { /* ignore */ }
       shortName = redactSecrets(shortName);
-      setMessages(prev => {
-        const isFresh = prev.length === 1 && prev[0].id === '1';
-        const newMsg = { 
-          id: generateId(),
-          sender: 'assistant' as const, 
-          text: `I've loaded the security context for ${shortName}. Ask me anything about the identified vulnerabilities, files scanned, or recommended resolution guides!` 
-        };
-        return isFresh ? [prev[0], newMsg] : [...prev, newMsg];
-      });
+      if (isActive) {
+        setMessages(prev => {
+          const isFresh = prev.length === 1 && prev[0].id === '1';
+          const newMsg = { 
+            id: generateId(),
+            sender: 'assistant' as const, 
+            text: `I've loaded the security context for ${shortName}. Ask me anything about the identified vulnerabilities, files scanned, or recommended resolution guides!` 
+          };
+          return isFresh ? [prev[0], newMsg] : [...prev, newMsg];
+        });
+      }
     }
+    return () => { isActive = false; };
   }, [repoUrl]);
 
   const handleSendMessage = async (e: React.FormEvent) => {

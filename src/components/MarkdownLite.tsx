@@ -75,7 +75,7 @@ const markdownComponents = {
     );
   },
   code: ({ inline, className, children, node, siblingIndex, index, ...props }: React.HTMLAttributes<HTMLElement> & { inline?: boolean; node?: unknown; siblingIndex?: number; index?: number }) => {
-    const codeString = String(children || '')
+    const codeString = String(children || '').slice(0, 10000)
       .replace(/\n$/, '')
       .replace(/[\u200B-\u200D\uFEFF\u202A-\u202E]/g, '');
     const isInline = typeof inline === 'boolean' ? inline : !codeString.includes('\n');

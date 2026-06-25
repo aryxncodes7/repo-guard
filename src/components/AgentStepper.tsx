@@ -14,7 +14,7 @@ interface AgentStepperProps {
 
 export default function AgentStepper({ agents = [] }: AgentStepperProps) {
   const { uniqueAgents, completedCount, progressPercent, hasError } = React.useMemo(() => {
-    const safeAgents = (agents || []).slice(-100);
+    const safeAgents = Array.isArray(agents) ? agents : [];
     const uniqueAgentsMap = new Map();
     for (const a of safeAgents) {
       if (!uniqueAgentsMap.has(a.id)) {
