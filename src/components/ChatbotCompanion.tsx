@@ -118,7 +118,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
         shortName = repoUrl.replace(/https?:\/\/[^\/]+\//, '');
       }
       try { shortName = decodeURIComponent(shortName); } catch (e) { /* ignore */ }
-      shortName = redactSecrets(shortName);
+
       if (isActive) {
         setMessages(prev => {
           const isFresh = prev.length === 1 && prev[0].id === '1';
