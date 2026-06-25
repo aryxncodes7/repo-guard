@@ -247,7 +247,7 @@ export default function App() {
 
     const fetchPromise = (async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/review`, {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/review`, {
           method: 'POST',
           headers: reviewHeaders,
           credentials: 'include',
@@ -440,7 +440,7 @@ export default function App() {
                     onChange={(e) => {
                       const val = e.target.value;
                       setApiKey(val);
-                      fetch(import.meta.env.VITE_API_BASE_URL + '/api/set-key', {
+                      fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/set-key', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ apiKey: val })
