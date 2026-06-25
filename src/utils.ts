@@ -17,7 +17,7 @@ const MAX_REPO_URL_LENGTH = 200;
 export function getSafeHref(href?: string) {
   if (!href) return undefined;
   if (href.length > 2048) return undefined;
-  if (/^(javascript|data|vbscript|file):/i.test(href.trim())) {
+  if (/^(javascript|data|vbscript|file):/i.test(href.replace(/[\s\x00-\x1F\x7F-\x9F]+/g, ''))) {
     return undefined;
   }
   try {
@@ -26,7 +26,8 @@ export function getSafeHref(href?: string) {
       absoluteHref = 'https:' + href;
     }
     const isAbsolute = /^(?:[a-z]+:)?\/\//i.test(absoluteHref);
-    const parsed = isAbsolute ? new URL(absoluteHref) : new URL(absoluteHref, 'http://localhost');
+    const fallbackOrigin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
+    const parsed = isAbsolute ? new URL(absoluteHref) : new URL(absoluteHref, fallbackOrigin);
     if (parsed.protocol === 'mailto:') {
       const email = parsed.pathname.trim();
       const domain = email.split('@').pop()?.toLowerCase();
@@ -68,8 +69,9 @@ export function normalizeGithubRepoUrl(rawUrl: unknown): string {
   if (!repoUrl) return "";
 
   // Reject relative paths, double dots, or backslashes
-  const lowerUrl = repoUrl.toLowerCase();
-  if (lowerUrl.includes("..") || lowerUrl.includes("\\") || lowerUrl.includes("%2e%2e") || lowerUrl.includes("%5c") || lowerUrl.includes("%2f")) {
+  let decodedUrl = repoUrl.toLowerCase();
+  try { decodedUrl = decodeURIComponent(decodedUrl); } catch {}
+  if (decodedUrl.includes("..") || decodedUrl.includes("\\") || decodedUrl.includes("%2e%2e") || decodedUrl.includes("%5c") || decodedUrl.includes("%2f")) {
     return "";
   }
 
@@ -110,8 +112,9 @@ export function normalizePrNumber(rawPrNumber: unknown): string | undefined {
 export function parseGithubRepo(repoUrl: string): { owner: string; repo: string } | null {
   try {
     const cleanedUrl = repoUrl.trim().replace(/\/$/, "");
-    const lowerCleaned = cleanedUrl.toLowerCase();
-    if (lowerCleaned.includes("..") || lowerCleaned.includes("\\") || lowerCleaned.includes("%2e%2e") || lowerCleaned.includes("%5c") || lowerCleaned.includes("%2f")) {
+    let decodedCleaned = cleanedUrl.toLowerCase();
+    try { decodedCleaned = decodeURIComponent(decodedCleaned); } catch {}
+    if (decodedCleaned.includes("..") || decodedCleaned.includes("\\") || decodedCleaned.includes("%2e%2e") || decodedCleaned.includes("%5c") || decodedCleaned.includes("%2f")) {
       return null;
     }
     

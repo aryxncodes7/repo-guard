@@ -5,8 +5,7 @@
 
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
-import DOMPurify from 'dompurify';
-import { ALLOWED_EMAIL_DOMAINS, getSafeHref } from '../utils';
+import { getSafeHref } from '../utils';
 
 interface MarkdownLiteProps {
   text: string;

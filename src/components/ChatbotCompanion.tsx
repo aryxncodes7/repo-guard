@@ -37,6 +37,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const csrfTokenRef = useRef(crypto.randomUUID());
 
   useEffect(() => {
     return () => {
@@ -92,7 +93,8 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       let finalMessage = sanitize(String(safeUserMsg).trim().slice(0, 4000));
       
       const chatHeaders: Record<string, string> = {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': csrfTokenRef.current
       };
 
       let reportContextBody: any = undefined;
