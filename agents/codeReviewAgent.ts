@@ -18,7 +18,9 @@ Make sure you cite actual file paths and line numbers. Do NOT hallucinate files 
 Output a detailed markdown report of all issues found. Do not output JSON.
   `.trim();
 
-  const config: GeminiConfig = {};
+  const config: GeminiConfig = {
+    maxOutputTokens: 600
+  };
 
   const response = await generateContentWithFallback(prompt, config, activeApiKey);
   return response.text?.trim() || "Code Review Agent produced no output.";

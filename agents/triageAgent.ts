@@ -22,7 +22,9 @@ Output a high-level summary of the architecture pattern, sizing, and high-level 
 Do not output JSON, just output a clear markdown summary.
   `.trim();
 
-  const config: GeminiConfig = {};
+  const config: GeminiConfig = {
+    maxOutputTokens: 500
+  };
 
   const response = await generateContentWithFallback(prompt, config, activeApiKey);
   return response.text?.trim() || "Triage Agent produced no output.";

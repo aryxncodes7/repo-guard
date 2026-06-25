@@ -17,7 +17,9 @@ Evaluate the README and any other documentation files. Identify missing sections
 Output a detailed markdown report of all documentation issues found. Do not output JSON.
   `.trim();
 
-  const config: GeminiConfig = {};
+  const config: GeminiConfig = {
+    maxOutputTokens: 600
+  };
 
   const response = await generateContentWithFallback(prompt, config, activeApiKey);
   return response.text?.trim() || "Docs Agent produced no output.";
