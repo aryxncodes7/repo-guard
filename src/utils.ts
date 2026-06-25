@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { getNormalizedUrl } from './sanitizeRepoUrl';
+import { getNormalizedUrl } from './sanitizeRepoUrl.js';
 
 export const MAX_PR_NUMBER = 1000000;
 const rawDomains = import.meta.env?.VITE_ALLOWED_EMAIL_DOMAINS || (typeof process !== 'undefined' ? process.env.VITE_ALLOWED_EMAIL_DOMAINS : undefined);
