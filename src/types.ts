@@ -60,5 +60,5 @@ export interface AgentProgress {
   id: 'triage' | 'code_review' | 'docs' | 'synthesizer';
   name: string;
   description: string;
-  status: 'pending' | 'running' | 'completed';
+  status: 'pending' | 'running' | 'completed' | 'error';
 }

@@ -123,10 +123,7 @@ test("MarkdownLite email regex prevents ReDoS and bypasses", () => {
   assert.strictEqual(emailRegex.test("malicious@example.com<script>alert(1)</script>"), false);
 });
 
-test("ChatbotCompanion sanitize function acts as passthrough in test env", async () => {
-  const { sanitize } = await import("./components/ChatbotCompanion.js");
-  assert.strictEqual(typeof sanitize("hello"), "string");
-});
+
 
 test("MarkdownLite component instantiates without crashing", async () => {
   const { default: MarkdownLite } = await import("./components/MarkdownLite.js");

@@ -66,7 +66,7 @@ export default function MarkdownLite({ text }: MarkdownLiteProps) {
           ),
           a: ({ children, href, node, siblingIndex, index, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { node?: unknown; siblingIndex?: unknown; index?: unknown }) => {
             const safeUrl = getSafeHref(href);
-            const isExternal = safeUrl?.startsWith('http');
+            const isExternal = safeUrl?.startsWith('http') || safeUrl?.startsWith('//');
             return (
               <a href={safeUrl} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noopener noreferrer" : undefined} className="text-teal-700 dark:text-teal-400 hover:underline font-semibold">
                 {children}

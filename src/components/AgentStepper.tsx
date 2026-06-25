@@ -68,6 +68,10 @@ export default function AgentStepper({ agents = [] }: AgentStepperProps) {
               statusClass = 'border-slate-200 dark:border-zinc-800 text-slate-500 dark:text-zinc-300 opacity-90 bg-white dark:bg-zinc-900/40';
               statusIcon = <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />;
               borderHighlight = 'border-slate-200 dark:border-zinc-800';
+            } else if (agent.status === 'error') {
+              statusClass = 'border-rose-200 dark:border-rose-900 text-rose-800 dark:text-rose-200 opacity-100 bg-rose-50/20 dark:bg-rose-950/10';
+              statusIcon = <div className="w-1.5 h-1.5 rounded-full bg-rose-500 dark:bg-rose-400" />;
+              borderHighlight = 'border-rose-300/80 dark:border-rose-800/80';
             }
 
             return (
@@ -82,9 +86,7 @@ export default function AgentStepper({ agents = [] }: AgentStepperProps) {
               >
                 {/* Visual line step badge - no preview step numbers */}
                 <div className="mt-0.5 flex-shrink-0 w-6 h-6 rounded-full border border-slate-200 dark:border-zinc-800 flex items-center justify-center text-xs bg-slate-50 dark:bg-zinc-950 font-semibold text-slate-600 dark:text-zinc-400">
-                  {agent.status === 'completed' ? statusIcon : (
-                    agent.status === 'running' ? statusIcon : <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-zinc-600" />
-                  )}
+                  {agent.status === 'pending' ? <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-zinc-600" /> : statusIcon}
                 </div>
 
                 {/* Info block */}

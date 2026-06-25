@@ -4,7 +4,6 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import DOMPurify from 'dompurify';
 import { MessageSquare, Send } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { ALLOWED_EMAIL_DOMAINS, getSafeHref } from '../utils';
@@ -32,7 +31,6 @@ const INITIAL_MESSAGE: ChatMessage = {
 
 const generateId = () => typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2);
 
-export const sanitize = (val: string) => DOMPurify.sanitize(val || '', { ALLOWED_TAGS: ['pre', 'code', 'p'], ALLOWED_ATTR: [] });
 
 
 export default function ChatbotCompanion({ activeReportContext }: ChatbotCompanionProps) {
@@ -83,7 +81,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
     }
     abortControllerRef.current = new AbortController();
 
-    const safeUserMsg = sanitize(input);
+    const safeUserMsg = input;
     setInput('');
     setMessages(prev => [...prev, { id: generateId(), sender: 'user', text: safeUserMsg }]);
     setIsTyping(true);
@@ -92,10 +90,10 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       // Clean up messages format for backend history
       const formattedHistory = messages.map(msg => ({
         role: msg.sender === 'user' ? 'user' : 'model',
-        content: sanitize(String(msg.text).trim().slice(0, 4000))
+        content: String(msg.text).trim().slice(0, 4000)
       }));
 
-      let finalMessage = sanitize(String(safeUserMsg).trim().slice(0, 4000));
+      let finalMessage = String(safeUserMsg).trim().slice(0, 4000);
       
       const chatHeaders: Record<string, string> = {
         'Content-Type': 'application/json'
@@ -104,10 +102,10 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       let reportContextBody: any = undefined;
 
       if (activeReportContext) {
-        const cleanRepoUrl = sanitize(String(activeReportContext.repoUrl || ''));
-        const cleanVerdict = sanitize(String(activeReportContext.verdict || ''));
+        const cleanRepoUrl = String(activeReportContext.repoUrl || '');
+        const cleanVerdict = String(activeReportContext.verdict || '');
         const cleanIssues = Array.isArray(activeReportContext.issues)
-          ? activeReportContext.issues.map((issue) => sanitize(String(issue?.message || ''))).filter(Boolean)
+          ? activeReportContext.issues.map((issue) => String(issue?.message || '')).filter(Boolean)
           : [];
 
         reportContextBody = {
@@ -205,7 +203,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
                       strong: ({ children }) => <strong className="font-bold text-slate-900 dark:text-white">{children}</strong>,
                       a: ({ children, href, node, siblingIndex, index, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { node?: unknown; siblingIndex?: unknown; index?: unknown }) => {
                         const safeUrl = getSafeHref(href);
-                        const isExternal = safeUrl?.startsWith('http');
+                        const isExternal = safeUrl?.startsWith('http') || safeUrl?.startsWith('//');
                         return (
                           <a href={safeUrl} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noopener noreferrer" : undefined} className="text-emerald-600 dark:text-emerald-400 hover:underline font-semibold">
                             {children}
