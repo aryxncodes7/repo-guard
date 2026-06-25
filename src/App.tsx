@@ -30,7 +30,8 @@ import {
   X,
   Trash2,
   Sliders,
-  Lock
+  Lock,
+  Search
 } from 'lucide-react';
 import { ReviewResponse, ReviewState, AgentProgress } from './types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -142,6 +143,28 @@ export default function App() {
   const [githubToken, setGithubToken] = useState<string>(() => {
     return localStorage.getItem('repoguard-github-token-custom') || '';
   });
+
+  const [repoSearchQuery, setRepoSearchQuery] = useState('');
+  
+  // Real OAuth flow handler
+  const handleConnectGithub = () => {
+    window.location.href = 'https://github.com/login/oauth/authorize?client_id=Ov23liLdii0jEwXkFp9d&scope=repo&redirect_uri=https://repo-guard-io.vercel.app/api/auth/callback/github';
+  };
+
+  // Check for session/token on mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    if (code) {
+      // Simulate successful OAuth callback by setting logged in state
+      setGithubConnected(true);
+      setGithubConnectedUser('aryxncodes7'); // Mock fetched user
+      localStorage.setItem('repoguard-github-linked', 'true');
+      localStorage.setItem('repoguard-github-user', 'aryxncodes7');
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
 
   const [repoUrl, setRepoUrl] = useState<string>('https://github.com/');
   const [prNumber, setPrNumber] = useState<string>('');
@@ -700,10 +723,11 @@ export default function App() {
                 {!githubConnected && (
                   <button
                     type="button"
-                    onClick={() => setSettingsOpen(true)}
-                    className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-white dark:text-zinc-200 rounded-xl font-bold text-xs shadow-sm transition-all border border-slate-700 dark:border-zinc-700 hover:border-slate-600 cursor-pointer"
+                    onClick={handleConnectGithub}
+                    className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-white dark:text-zinc-200 rounded-xl font-bold text-xs shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all border border-emerald-500/50 cursor-pointer"
                   >
                     <span className="text-sm leading-none -mt-0.5">🔐</span>
+                    <Github className="w-3.5 h-3.5" />
                     <span>Connect GitHub</span>
                   </button>
                 )}
@@ -842,24 +866,78 @@ export default function App() {
                         </button>
                       </form>
 
-                      {/* Divider */}
-                      <div className="relative flex items-center py-2" aria-hidden="true">
-                        <div className="flex-grow border-t border-slate-200 dark:border-zinc-800"></div>
-                        <span className="flex-shrink-0 mx-4 text-[10px] text-slate-400 dark:text-zinc-500 font-extrabold uppercase tracking-widest bg-white dark:bg-zinc-900 px-2 rounded-full border border-slate-200 dark:border-zinc-800 shadow-sm relative">
-                          OR
-                        </span>
-                        <div className="flex-grow border-t border-slate-200 dark:border-zinc-800"></div>
-                      </div>
+                      {!githubConnected ? (
+                        <>
+                          {/* Divider */}
+                          <div className="relative flex items-center py-2" aria-hidden="true">
+                            <div className="flex-grow border-t border-slate-200 dark:border-zinc-800"></div>
+                            <span className="flex-shrink-0 mx-4 text-[10px] text-slate-400 dark:text-zinc-500 font-extrabold uppercase tracking-widest bg-white dark:bg-zinc-900 px-2 rounded-full border border-slate-200 dark:border-zinc-800 shadow-sm relative">
+                              OR
+                            </span>
+                            <div className="flex-grow border-t border-slate-200 dark:border-zinc-800"></div>
+                          </div>
 
-                      {/* Path B: GitHub Import */}
-                      <button
-                        type="button"
-                        onClick={() => setSettingsOpen(true)}
-                        className="w-full bg-slate-900 hover:bg-slate-800 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-white dark:text-zinc-200 font-sans font-semibold py-2.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm border border-slate-700 dark:border-zinc-700 hover:shadow-slate-900/20 hover:translate-y-[-0.5px] active:translate-y-[0.5px]"
-                      >
-                        <span className="text-[15px] leading-none">🤝</span>
-                        <span>Import directly from GitHub</span>
-                      </button>
+                          {/* Path B: GitHub Import */}
+                          <button
+                            type="button"
+                            onClick={handleConnectGithub}
+                            className="w-full bg-slate-900 hover:bg-slate-800 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-white dark:text-zinc-200 font-sans font-semibold py-2.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.3)] border border-emerald-500/50 hover:translate-y-[-0.5px] active:translate-y-[0.5px]"
+                          >
+                            <span className="text-[15px] leading-none">🔐</span>
+                            <Github className="w-4 h-4 fill-current opacity-80" />
+                            <span>Connect GitHub Account</span>
+                          </button>
+                        </>
+                      ) : (
+                        <div className="mt-6 border-t border-slate-200 dark:border-zinc-800 pt-6 animate-fade-in">
+                          <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-100 mb-4 flex items-center gap-2 font-sans">
+                            <span className="text-lg">👋</span> Welcome back, {githubConnectedUser}! Select a repository to audit
+                          </h3>
+                          
+                          <div className="relative mb-4">
+                            <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+                            <input
+                              type="text"
+                              placeholder="Search repositories..."
+                              value={repoSearchQuery}
+                              onChange={(e) => setRepoSearchQuery(e.target.value)}
+                              className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-lg text-sm text-slate-800 dark:text-zinc-100 focus:outline-none focus:border-emerald-500 dark:focus:border-emerald-400 focus:ring-1 focus:ring-emerald-500/50 transition-all font-sans"
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
+                            {[
+                              { name: 'repo-guard', public: true },
+                              { name: 'nextjs-portfolio', public: true },
+                              { name: 'api-service', public: false },
+                              { name: 'auth-server', public: false },
+                            ].filter(repo => repo.name.toLowerCase().includes(repoSearchQuery.toLowerCase())).map((repo) => (
+                              <div key={repo.name} className="flex flex-col p-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 hover:border-emerald-500/30 transition-all group">
+                                <div className="flex items-center justify-between mb-3">
+                                  <span className="font-bold text-sm text-slate-800 dark:text-zinc-200 font-sans truncate pr-2">{repo.name}</span>
+                                  <span className={`text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5 rounded border ${repo.public ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/50' : 'bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 border-slate-200 dark:border-zinc-700'}`}>
+                                    {repo.public ? 'Public' : 'Private'}
+                                  </span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setRepoUrl(`https://github.com/${githubConnectedUser}/${repo.name}`);
+                                    // Trigger form submit directly
+                                    setTimeout(() => {
+                                      const form = document.getElementById('repo-review-form') as HTMLFormElement;
+                                      if (form) form.requestSubmit();
+                                    }, 0);
+                                  }}
+                                  className="w-full mt-auto py-1.5 rounded-lg bg-slate-50 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 font-sans text-xs font-bold border border-slate-200 dark:border-zinc-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-200 dark:hover:border-emerald-800 transition-all flex items-center justify-center gap-1.5 group-hover:shadow-sm"
+                                >
+                                  <span>🚀</span> Run Security Audit
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
 
