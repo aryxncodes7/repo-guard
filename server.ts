@@ -408,7 +408,8 @@ app.post("/api/chat", async (req, res) => {
     return res.status(400).json({ status: "error", message: "Message exceeds maximum allowed length." });
   }
 
-  const cleanMessage = clampText(message, MAX_CHAT_MESSAGE_LENGTH);
+  const redactSecrets = (text: string) => text.replace(/(gh[pousr]_[a-zA-Z0-9]{36}|AIza[0-9A-Za-z-_]{35})/g, '***REDACTED***');
+  const cleanMessage = redactSecrets(clampText(message, MAX_CHAT_MESSAGE_LENGTH) || '');
   if (!cleanMessage) {
     return res.status(400).json({ status: "error", message: "Message is required." });
   }
@@ -426,7 +427,7 @@ app.post("/api/chat", async (req, res) => {
         if (!cleanContent) continue;
         chatContents.push({
           role: role === "user" ? "user" : "model",
-          parts: [{ text: cleanContent }]
+          parts: [{ text: redactSecrets(cleanContent) }]
         });
       }
     }

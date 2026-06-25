@@ -142,6 +142,10 @@ test("MarkdownLite sanitizes XSS payloads", async () => {
   const React = await import("react");
   const result = renderToString(React.createElement(MarkdownLite, { text: "<script>alert('xss')</script>" }));
   assert.ok(!result.includes("<script>"));
+  
+  const result2 = renderToString(React.createElement(MarkdownLite, { text: "<a href=\"javascript:alert(1)\" onmouseover=\"alert(2)\">click</a>" }));
+  assert.ok(!result2.includes("onmouseover"));
+  assert.ok(!result2.includes("javascript:alert"));
 });
 
 test("AgentStepper correctly surfaces error states and API schema request validation", async () => {

@@ -88,10 +88,11 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
 
   // If there is context and the chat just opened, we can customize the greeting
   const repoUrl = activeReportContext?.repoUrl;
-  const prevRepoUrlRef = useRef<string | undefined>(undefined);
+  const initialized = useRef(false);
+  
   useEffect(() => {
-    if (repoUrl && repoUrl !== prevRepoUrlRef.current) {
-      prevRepoUrlRef.current = repoUrl;
+    if (!initialized.current && repoUrl) {
+      initialized.current = true;
       const shortName = repoUrl.replace(/https?:\/\/(www\.)?github\.com\//, '') || 'this repository';
       setMessages(prev => {
         const isFresh = prev.length === 1 && prev[0].id === '1';
@@ -156,13 +157,20 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
         requestBody.reportContext = reportContextBody;
       }
 
+      let jsonBody = "";
+      try {
+        jsonBody = JSON.stringify(requestBody);
+      } catch (e) {
+        throw new Error("Failed to stringify chat request payload.");
+      }
+
       const baseUrl = import.meta.env.VITE_API_BASE_URL || window.location.origin;
       
       const response = await fetch(`${baseUrl}/api/chat`, {
         method: 'POST',
         headers: chatHeaders,
         credentials: 'include',
-        body: JSON.stringify(requestBody),
+        body: jsonBody,
         signal: abortControllerRef.current.signal
       });
       const contentType = response.headers.get("content-type");

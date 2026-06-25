@@ -14,16 +14,23 @@ export const ALLOWED_EMAIL_DOMAINS = parsedDomains.length > 0
 
 const MAX_REPO_URL_LENGTH = 200;
 
+const HEX_ENTITY_REGEX = /&#x([0-9a-fA-F]+);?/gi;
+const DEC_ENTITY_REGEX = /&#(\d+);?/g;
+const COLON_ENTITY_REGEX = /&colon;?/gi;
+const TAB_ENTITY_REGEX = /&tab;?/gi;
+const NEWLINE_ENTITY_REGEX = /&newline;?/gi;
+const STRIP_CHARS_REGEX = /[\s\x00-\x1F\x7F-\x9F]+/g;
+
 export function getSafeHref(href?: string) {
   if (!href) return undefined;
   if (href.length > 2048) return undefined;
-  const decodedHref = href.replace(/&#x([0-9a-fA-F]+);?/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
-                          .replace(/&#(\d+);?/g, (_, dec) => String.fromCharCode(parseInt(dec, 10)))
-                          .replace(/&colon;?/gi, ':')
-                          .replace(/&tab;?/gi, '\t')
-                          .replace(/&newline;?/gi, '\n');
+  const decodedHref = href.replace(HEX_ENTITY_REGEX, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+                          .replace(DEC_ENTITY_REGEX, (_, dec) => String.fromCharCode(parseInt(dec, 10)))
+                          .replace(COLON_ENTITY_REGEX, ':')
+                          .replace(TAB_ENTITY_REGEX, '\t')
+                          .replace(NEWLINE_ENTITY_REGEX, '\n');
   try {
-    const strippedHref = decodedHref.replace(/[\s\x00-\x1F\x7F-\x9F]+/g, '');
+    const strippedHref = decodedHref.replace(STRIP_CHARS_REGEX, '');
     let absoluteHref = strippedHref;
     if (strippedHref.startsWith('//')) {
       absoluteHref = 'https:' + strippedHref;
