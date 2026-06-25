@@ -23,8 +23,7 @@ type ChatMessage = {
   text: string;
 };
 
-// NOTE: Client-side redaction is defense-in-depth only.
-// Primary secret redaction is enforced server-side in server.ts /api/chat handler.
+// Security utility to redact secrets directly on the client to prevent accidental UI persistence
 const REDACTION_PATTERNS = [
   /gh[pousr](?:_|%5F)[a-zA-Z0-9]{36}/gi,
   /AIza[0-9A-Za-z-_]{35}/gi,
@@ -238,15 +237,13 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
         setMessages(prev => [...prev, { id: generateId(), sender: 'assistant', text: data.message || "I ran into a minor connection problem. Please confirm your local API server configuration is running." }]);
       }
     } catch (err: any) {
-      if (err.name === 'AbortError' || abortControllerRef.current !== currentController) {
+      if (err.name === 'AbortError') {
         return;
       }
       const errorMessage = err?.message || 'Network offline';
       setMessages(prev => [...prev, { id: generateId(), sender: 'assistant', text: `Backend Error: ${errorMessage}. Please retry in a few moments.` }]);
     } finally {
-      if (abortControllerRef.current === currentController) {
-        setIsTyping(false);
-      }
+      setIsTyping(false);
     }
   };
 

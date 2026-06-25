@@ -94,7 +94,8 @@ const markdownComponents = {
 export default function MarkdownLite({ text }: MarkdownLiteProps) {
   if (!text) return null;
   const safeText = React.useMemo(() => {
-    return String(text).slice(0, 100000);
+    const str = String(text);
+    return str.length > 100000 ? str.slice(0, 100000) + '\n\n**[TRUNCATED: Output exceeded 100k characters]**' : str;
   }, [text]);
 
   return (

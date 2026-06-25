@@ -408,7 +408,21 @@ app.post("/api/chat", async (req, res) => {
     return res.status(400).json({ status: "error", message: "Message exceeds maximum allowed length." });
   }
 
-  const redactSecrets = (text: string) => text.replace(/(gh[pousr]_[a-zA-Z0-9]{36}|AIza[0-9A-Za-z-_]{35})/g, '***REDACTED***');
+  const redactSecrets = (text: string) => {
+    if (!text) return text;
+    let result = text;
+    const REDACTION_PATTERNS = [
+      /gh[pousr](?:_|%5F)[a-zA-Z0-9]{36}/gi,
+      /AIza[0-9A-Za-z-_]{35}/gi,
+      /AKIA[0-9A-Z]{16}/gi,
+      /(?:sk|rk)_(?:live|test)(?:_|%5F)[0-9a-zA-Z]{24}/gi,
+      /xox[baprs](?:-|%2D)[0-9a-zA-Z]{10,48}/gi
+    ];
+    for (const pattern of REDACTION_PATTERNS) {
+      result = result.replace(pattern, '***REDACTED***');
+    }
+    return result;
+  };
   const cleanMessage = redactSecrets(clampText(message, MAX_CHAT_MESSAGE_LENGTH) || '');
   if (!cleanMessage) {
     return res.status(400).json({ status: "error", message: "Message is required." });
