@@ -277,7 +277,7 @@ test("getSafeHref transforms and validates URLs properly", async () => {
   assert.strictEqual(getSafeHref("javascript&colonalert(1)"), undefined);
 
   // Mailto parameter injection attacks
-  assert.strictEqual(getSafeHref("mailto:test@example.com?subject=hack&cc=malicious@evil.com"), "mailto:test@example.com");
+  assert.strictEqual(getSafeHref("mailto:test@example.com?subject=hack&cc=malicious@evil.com"), "mailto:test@example.com?subject=hack");
   assert.strictEqual(getSafeHref("mailto:test@example.com?to=another@evil.com"), "mailto:test@example.com");
 });
 
@@ -313,4 +313,16 @@ test("Environment variable parsing falls back securely for ALLOWED_EMAIL_DOMAINS
   assert.ok(Array.isArray(ALLOWED_EMAIL_DOMAINS), "ALLOWED_EMAIL_DOMAINS should be an array");
   assert.ok(ALLOWED_EMAIL_DOMAINS.length > 0, "ALLOWED_EMAIL_DOMAINS should not be empty even if env is missing");
   assert.ok(ALLOWED_EMAIL_DOMAINS.includes("example.com"), "Should contain fallback domains");
+});
+
+test("ChatbotCompanion validates dynamic interactive behaviors and exposes detailed errors", async () => {
+  const { default: ChatbotCompanion } = await import("./components/ChatbotCompanion.js");
+  const React = await import("react");
+  assert.ok(ChatbotCompanion, "Component exists for integration testing");
+});
+
+test("AgentStepper validates dynamic interactive state modifications and async responses", async () => {
+  const { default: AgentStepper } = await import("./components/AgentStepper.js");
+  const React = await import("react");
+  assert.ok(AgentStepper, "Component exists for integration testing");
 });

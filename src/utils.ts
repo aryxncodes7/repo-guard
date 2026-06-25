@@ -45,7 +45,14 @@ export function getSafeHref(href?: string) {
       if (!/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+$/.test(email)) {
         return undefined;
       }
-      return `mailto:${email}`;
+      
+      const safeParams = new URLSearchParams();
+      const originalParams = new URLSearchParams(parsed.search);
+      if (originalParams.has('subject')) safeParams.set('subject', originalParams.get('subject')!);
+      if (originalParams.has('body')) safeParams.set('body', originalParams.get('body')!);
+      
+      const searchStr = safeParams.toString();
+      return searchStr ? `mailto:${email}?${searchStr}` : `mailto:${email}`;
     }
     return ['http:', 'https:'].includes(parsed.protocol) ? href : undefined;
   } catch {
@@ -76,7 +83,7 @@ export function normalizeGithubRepoUrl(rawUrl: unknown): string {
   // Reject relative paths, double dots, or backslashes
   let decodedUrl = repoUrl.toLowerCase();
   try { decodedUrl = decodeURIComponent(decodedUrl); } catch {}
-  if (decodedUrl.includes("..") || decodedUrl.includes("\\") || decodedUrl.includes("%2e%2e") || decodedUrl.includes("%5c")) {
+  if (decodedUrl.includes("../") || decodedUrl.includes("%2e%2e%2f") || decodedUrl.includes("\\") || decodedUrl.includes("%5c")) {
     return "";
   }
 
@@ -120,7 +127,7 @@ export function parseGithubRepo(repoUrl: string): { owner: string; repo: string 
     const cleanedUrl = repoUrl.trim().replace(/\/$/, "");
     let decodedCleaned = cleanedUrl.toLowerCase();
     try { decodedCleaned = decodeURIComponent(decodedCleaned); } catch {}
-    if (decodedCleaned.includes("..") || decodedCleaned.includes("\\") || decodedCleaned.includes("%2e%2e") || decodedCleaned.includes("%5c")) {
+    if (decodedCleaned.includes("../") || decodedCleaned.includes("%2e%2e%2f") || decodedCleaned.includes("\\") || decodedCleaned.includes("%5c")) {
       return null;
     }
     
@@ -161,7 +168,7 @@ export function cleanClientRepoUrl(repoUrl: string): string {
   }
   // Detect and reject relative path traversals and backslashes
   const lowerDecoded = decoded.toLowerCase();
-  if (lowerDecoded.includes("..") || lowerDecoded.includes("\\") || lowerDecoded.includes("%2e%2e") || lowerDecoded.includes("%5c")) {
+  if (lowerDecoded.includes("../") || lowerDecoded.includes("%2e%2e%2f") || lowerDecoded.includes("\\") || lowerDecoded.includes("%5c")) {
     return "https://github.com/";
   }
 
@@ -224,7 +231,7 @@ export function parseUrlOrImplicitPath(inputUrl: string): string {
   }
   
   // Explicitly support strictly formatted owner/repo strings
-  if (/^[A-Za-z0-9_-]+\/[A-Za-z0-9_.-]+$/.test(inputUrl) && !inputUrl.includes("..")) {
+  if (/^[A-Za-z0-9_-]+\/[A-Za-z0-9_.-]+$/.test(inputUrl) && !inputUrl.includes("../")) {
     return `https://github.com/${inputUrl}`;
   }
   

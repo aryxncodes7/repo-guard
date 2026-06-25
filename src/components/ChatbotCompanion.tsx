@@ -179,7 +179,8 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       }
     } catch (err: any) {
       if (err.name === 'AbortError') return;
-      setMessages(prev => [...prev, { id: generateId(), sender: 'assistant', text: "Our backend audit network seems offline. Please retry in a few moments." }]);
+      const errorMessage = err?.message || 'Network offline';
+      setMessages(prev => [...prev, { id: generateId(), sender: 'assistant', text: `Backend Error: ${errorMessage}. Please retry in a few moments.` }]);
     } finally {
       if (!abortControllerRef.current?.signal.aborted) {
         setIsTyping(false);
