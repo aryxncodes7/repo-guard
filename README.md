@@ -2,8 +2,12 @@
 
 RepoGuard is a multi-agent repository auditor and security companion that scans GitHub repositories and Pull Requests. It automatically identifies security vulnerabilities, exposes leaked secrets or API credentials, evaluates logic bugs, inspects code styles, and generates documentation verdicts — all powered by Google's Gemini AI models with intelligent fallback across model tiers.
 
-## Setup
-Required environment variable: `VITE_ALLOWED_EMAIL_DOMAINS` (comma-separated list).
+## Security Configuration
+Set `VITE_ALLOWED_EMAIL_DOMAINS` in your `.env` file to control valid email domains.
+
+## Development
+Ensure your backend is running to support the Chatbot AI Companion.
+See `src/types.ts` for data contracts.
 
 ---
 

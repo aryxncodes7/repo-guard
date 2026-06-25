@@ -277,6 +277,8 @@ test("parseUrlOrImplicitPath correctly prefixes URLs", async () => {
   assert.strictEqual(parseUrlOrImplicitPath("http://example.com"), "https://example.com");
   assert.strictEqual(parseUrlOrImplicitPath("facebook/react"), "https://github.com/facebook/react");
   assert.strictEqual(parseUrlOrImplicitPath("invalid...format"), "");
+  assert.strictEqual(parseUrlOrImplicitPath("http://github.com/owner/repo?query=1#hash"), "https://github.com/owner/repo?query=1#hash");
+  assert.strictEqual(parseUrlOrImplicitPath("https://www.github.com/owner/repo"), "https://www.github.com/owner/repo");
 });
 
 test("ChatbotCompanion serializes malformed reportContext without crashing", async () => {
