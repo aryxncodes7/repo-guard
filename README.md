@@ -53,6 +53,12 @@ RepoGuard is built as a single-page application (SPA) backed by a secure proxy s
 
 ```
 repoguard/
+├── agents/
+│   ├── agentUtils.ts               # Core utility functions and Gemini client abstractions
+│   ├── codeReviewAgent.ts          # Line-by-line vulnerability and logic scanner
+│   ├── docsAgent.ts                # Documentation compliance and style evaluator
+│   ├── synthesizerAgent.ts         # Aggregator that compiles final markdown reports
+│   └── triageAgent.ts              # Initial scope and risk metric analyzer
 ├── src/
 │   ├── components/
 │   │   ├── AgentStepper.tsx        # Multi-agent visual progression stepper
@@ -67,7 +73,9 @@ repoguard/
 ├── index.html                      # HTML SPA client entrypoint
 ├── package.json                    # Workspace dependencies, build, and start script hooks
 ├── tsconfig.json                   # Client and server TypeScript compilation config
-└── vite.config.ts                  # Vite client dev server and asset bundler rules
+├── vite.config.ts                  # Vite client dev server and asset bundler rules
+├── vercel.json                     # Vercel deployment and routing configuration
+└── .env.example                    # Template for required environment variables
 ```
 
 ---
