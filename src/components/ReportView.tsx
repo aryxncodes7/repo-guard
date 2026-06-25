@@ -143,7 +143,7 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack }: Repo
         >
           
           {/* Main Verdict Card */}
-          <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-sm relative overflow-hidden group hover:border-slate-300 dark:hover:border-zinc-700 transition-all">
+          <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-sm relative overflow-hidden group hover:border-slate-300 dark:hover:border-zinc-700 transition-all border-l-4 border-red-500">
             <div className={`absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r ${
               activeReviewResult.final_summary.verdict === 'approve' ? 'from-emerald-500 to-teal-400' :
               activeReviewResult.final_summary.verdict === 'request_changes' ? 'from-rose-500 to-orange-400' :
@@ -303,7 +303,7 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack }: Repo
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, delay: 0.15 }}
             whileHover={{ y: -2, boxShadow: "0 12px 30px -10px rgba(0,0,0,0.04)" }}
-            className="p-6 md:p-8 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-sm space-y-5 relative overflow-hidden"
+            className="p-6 md:p-8 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800/80 shadow-sm space-y-5 relative overflow-hidden"
           >
             <div className="flex items-center gap-2 border-b border-slate-100 dark:border-zinc-800 pb-3.5">
               <Layers className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
@@ -322,7 +322,7 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack }: Repo
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, delay: 0.2 }}
             whileHover={{ y: -2, boxShadow: "0 12px 30px -10px rgba(0,0,0,0.04)" }}
-            className="p-6 md:p-8 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-sm space-y-8 relative overflow-hidden"
+            className="p-6 md:p-8 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800/80 shadow-sm space-y-8 relative overflow-hidden"
           >
             <div className="flex items-center gap-2 border-b border-slate-100 dark:border-zinc-800 pb-3.5">
               <FileCode2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
@@ -380,7 +380,7 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack }: Repo
                   <div key={pathName} className="space-y-4">
                     
                     {/* File Group Title */}
-                    <div className="flex items-center gap-2 px-3.5 py-2 bg-slate-100/90 dark:bg-zinc-800/80 border border-slate-200/60 dark:border-zinc-800 rounded-xl text-[11px] font-sans text-slate-700 dark:text-zinc-300 font-bold">
+                    <div className="flex items-center gap-2 text-slate-700 dark:text-zinc-300 font-bold bg-zinc-900 px-4 py-2 rounded-t-lg font-mono text-xs border-b border-zinc-800">
                       <FileCode2 className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
                       <span className="truncate">{pathName}</span>
                     </div>
@@ -441,7 +441,7 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack }: Repo
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, delay: 0.25 }}
             whileHover={{ y: -2, boxShadow: "0 12px 30px -10px rgba(0,0,0,0.04)" }}
-            className="p-6 md:p-8 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-sm space-y-6 relative overflow-hidden"
+            className="p-6 md:p-8 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800/80 shadow-sm space-y-6 relative overflow-hidden"
           >
             <div className="flex items-center gap-2 border-b border-slate-100 dark:border-zinc-800 pb-3.5">
               <BookOpen className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
@@ -501,7 +501,7 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack }: Repo
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, delay: 0.3 }}
             whileHover={{ y: -2, boxShadow: "0 12px 30px -10px rgba(0,0,0,0.04)" }}
-            className="p-6 md:p-8 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-sm space-y-5 relative overflow-hidden"
+            className="p-6 md:p-8 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800/80 shadow-sm space-y-5 relative overflow-hidden"
           >
             <div className="flex items-center gap-2 border-b border-slate-100 dark:border-zinc-800 pb-3.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
