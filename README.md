@@ -6,6 +6,9 @@ RepoGuard is a state-of-the-art multi-agent repository auditor and security comp
 
 ## ✨ Features
 
+- **🔐 Real GitHub OAuth Integration**: Securely connect your GitHub account via a seamless OAuth flow with robust local state wiping on disconnect.
+- **🗃️ Dynamic Repository Grid**: Authenticated users receive a state-flipping dashboard that fetches and filters their live GitHub repositories via the official API for instant audit execution.
+- **🎛️ Repo Health Matrix**: A multi-dimensional scorecard widget in the report view that breaks down security, accessibility, test coverage, and code cleanliness into semantic color-coded progress indicators.
 - **🔍 Comprehensive Security Audits**: Performs full-scope security reviews on actual repository files to spot leaked credentials, logic bugs, and structural flaws.
 - **🤖 Multi-Agent Analysis Pipeline**:
   - **Triage Agent**: Analyzes the size, scope, and initial risk metrics of the codebase.
