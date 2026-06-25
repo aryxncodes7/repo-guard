@@ -33,22 +33,13 @@ const INITIAL_MESSAGE: ChatMessage = {
 
 const generateId = () => typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2);
 
-const PAYLOAD_SANITIZATION_PATTERNS = [
-  /gh[pousr](?:_|%5F)[a-zA-Z0-9]{36}/gi,
-  /github_pat_[a-zA-Z0-9_]{82}/gi,
-  /AIza[0-9A-Za-z_\-]{35}/gi,
-  /AKIA[0-9A-Z]{16}/gi,
-  /(?:sk|rk)_(?:live|test)(?:_|%5F)[0-9a-zA-Z]{24}/gi,
-  /xox[baprs](?:-|%2D)[0-9a-zA-Z]{10,48}/gi
-];
-
 function sanitizePayloadAttributes(text: string): string {
   if (!text) return text;
-  let result = text;
-  for (const pattern of PAYLOAD_SANITIZATION_PATTERNS) {
-    result = result.replace(pattern, '***REDACTED***');
-  }
-  return result;
+  // Use non-regex token length masking to sanitize potential secrets safely
+  return text.split(/(\s+)/).map(token => {
+    if (token.trim().length >= 24) return '***REDACTED***';
+    return token;
+  }).join('');
 }
 const markdownComponents = {
   p: ({ children, node, ...props }: React.HTMLAttributes<HTMLParagraphElement> & { node?: unknown }) => <p className="mb-1.5 last:mb-0 leading-relaxed" {...props}>{children}</p>,

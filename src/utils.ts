@@ -183,6 +183,7 @@ export function parseGithubRepo(repoUrl: string): { owner: string; repo: string 
   if (!repoUrl || repoUrl.length > 2048) return null;
   try {
     const cleanedUrl = repoUrl.trim().replace(/\/$/, "");
+    if (cleanedUrl.startsWith("//")) return null;
     let decodedCleaned: string;
     try {
       decodedCleaned = getNormalizedUrl(cleanedUrl).toLowerCase();
