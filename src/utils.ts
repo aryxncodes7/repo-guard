@@ -37,7 +37,7 @@ export function getSafeHref(href?: string) {
       if (email.length > 254) {
         return undefined;
       }
-      if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$/.test(email)) {
+      if (!/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$/.test(email)) {
         return undefined;
       }
       return `mailto:${email}${parsed.search}`;
@@ -200,10 +200,10 @@ export function parseUrlOrImplicitPath(inputUrl: string): string {
   }
   
   if (inputUrl.startsWith("//")) {
-    return "https:" + inputUrl;
+    return `https:${inputUrl}`;
   }
   
-  const httpsUrl = "https://" + inputUrl;
+  const httpsUrl = `https://${inputUrl}`;
   let canParseHttps = false;
   try {
     new URL(httpsUrl);

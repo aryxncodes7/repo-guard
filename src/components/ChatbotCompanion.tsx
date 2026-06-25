@@ -28,7 +28,7 @@ const INITIAL_MESSAGE: ChatMessage = {
   text: "Hello! I am RepoGuard's Resident Auditor. Ask me about your security scan results, fixing plain-text secrets, resolving vulnerabilities, or modifying repository code structures."
 };
 
-export const sanitize = (val: string) => DOMPurify.sanitize(val || '', { USE_PROFILES: { html: false } });
+export const sanitize = (val: string) => DOMPurify.sanitize(val || '', { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
 
 
 export default function ChatbotCompanion({ activeReportContext }: ChatbotCompanionProps) {
@@ -200,11 +200,15 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
                       ol: ({ children }) => <ol className="list-decimal pl-4 mb-1.5 space-y-0.5">{children}</ol>,
                       li: ({ children }) => <li className="mb-0.5">{children}</li>,
                       strong: ({ children }) => <strong className="font-bold text-slate-900 dark:text-white">{children}</strong>,
-                      a: ({ children, href }) => (
-                        <a href={getSafeHref(href)} target="_blank" rel="noopener noreferrer" className="text-emerald-600 dark:text-emerald-400 hover:underline font-semibold">
-                          {children}
-                        </a>
-                      ),
+                      a: ({ children, href, ...props }: any) => {
+                        const safeUrl = getSafeHref(href);
+                        const isExternal = safeUrl?.startsWith('http');
+                        return (
+                          <a href={safeUrl} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noopener noreferrer" : undefined} className="text-emerald-600 dark:text-emerald-400 hover:underline font-semibold">
+                            {children}
+                          </a>
+                        );
+                      },
                       code: ({ inline, className, children, node, siblingIndex, index, ...props }: any) => {
                         const codeString = String(children || '').replace(/\n$/, '');
                         const isInline = !codeString.includes('\n');

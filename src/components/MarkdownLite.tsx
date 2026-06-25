@@ -64,11 +64,15 @@ export default function MarkdownLite({ text }: MarkdownLiteProps) {
               <span className="flex-1 text-[13px] text-slate-700 dark:text-zinc-300">{children}</span>
             </div>
           ),
-          a: ({ children, href }) => (
-            <a href={getSafeHref(href)} target="_blank" rel="noopener noreferrer" className="text-teal-700 dark:text-teal-400 hover:underline font-semibold">
-              {children}
-            </a>
-          ),
+          a: ({ children, href, ...props }: any) => {
+            const safeUrl = getSafeHref(href);
+            const isExternal = safeUrl?.startsWith('http');
+            return (
+              <a href={safeUrl} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noopener noreferrer" : undefined} className="text-teal-700 dark:text-teal-400 hover:underline font-semibold">
+                {children}
+              </a>
+            );
+          },
           code: ({ inline, className, children, node, siblingIndex, index, ...props }: React.HTMLAttributes<HTMLElement> & { inline?: boolean; node?: any; siblingIndex?: number; index?: number }) => {
             const codeString = String(children || '').replace(/\n$/, '');
             const isInline = typeof inline === 'boolean' ? inline : !codeString.includes('\n');
