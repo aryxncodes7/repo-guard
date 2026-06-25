@@ -266,14 +266,22 @@ export function parseUrlOrImplicitPath(inputUrl: string): string {
     new URL(inputUrl);
     canParseInput = true;
   } catch {}
+  const ALLOWED_DOMAINS = ['github.com', 'www.github.com'];
+
   if (canParseInput) {
     const parsed = new URL(inputUrl);
     if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return "";
+    if (!ALLOWED_DOMAINS.includes(parsed.hostname.toLowerCase())) return "";
     return inputUrl.replace(/^http:/i, "https:");
   }
   
   if (inputUrl.startsWith("//")) {
-    return `https:${inputUrl}`;
+    const testUrl = `https:${inputUrl}`;
+    try {
+      const parsed = new URL(testUrl);
+      if (!ALLOWED_DOMAINS.includes(parsed.hostname.toLowerCase())) return "";
+    } catch { return ""; }
+    return testUrl;
   }
   
   const httpsUrl = `https://${inputUrl}`;

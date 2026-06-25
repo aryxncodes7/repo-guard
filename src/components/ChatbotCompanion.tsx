@@ -7,6 +7,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MessageSquare, Send } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { getSafeHref } from '../utils';
+import rehypeSanitize from 'rehype-sanitize';
 import { CodeIssue, FinalSummary } from '../types';
 
 interface ChatbotCompanionProps {
@@ -93,12 +94,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
   const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-        abortControllerRef.current = null;
-      }
-    };
+    return () => abortControllerRef.current?.abort();
   }, []);
 
   // Clear chat state between audit sessions to prevent privacy leaks
@@ -302,6 +298,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
                   <ReactMarkdown
                     components={markdownComponents}
                     urlTransform={getSafeHref}
+                    rehypePlugins={[rehypeSanitize]}
                   >
                     {m.text}
                   </ReactMarkdown>
