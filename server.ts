@@ -363,14 +363,13 @@ ${repoFilesText}
     
     console.log(`[API Review] Starting multi-agent pipeline for ${normalizedRepoUrl}`);
     
-    console.log(`[API Review] Running Triage Agent...`);
-    const triageOutput = await runTriageAgent(normalizedRepoUrl, prDetailsPrompt, promptContext, activeApiKey);
+    console.log(`[API Review] Running Triage, Code Review, and Docs Agents concurrently...`);
     
-    console.log(`[API Review] Running Code Review Agent...`);
-    const codeReviewOutput = await runCodeReviewAgent(triageOutput, promptContext, activeApiKey);
-    
-    console.log(`[API Review] Running Docs Agent...`);
-    const docsOutput = await runDocsAgent(codeReviewOutput, promptContext, activeApiKey);
+    const [triageOutput, codeReviewOutput, docsOutput] = await Promise.all([
+      runTriageAgent(normalizedRepoUrl, prDetailsPrompt, promptContext, activeApiKey),
+      runCodeReviewAgent(promptContext, activeApiKey),
+      runDocsAgent(promptContext, activeApiKey)
+    ]);
     
     console.log(`[API Review] Running Synthesizer Agent...`);
     const parsedData = await runSynthesizerAgent(triageOutput, codeReviewOutput, docsOutput, activeApiKey);

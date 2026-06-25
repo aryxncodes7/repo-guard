@@ -2,7 +2,6 @@ import { generateContentWithFallback } from "./agentUtils.js";
 import type { GeminiConfig } from "./agentUtils.js";
 
 export async function runCodeReviewAgent(
-  triageOutput: string,
   context: string,
   activeApiKey?: string
 ): Promise<string> {
@@ -10,10 +9,7 @@ export async function runCodeReviewAgent(
 You are the Code Review Agent in a multi-agent AI pipeline.
 Your role is to scan for real code issues, logic bugs, test gaps, and secret leaks line-by-line.
 
-You have been provided with the following initial Triage Analysis:
-${triageOutput}
-
-And the following repository context (file contents/diffs):
+You have been provided with the following repository context (file contents/diffs):
 ${context}
 
 Conduct a highly comprehensive, technically concrete, and premium review of this project. Identify real code issues, logic bugs, test gaps, and secret leaks.
