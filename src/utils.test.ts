@@ -430,6 +430,21 @@ test("ChatbotCompanion AbortController state cleanup on unmount", async () => {
   assert.ok(result.includes("AI Security Companion"), "Should render without crashing");
 });
 
+test("ChatbotCompanion prevents ReDoS on extreme input length payload", async () => {
+  const React = await import("react");
+  const { default: ChatbotCompanion } = await import("./components/ChatbotCompanion.js");
+  const { renderToString } = await import("react-dom/server");
+  
+  // This validates the component can be instantiated even if it receives extreme payload data
+  const result = renderToString(React.createElement(ChatbotCompanion, { 
+    activeReportContext: {
+      repoUrl: "https://github.com/owner/" + "x".repeat(50000),
+      reportData: null
+    } as any
+  }));
+  assert.ok(result.length > 0, "Should handle long strings safely");
+});
+
 test("MarkdownLite truncates input at 100k character boundary", async () => {
   const { default: MarkdownLite } = await import("./components/MarkdownLite.js");
   const { renderToString } = await import("react-dom/server");

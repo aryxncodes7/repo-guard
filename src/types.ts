@@ -61,5 +61,5 @@ export interface AgentProgress {
   name: string;
   description: string;
   status: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }

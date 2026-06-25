@@ -15,9 +15,16 @@ interface AgentStepperProps {
 export default function AgentStepper({ agents = [] }: AgentStepperProps) {
   const { completedCount, progressPercent, hasError } = React.useMemo(() => {
     const safeAgents = agents || [];
-    const errorCount = safeAgents.filter(a => a.status === 'error').length;
-    const count = safeAgents.filter(a => a.status === 'completed').length;
-    const percent = safeAgents.length > 0 ? (count / safeAgents.length) * 100 : 0;
+    const uniqueAgentsMap = new Map();
+    for (const a of safeAgents) {
+      if (!uniqueAgentsMap.has(a.id)) {
+        uniqueAgentsMap.set(a.id, a);
+      }
+    }
+    const uniqueAgents = Array.from(uniqueAgentsMap.values());
+    const errorCount = uniqueAgents.filter(a => a.status === 'error').length;
+    const count = uniqueAgents.filter(a => a.status === 'completed').length;
+    const percent = uniqueAgents.length > 0 ? (count / uniqueAgents.length) * 100 : 0;
     return { completedCount: count, progressPercent: percent, hasError: errorCount > 0 };
   }, [agents]);
 

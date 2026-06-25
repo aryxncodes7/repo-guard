@@ -143,11 +143,16 @@ export function normalizeGithubRepoUrl(rawUrl: unknown): string {
 }
 
 export function normalizePrNumber(rawPrNumber: unknown): string | undefined {
-  if (typeof rawPrNumber !== 'string' && typeof rawPrNumber !== 'number') return undefined;
-  if (rawPrNumber === "") return undefined;
-  if (typeof rawPrNumber === 'string' && !/^\d+$/.test(rawPrNumber)) return undefined;
-  const numeric = Number(rawPrNumber);
-  return Number.isInteger(numeric) && numeric > 0 && numeric <= 1_000_000 ? String(numeric) : undefined;
+  if (typeof rawPrNumber === 'number') {
+    return Number.isInteger(rawPrNumber) && rawPrNumber > 0 && rawPrNumber <= 1_000_000 ? String(rawPrNumber) : undefined;
+  }
+  if (typeof rawPrNumber === 'string') {
+    const trimmed = rawPrNumber.trim();
+    if (trimmed === "" || !/^\d+$/.test(trimmed)) return undefined;
+    const numeric = Number(trimmed);
+    return Number.isInteger(numeric) && numeric > 0 && numeric <= 1_000_000 ? String(numeric) : undefined;
+  }
+  return undefined;
 }
 
 export function parseGithubRepo(repoUrl: string): { owner: string; repo: string } | null {
@@ -155,23 +160,21 @@ export function parseGithubRepo(repoUrl: string): { owner: string; repo: string 
   try {
     const cleanedUrl = repoUrl.trim().replace(/\/$/, "");
     let decodedCleaned = cleanedUrl.toLowerCase();
-    try {
-      decodedCleaned = decodeURIComponent(decodedCleaned);
-    } catch {
-      return null;
-    }
-    // Check traversal patterns both before and after canonicalization
-    if (decodedCleaned.includes("../") || decodedCleaned.includes("%2e%2e%2f") || decodedCleaned.includes("\\") || decodedCleaned.includes("%5c")) {
-      return null;
-    }
-    // Double-decode to catch double-encoded bypasses
-    try {
-      const doubleDecoded = decodeURIComponent(decodedCleaned);
-      if (doubleDecoded.includes("../") || doubleDecoded.includes("\\")) {
+    
+    let prev = "";
+    let iter = 0;
+    while (decodedCleaned !== prev && iter < 5) {
+      prev = decodedCleaned;
+      try {
+        decodedCleaned = decodeURIComponent(decodedCleaned);
+      } catch {
         return null;
       }
-    } catch {
-      // Single decode was sufficient
+      iter++;
+    }
+    
+    if (decodedCleaned.includes("../") || decodedCleaned.includes("\\")) {
+      return null;
     }
     
     const urlToParse = parseUrlOrImplicitPath(cleanedUrl);

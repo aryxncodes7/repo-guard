@@ -104,9 +104,13 @@ export default function MarkdownLite({ text }: MarkdownLiteProps) {
           tagNames: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'ul', 'li', 'a', 'code', 'pre', 'span', 'div'],
           attributes: {
             ...defaultSchema.attributes,
-            'code': ['className'],
-            'span': ['className'],
-            'a': ['href', 'target', 'rel']
+            'code': [...(defaultSchema.attributes?.code || []), 'className'],
+            'span': [...(defaultSchema.attributes?.span || []), 'className'],
+            'a': [...(defaultSchema.attributes?.a || []), 'href', 'target', 'rel']
+          },
+          protocols: {
+            ...defaultSchema.protocols,
+            href: ['http', 'https', 'mailto']
           }
         }]]}
       >
