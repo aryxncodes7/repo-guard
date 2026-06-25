@@ -24,18 +24,26 @@ const STRIP_CHARS_REGEX = /[\s\x00-\x1F\x7F-\x9F]+/g;
 export function getSafeHref(href?: string) {
   if (!href) return undefined;
   if (href.length > 2048) return undefined;
-  // Iteratively decode HTML entities until stable to prevent nested encoding bypass
-  // Capped at 3 iterations with length guard to prevent ReDoS amplification
+  // Iteratively decode HTML entities and URI components until stable to prevent nested encoding bypass
+  // Capped at 10 iterations with length guard to prevent ReDoS amplification and bounds violations
   let decodedHref = href;
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 10; i++) {
     if (decodedHref.length > 2048) return undefined;
     const prev = decodedHref;
+    
     decodedHref = decodedHref
       .replace(HEX_ENTITY_REGEX, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
       .replace(DEC_ENTITY_REGEX, (_, dec) => String.fromCharCode(parseInt(dec, 10)))
       .replace(COLON_ENTITY_REGEX, ':')
       .replace(TAB_ENTITY_REGEX, '\t')
       .replace(NEWLINE_ENTITY_REGEX, '\n');
+      
+    try {
+      decodedHref = decodeURIComponent(decodedHref);
+    } catch (e) {
+      // Ignore malformed URI sequences during recursive unwrap
+    }
+    
     if (decodedHref === prev) break;
     if (decodedHref.length > 2048) return undefined;
   }
