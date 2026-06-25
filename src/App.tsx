@@ -849,7 +849,7 @@ export default function App() {
                   animate={{ opacity: 1, x: 0, scale: 1 }}
                   exit={{ opacity: 0, x: -60, scale: 0.98 }}
                   transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                  className="w-full scale-125 origin-center"
+                  className="w-full scale-110 origin-center"
                 >
                   <AgentStepper agents={agents} />
                 </motion.div>
