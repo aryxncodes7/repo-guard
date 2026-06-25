@@ -47,11 +47,11 @@ test("normalizeGithubRepoUrl parses valid and invalid URLs", () => {
   assert.strictEqual(normalizeGithubRepoUrl("http://github.com/owner/repo"), "https://github.com/owner/repo");
   assert.strictEqual(normalizeGithubRepoUrl("https://github.com/owner"), "");
   assert.strictEqual(normalizeGithubRepoUrl("https://github.com/"), "");
-  assert.strictEqual(normalizeGithubRepoUrl("https://gitlab.com/owner/repo"), "https://gitlab.com/owner/repo");
+  assert.strictEqual(normalizeGithubRepoUrl("https://gitlab.com/owner/repo"), "");
 
   // Advanced URL parsing edge cases
   assert.strictEqual(normalizeGithubRepoUrl("https://github.com:443/owner/repo#fragment"), "https://github.com/owner/repo");
-  assert.strictEqual(normalizeGithubRepoUrl("https://github.com.example.com/owner/repo"), "https://github.com.example.com/owner/repo");
+  assert.strictEqual(normalizeGithubRepoUrl("https://github.com.example.com/owner/repo"), "");
 });
 
 test("normalizePrNumber formats numbers and handles invalid values", () => {
@@ -332,8 +332,8 @@ test("parseUrlOrImplicitPath correctly prefixes URLs", async () => {
   const { parseUrlOrImplicitPath } = await import("./utils.js");
   assert.strictEqual(parseUrlOrImplicitPath("https://github.com"), "https://github.com");
   assert.strictEqual(parseUrlOrImplicitPath("github.com/owner/repo"), "https://github.com/owner/repo");
-  assert.strictEqual(parseUrlOrImplicitPath("//example.com"), "https://example.com");
-  assert.strictEqual(parseUrlOrImplicitPath("http://example.com"), "https://example.com");
+  assert.strictEqual(parseUrlOrImplicitPath("//example.com"), "");
+  assert.strictEqual(parseUrlOrImplicitPath("http://example.com"), "");
   assert.strictEqual(parseUrlOrImplicitPath("facebook/react"), "https://github.com/facebook/react");
   assert.strictEqual(parseUrlOrImplicitPath("invalid...format"), "");
   assert.strictEqual(parseUrlOrImplicitPath("http://github.com/owner/repo?query=1#hash"), "https://github.com/owner/repo?query=1#hash");
