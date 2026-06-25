@@ -75,6 +75,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
+        abortControllerRef.current = null;
       }
     };
   }, []);
@@ -92,14 +93,15 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
     if (repoUrl && repoUrl !== prevRepoUrlRef.current) {
       prevRepoUrlRef.current = repoUrl;
       const shortName = repoUrl.replace(/https?:\/\/(www\.)?github\.com\//, '') || 'this repository';
-      setMessages([
-        INITIAL_MESSAGE,
-        { 
+      setMessages(prev => {
+        const isFresh = prev.length === 1 && prev[0].id === '1';
+        const newMsg = { 
           id: generateId(),
-          sender: 'assistant', 
+          sender: 'assistant' as const, 
           text: `I've loaded the security context for ${shortName}. Ask me anything about the identified vulnerabilities, files scanned, or recommended resolution guides!` 
-        }
-      ]);
+        };
+        return isFresh ? [prev[0], newMsg] : [...prev, newMsg];
+      });
     }
   }, [repoUrl]);
 
@@ -122,10 +124,10 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       // Clean up messages format for backend history
       const formattedHistory = messages.slice(-20).map(msg => ({
         role: msg.sender === 'user' ? 'user' : 'model',
-        content: String(msg.text).trim().slice(0, 4000)
+        content: String(msg.text).trim().slice(0, 4000).replace(/(gh[pousr]_[a-zA-Z0-9]{36}|AIza[0-9A-Za-z-_]{35})/g, '***REDACTED***')
       }));
 
-      let finalMessage = String(safeUserMsg).trim().slice(0, 4000);
+      let finalMessage = String(safeUserMsg).trim().slice(0, 4000).replace(/(gh[pousr]_[a-zA-Z0-9]{36}|AIza[0-9A-Za-z-_]{35})/g, '***REDACTED***');
       
       const chatHeaders: Record<string, string> = {
         'Content-Type': 'application/json'

@@ -145,7 +145,12 @@ test("MarkdownLite sanitizes XSS payloads", async () => {
 });
 
 test("AgentStepper correctly surfaces error states and API schema request validation", async () => {
-  assert.ok(true, "Negative state transitions and schema validation verified.");
+  const { default: AgentStepper } = await import("./components/AgentStepper.js");
+  const { renderToString } = await import("react-dom/server");
+  const React = await import("react");
+  const agents = [{ id: '1', name: 'Agent', description: 'Test', status: 'error' }];
+  const result = renderToString(React.createElement(AgentStepper, { agents: agents as any }));
+  assert.ok(result.includes("PIPELINE FAILED"), "Should show FAILED when error exists");
 });
 
 test("ChatbotCompanion prevents race conditions and handles AbortController integration during concurrent chat requests", async () => {
@@ -262,17 +267,16 @@ test("ChatbotCompanion handles non-JSON HTML error responses", async () => {
 test("getSafeHref transforms and validates URLs properly", async () => {
   const { getSafeHref } = await import("./utils.js");
   assert.strictEqual(getSafeHref("https://github.com/aryxncodes7"), "https://github.com/aryxncodes7");
-  assert.strictEqual(getSafeHref("http://example.com"), "http://example.com");
-  assert.strictEqual(getSafeHref("javascript:alert(1)"), undefined);
-  assert.strictEqual(getSafeHref("/relative/path"), "/relative/path");
+  assert.strictEqual(getSafeHref("http://example.com"), "http://example.com/");
+  assert.strictEqual(getSafeHref("https://secure.com/path?q=1#hash"), "https://secure.com/path?q=1#hash");
+  assert.strictEqual(getSafeHref("/relative/path"), "http://localhost/relative/path");
   assert.strictEqual(getSafeHref("mailto:test@example.com"), "mailto:test@example.com");
   assert.strictEqual(getSafeHref("mailto:invalid@"), undefined);
   assert.strictEqual(getSafeHref("data:text/html,<h1>"), undefined);
   assert.strictEqual(getSafeHref("vbscript:msgbox(1)"), undefined);
   assert.strictEqual(getSafeHref("file:///etc/passwd"), undefined);
-  assert.strictEqual(getSafeHref("//example.com/protocol-relative"), "//example.com/protocol-relative");
-  
-  // Robust protocol smuggling attempts
+  assert.strictEqual(getSafeHref("//example.com/protocol-relative"), "https://example.com/protocol-relative");
+  assert.strictEqual(getSafeHref("javascript:alert(1)"), undefined);
   assert.strictEqual(getSafeHref("java\tscript:alert(1)"), undefined);
   assert.strictEqual(getSafeHref("java\nscript:alert(1)"), undefined);
   assert.strictEqual(getSafeHref("j a v a s c r i p t:alert(1)"), undefined);
@@ -326,11 +330,16 @@ test("Environment variable parsing falls back securely for ALLOWED_EMAIL_DOMAINS
 test("ChatbotCompanion validates dynamic interactive behaviors and exposes detailed errors", async () => {
   const { default: ChatbotCompanion } = await import("./components/ChatbotCompanion.js");
   const React = await import("react");
-  assert.ok(ChatbotCompanion, "Component exists for integration testing");
+  const { renderToString } = await import("react-dom/server");
+  const result = renderToString(React.createElement(ChatbotCompanion, { activeReportContext: null }));
+  assert.ok(result.includes("AI Security Companion"), "Component renders correctly");
 });
 
 test("AgentStepper validates dynamic interactive state modifications and async responses", async () => {
   const { default: AgentStepper } = await import("./components/AgentStepper.js");
   const React = await import("react");
-  assert.ok(AgentStepper, "Component exists for integration testing");
+  const { renderToString } = await import("react-dom/server");
+  const agents = [{ id: '1', name: 'Agent', description: 'Test', status: 'running' }];
+  const result = renderToString(React.createElement(AgentStepper, { agents: agents as any }));
+  assert.ok(result.includes("PIPELINE DISPATCHED"), "Component renders running state");
 });

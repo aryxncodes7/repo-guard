@@ -61,7 +61,7 @@ export function getSafeHref(href?: string) {
       const searchStr = safeParams.toString();
       return searchStr ? `mailto:${email}?${searchStr}` : `mailto:${email}`;
     }
-    return ['http:', 'https:'].includes(parsed.protocol) ? href : undefined;
+    return ['http:', 'https:'].includes(parsed.protocol) ? parsed.href : undefined;
   } catch {
     return undefined;
   }
