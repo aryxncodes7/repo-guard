@@ -145,6 +145,48 @@ export default function App() {
   });
 
   const [repoSearchQuery, setRepoSearchQuery] = useState('');
+  const [repositories, setRepositories] = useState<{ name: string; private: boolean; html_url: string; full_name: string }[]>([]);
+  const [reposLoading, setReposLoading] = useState(false);
+
+  // Fetch real GitHub repositories when authenticated
+  useEffect(() => {
+    if (githubConnected) {
+      const fetchRepos = async () => {
+        setReposLoading(true);
+        try {
+          const token = githubToken || localStorage.getItem('repoguard-github-token-custom');
+          let url = 'https://api.github.com/user/repos?per_page=50&sort=updated';
+          const headers: Record<string, string> = {
+            'Accept': 'application/vnd.github.v3+json'
+          };
+          
+          if (token) {
+            headers['Authorization'] = `token ${token}`;
+          } else if (githubConnectedUser) {
+            // Fallback for public repos if no token is available
+            url = `https://api.github.com/users/${githubConnectedUser}/repos?per_page=50&sort=updated`;
+          }
+
+          const response = await fetch(url, { headers });
+          if (response.ok) {
+            const data = await response.json();
+            setRepositories(data);
+          } else {
+            setRepositories([]);
+          }
+        } catch (err) {
+          console.error("Failed to fetch repositories:", err);
+          setRepositories([]);
+        } finally {
+          setReposLoading(false);
+        }
+      };
+      
+      fetchRepos();
+    } else {
+      setRepositories([]);
+    }
+  }, [githubConnected, githubConnectedUser, githubToken]);
 
   // Real OAuth flow handler
   const handleConnectGithub = () => {
@@ -911,37 +953,39 @@ export default function App() {
                             />
                           </div>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
-                            {[
-                              { name: 'repo-guard', public: true },
-                              { name: 'nextjs-portfolio', public: true },
-                              { name: 'api-service', public: false },
-                              { name: 'auth-server', public: false },
-                            ].filter(repo => repo.name.toLowerCase().includes(repoSearchQuery.toLowerCase())).map((repo) => (
-                              <div key={repo.name} className="flex flex-col p-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 hover:border-emerald-500/30 transition-all group">
-                                <div className="flex items-center justify-between mb-3">
-                                  <span className="font-bold text-sm text-slate-800 dark:text-zinc-200 font-sans truncate pr-2">{repo.name}</span>
-                                  <span className={`text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5 rounded border ${repo.public ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/50' : 'bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 border-slate-200 dark:border-zinc-700'}`}>
-                                    {repo.public ? 'Public' : 'Private'}
-                                  </span>
+                          {reposLoading ? (
+                            <div className="flex flex-col items-center justify-center p-8 text-slate-500 dark:text-zinc-400 font-sans animate-pulse">
+                              <span className="text-2xl mb-2">⚡</span>
+                              <span className="text-xs font-bold uppercase tracking-widest">Fetching live repositories...</span>
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
+                              {repositories.filter(repo => repo.name.toLowerCase().includes(repoSearchQuery.toLowerCase())).map((repo) => (
+                                <div key={repo.full_name || repo.name} className="flex flex-col p-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 hover:border-emerald-500/30 transition-all group">
+                                  <div className="flex items-center justify-between mb-3">
+                                    <span className="font-bold text-sm text-slate-800 dark:text-zinc-200 font-sans truncate pr-2" title={repo.name}>{repo.name}</span>
+                                    <span className={`text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5 rounded border ${!repo.private ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/50' : 'bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 border-slate-200 dark:border-zinc-700'}`}>
+                                      {!repo.private ? 'Public' : 'Private'}
+                                    </span>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setRepoUrl(repo.html_url);
+                                      // Trigger form submit directly
+                                      setTimeout(() => {
+                                        const form = document.getElementById('repo-review-form') as HTMLFormElement;
+                                        if (form) form.requestSubmit();
+                                      }, 0);
+                                    }}
+                                    className="w-full mt-auto py-1.5 rounded-lg bg-slate-50 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 font-sans text-xs font-bold border border-slate-200 dark:border-zinc-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-200 dark:hover:border-emerald-800 transition-all flex items-center justify-center gap-1.5 group-hover:shadow-sm"
+                                  >
+                                    <span>🚀</span> Run Security Audit
+                                  </button>
                                 </div>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setRepoUrl(`https://github.com/${githubConnectedUser}/${repo.name}`);
-                                    // Trigger form submit directly
-                                    setTimeout(() => {
-                                      const form = document.getElementById('repo-review-form') as HTMLFormElement;
-                                      if (form) form.requestSubmit();
-                                    }, 0);
-                                  }}
-                                  className="w-full mt-auto py-1.5 rounded-lg bg-slate-50 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 font-sans text-xs font-bold border border-slate-200 dark:border-zinc-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-200 dark:hover:border-emerald-800 transition-all flex items-center justify-center gap-1.5 group-hover:shadow-sm"
-                                >
-                                  <span>🚀</span> Run Security Audit
-                                </button>
-                              </div>
-                            ))}
-                          </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
