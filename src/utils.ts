@@ -25,16 +25,7 @@ export const ALLOWED_EMAIL_DOMAINS = parsedDomains.length > 0
 
 const MAX_REPO_URL_LENGTH = 200;
 
-const HEX_ENTITY_REGEX_1 = /&#x([0-9a-fA-F]+);/gi;
-const HEX_ENTITY_REGEX_2 = /&#x([0-9a-fA-F]+)/gi;
-const DEC_ENTITY_REGEX_1 = /&#(\d+);/g;
-const DEC_ENTITY_REGEX_2 = /&#(\d+)/g;
-const COLON_ENTITY_REGEX_1 = /&colon;/gi;
-const COLON_ENTITY_REGEX_2 = /&colon/gi;
-const TAB_ENTITY_REGEX_1 = /&tab;/gi;
-const TAB_ENTITY_REGEX_2 = /&tab/gi;
-const NEWLINE_ENTITY_REGEX_1 = /&newline;/gi;
-const NEWLINE_ENTITY_REGEX_2 = /&newline/gi;
+const ENTITY_REGEX = /&(?:#x([0-9a-fA-F]+);?|#(\d+);?|colon;?|tab;?|newline;?)/gi;
 const STRIP_CHARS_REGEX = /[\s\x00-\x1F\x7F-\x9F]/g;
 
 export function getSafeHref(href?: string) {
@@ -45,23 +36,24 @@ export function getSafeHref(href?: string) {
   let decodedHref = href;
   if (decodedHref.length > 2048) return undefined;
   
-  decodedHref = decodedHref
-    .replace(HEX_ENTITY_REGEX_1, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
-    .replace(HEX_ENTITY_REGEX_2, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
-    .replace(DEC_ENTITY_REGEX_1, (_, dec) => String.fromCharCode(parseInt(dec, 10)))
-    .replace(DEC_ENTITY_REGEX_2, (_, dec) => String.fromCharCode(parseInt(dec, 10)))
-    .replace(COLON_ENTITY_REGEX_1, ':')
-    .replace(COLON_ENTITY_REGEX_2, ':')
-    .replace(TAB_ENTITY_REGEX_1, '\t')
-    .replace(TAB_ENTITY_REGEX_2, '\t')
-    .replace(NEWLINE_ENTITY_REGEX_1, '\n')
-    .replace(NEWLINE_ENTITY_REGEX_2, '\n');
+  decodedHref = decodedHref.replace(ENTITY_REGEX, (match, hex, dec) => {
+    if (hex) return String.fromCharCode(parseInt(hex, 16));
+    if (dec) return String.fromCharCode(parseInt(dec, 10));
+    const lower = match.toLowerCase();
+    if (lower.startsWith('&colon')) return ':';
+    if (lower.startsWith('&tab')) return '\t';
+    if (lower.startsWith('&newline')) return '\n';
+    return match;
+  });
     
   try {
     decodedHref = safeDecode(decodedHref);
   } catch (e) {}
   try {
     const strippedHref = decodedHref.replace(STRIP_CHARS_REGEX, '');
+    if (/^(?:javascript|vbscript|data):/i.test(strippedHref)) {
+      return undefined;
+    }
     let absoluteHref = strippedHref;
     if (strippedHref.startsWith('//')) {
       absoluteHref = 'https:' + strippedHref;
@@ -223,7 +215,7 @@ export function cleanClientRepoUrl(repoUrl: string): string {
   let decoded = safeDecode(trimmed);
   // Detect and reject relative path traversals and backslashes
   const lowerDecoded = decoded.toLowerCase();
-  if (lowerDecoded.includes("../") || lowerDecoded.includes("%2e%2e%2f") || lowerDecoded.includes("\\") || lowerDecoded.includes("%5c")) {
+  if (lowerDecoded.includes("..") || lowerDecoded.includes("%2e") || lowerDecoded.includes("\\") || lowerDecoded.includes("%5c")) {
     return "https://github.com/";
   }
 
