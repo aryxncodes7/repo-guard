@@ -178,7 +178,7 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack }: Repo
                     <span className="font-extrabold text-base tracking-wide text-rose-600 dark:text-rose-400 block leading-none">
                       QUARANTINED
                     </span>
-                    <span className="text-xs text-slate-500 dark:text-zinc-400 font-medium mt-1.5 block">Critical security leakage detected</span>
+                    <span className="text-xs text-slate-500 dark:text-zinc-400 font-medium mt-1.5 block">Critical code issues or vulnerabilities detected</span>
                   </div>
                 </>
               )}
