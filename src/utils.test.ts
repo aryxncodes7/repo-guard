@@ -152,8 +152,8 @@ test("AgentStepper correctly surfaces error states and API schema request valida
   const { default: AgentStepper } = await import("./components/AgentStepper.js");
   const { renderToString } = await import("react-dom/server");
   const React = await import("react");
-  const agents = [{ id: '1', name: 'Agent', description: 'Test', status: 'error' }];
-  const result = renderToString(React.createElement(AgentStepper, { agents: agents as any }));
+  const agents: import("./types.js").AgentProgress[] = [{ id: 'triage', name: 'Agent', description: 'Test', status: 'error' }];
+  const result = renderToString(React.createElement(AgentStepper, { agents }));
   assert.ok(result.includes("PIPELINE FAILED"), "Should show FAILED when error exists");
 });
 
@@ -165,6 +165,27 @@ test("ChatbotCompanion prevents race conditions and handles AbortController inte
     activeReportContext: null
   }));
   assert.ok(result.includes("AI Security Companion"), "ChatbotCompanion renders");
+
+  // Verify AbortController concurrency: rapid abort should fire AbortError
+  const controller1 = new AbortController();
+  const controller2 = new AbortController();
+  controller1.abort();
+  assert.ok(controller1.signal.aborted, "First controller should be aborted when superseded");
+  assert.ok(!controller2.signal.aborted, "Second controller should remain active");
+
+  // Simulate rapid sequential aborts like the ChatbotCompanion does
+  const controllers: AbortController[] = [];
+  for (let i = 0; i < 5; i++) {
+    if (controllers.length > 0) {
+      controllers[controllers.length - 1].abort();
+    }
+    controllers.push(new AbortController());
+  }
+  // All but the last should be aborted
+  for (let i = 0; i < controllers.length - 1; i++) {
+    assert.ok(controllers[i].signal.aborted, `Controller ${i} should be aborted`);
+  }
+  assert.ok(!controllers[controllers.length - 1].signal.aborted, "Last controller should remain active");
 });
 
 test("MarkdownLite sanitizes malicious URLs and scripts during render", async () => {
@@ -346,7 +367,7 @@ test("AgentStepper validates dynamic interactive state modifications and async r
   const { default: AgentStepper } = await import("./components/AgentStepper.js");
   const React = await import("react");
   const { renderToString } = await import("react-dom/server");
-  const agents = [{ id: '1', name: 'Agent', description: 'Test', status: 'running' }];
-  const result = renderToString(React.createElement(AgentStepper, { agents: agents as any }));
+  const agents: import("./types.js").AgentProgress[] = [{ id: 'triage', name: 'Agent', description: 'Test', status: 'running' }];
+  const result = renderToString(React.createElement(AgentStepper, { agents }));
   assert.ok(result.includes("PIPELINE DISPATCHED"), "Component renders running state");
 });

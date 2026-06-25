@@ -24,11 +24,18 @@ const STRIP_CHARS_REGEX = /[\s\x00-\x1F\x7F-\x9F]+/g;
 export function getSafeHref(href?: string) {
   if (!href) return undefined;
   if (href.length > 2048) return undefined;
-  const decodedHref = href.replace(HEX_ENTITY_REGEX, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
-                          .replace(DEC_ENTITY_REGEX, (_, dec) => String.fromCharCode(parseInt(dec, 10)))
-                          .replace(COLON_ENTITY_REGEX, ':')
-                          .replace(TAB_ENTITY_REGEX, '\t')
-                          .replace(NEWLINE_ENTITY_REGEX, '\n');
+  // Iteratively decode HTML entities until stable to prevent nested encoding bypass
+  let decodedHref = href;
+  for (let i = 0; i < 5; i++) {
+    const prev = decodedHref;
+    decodedHref = decodedHref
+      .replace(HEX_ENTITY_REGEX, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+      .replace(DEC_ENTITY_REGEX, (_, dec) => String.fromCharCode(parseInt(dec, 10)))
+      .replace(COLON_ENTITY_REGEX, ':')
+      .replace(TAB_ENTITY_REGEX, '\t')
+      .replace(NEWLINE_ENTITY_REGEX, '\n');
+    if (decodedHref === prev) break;
+  }
   try {
     const strippedHref = decodedHref.replace(STRIP_CHARS_REGEX, '');
     let absoluteHref = strippedHref;
@@ -96,7 +103,12 @@ export function normalizeGithubRepoUrl(rawUrl: unknown): string {
 
   // Reject relative paths, double dots, or backslashes
   let decodedUrl = repoUrl.toLowerCase();
-  try { decodedUrl = decodeURIComponent(decodedUrl); } catch {}
+  try {
+    decodedUrl = decodeURIComponent(decodedUrl);
+  } catch {
+    // Malformed percent-encoding — reject the input
+    return "";
+  }
   if (decodedUrl.includes("../") || decodedUrl.includes("%2e%2e%2f") || decodedUrl.includes("\\") || decodedUrl.includes("%5c")) {
     return "";
   }

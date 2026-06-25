@@ -123,13 +123,16 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
 
     try {
       // Clean up messages format for backend history
+      // NOTE: Client-side redaction is defense-in-depth only.
+      // Primary secret redaction is enforced server-side in server.ts /api/chat handler.
+      const SECRET_REDACTION_REGEX = /(gh[pousr]_[a-zA-Z0-9]{36}|AIza[0-9A-Za-z-_]{35})/g;
       const historyToKeep = messages.length > 20 ? [messages[0], ...messages.slice(-19)] : messages;
       const formattedHistory = historyToKeep.map(msg => ({
         role: msg.sender === 'user' ? 'user' : 'model',
-        content: String(msg.text).trim().slice(0, 4000).replace(/(gh[pousr]_[a-zA-Z0-9]{36}|AIza[0-9A-Za-z-_]{35})/g, '***REDACTED***')
+        content: String(msg.text).trim().slice(0, 4000).replace(SECRET_REDACTION_REGEX, '***REDACTED***')
       }));
 
-      let finalMessage = String(safeUserMsg).trim().slice(0, 4000).replace(/(gh[pousr]_[a-zA-Z0-9]{36}|AIza[0-9A-Za-z-_]{35})/g, '***REDACTED***');
+      let finalMessage = String(safeUserMsg).trim().slice(0, 4000).replace(SECRET_REDACTION_REGEX, '***REDACTED***');
       
       const chatHeaders: Record<string, string> = {
         'Content-Type': 'application/json'
