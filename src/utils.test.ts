@@ -274,6 +274,12 @@ test("getSafeHref transforms and validates URLs properly", async () => {
   assert.strictEqual(getSafeHref("java\nscript:alert(1)"), undefined);
   assert.strictEqual(getSafeHref("j a v a s c r i p t:alert(1)"), undefined);
   assert.strictEqual(getSafeHref("java\x00script:alert(1)"), undefined);
+
+  // HTML entity encoding attacks
+  assert.strictEqual(getSafeHref("javascript&colon;alert(1)"), undefined);
+  assert.strictEqual(getSafeHref("javascript&#58;alert(1)"), undefined);
+  assert.strictEqual(getSafeHref("javascript&#x3a;alert(1)"), undefined);
+  assert.strictEqual(getSafeHref("javascript&colonalert(1)"), undefined);
 });
 
 test("parseUrlOrImplicitPath correctly prefixes URLs", async () => {

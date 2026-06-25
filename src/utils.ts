@@ -17,7 +17,8 @@ const MAX_REPO_URL_LENGTH = 200;
 export function getSafeHref(href?: string) {
   if (!href) return undefined;
   if (href.length > 2048) return undefined;
-  if (/^(javascript|data|vbscript|file):/i.test(href.replace(/[\s\x00-\x1F\x7F-\x9F]+/g, ''))) {
+  const decodedHref = href.replace(/&#(?:x0*3a|0*58);?|&colon;?/gi, ':');
+  if (/^(javascript|data|vbscript|file):/i.test(decodedHref.replace(/[\s\x00-\x1F\x7F-\x9F]+/g, ''))) {
     return undefined;
   }
   try {
@@ -150,12 +151,13 @@ export function cleanClientRepoUrl(repoUrl: string): string {
 
   let decoded: string;
   try {
-    decoded = decodeURIComponent(trimmed).toLowerCase();
+    decoded = decodeURIComponent(trimmed);
   } catch {
     return "https://github.com/";
   }
   // Detect and reject relative path traversals and backslashes
-  if (decoded.includes("..") || decoded.includes("\\") || decoded.includes("%2e%2e") || decoded.includes("%5c")) {
+  const lowerDecoded = decoded.toLowerCase();
+  if (lowerDecoded.includes("..") || lowerDecoded.includes("\\") || lowerDecoded.includes("%2e%2e") || lowerDecoded.includes("%5c")) {
     return "https://github.com/";
   }
 
