@@ -256,7 +256,16 @@ export default function App() {
 
         if (!response.ok) {
           responseCodeStatus = `HTTP ${response.status} ${response.statusText || 'Internal Server Error'}`;
-          throw new Error(`The backend endpoint returned status: ${response.status}`);
+          let errorMsg = `The backend endpoint returned status: ${response.status}`;
+          try {
+            const errData = await response.json();
+            if (errData && errData.message) {
+              errorMsg = errData.message;
+            }
+          } catch (e) {
+            // fallback to generic message if parsing fails
+          }
+          throw new Error(errorMsg);
         }
 
         const data = await response.json() as ReviewResponse;
