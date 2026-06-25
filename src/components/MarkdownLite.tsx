@@ -85,6 +85,7 @@ const markdownComponents = {
 
 export default function MarkdownLite({ text }: MarkdownLiteProps) {
   if (!text) return null;
+  const safeText = String(text).slice(0, 100000);
 
   return (
     <div className="space-y-3.5 text-sm leading-relaxed text-slate-800 dark:text-zinc-200">
@@ -92,7 +93,7 @@ export default function MarkdownLite({ text }: MarkdownLiteProps) {
         urlTransform={getSafeHref}
         components={markdownComponents}
       >
-        {text}
+        {safeText}
       </ReactMarkdown>
     </div>
   );

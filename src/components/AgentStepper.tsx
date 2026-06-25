@@ -13,9 +13,12 @@ interface AgentStepperProps {
 }
 
 export default function AgentStepper({ agents = [] }: AgentStepperProps) {
-  const safeAgents = agents || [];
-  const completedCount = safeAgents.filter(a => a.status === 'completed' || a.status === 'error').length;
-  const progressPercent = safeAgents.length > 0 ? (completedCount / safeAgents.length) * 100 : 0;
+  const { completedCount, progressPercent } = React.useMemo(() => {
+    const safeAgents = agents || [];
+    const count = safeAgents.filter(a => a.status === 'completed' || a.status === 'error').length;
+    const percent = safeAgents.length > 0 ? (count / safeAgents.length) * 100 : 0;
+    return { completedCount: count, progressPercent: percent };
+  }, [agents]);
 
   return (
     <div className="max-w-xl w-full mx-auto space-y-6 pt-6 pb-12">

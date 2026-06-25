@@ -138,8 +138,8 @@ export default function App() {
   const [scanDepth, setScanDepth] = useState<string>(() => {
     return localStorage.getItem('repoguard-scan-depth') || 'standard';
   });
-  const [geminiKey, setGeminiKey] = useState<string>(() => {
-    return localStorage.getItem('repoguard-gemini-key') || '';
+  const [apiKey, setApiKey] = useState<string>(() => {
+    return sessionStorage.getItem('repoguard-gemini-key') || '';
   });
   const [githubToken, setGithubToken] = useState<string>(() => {
     return localStorage.getItem('repoguard-github-token-custom') || '';
@@ -240,7 +240,7 @@ export default function App() {
     const reviewHeaders: Record<string, string> = {
       'Content-Type': 'application/json'
     };
-    if (geminiKey) reviewHeaders['x-api-key'] = geminiKey;
+    if (apiKey) reviewHeaders['x-api-key'] = apiKey;
     if (githubToken) reviewHeaders['x-github-token'] = githubToken;
 
     const requestBody = {
@@ -438,10 +438,10 @@ export default function App() {
                     id="settings-gemini-key"
                     type="password"
                     placeholder="AIzaSy..."
-                    value={geminiKey}
+                    value={apiKey}
                     onChange={(e) => {
-                      setGeminiKey(e.target.value);
-                      localStorage.setItem('repoguard-gemini-key', e.target.value);
+                      setApiKey(e.target.value);
+                      sessionStorage.setItem('repoguard-gemini-key', e.target.value);
                     }}
                     className="w-full px-3 py-1.5 text-xs bg-white dark:bg-zinc-900 dark:text-zinc-200 border border-slate-300 dark:border-zinc-700 focus:border-emerald-500 rounded-lg text-slate-800 focus:outline-none transition font-sans"
                   />

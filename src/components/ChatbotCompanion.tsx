@@ -120,7 +120,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
 
     try {
       // Clean up messages format for backend history
-      const formattedHistory = messages.map(msg => ({
+      const formattedHistory = messages.slice(-20).map(msg => ({
         role: msg.sender === 'user' ? 'user' : 'model',
         content: String(msg.text).trim().slice(0, 4000)
       }));
@@ -130,7 +130,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       const chatHeaders: Record<string, string> = {
         'Content-Type': 'application/json'
       };
-      const customApiKey = localStorage.getItem('repoguard-gemini-key');
+      const customApiKey = sessionStorage.getItem('repoguard-gemini-key');
       if (customApiKey) {
         chatHeaders['x-api-key'] = customApiKey;
       }

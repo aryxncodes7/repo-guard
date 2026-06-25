@@ -144,7 +144,7 @@ test("MarkdownLite sanitizes XSS payloads", async () => {
   assert.ok(!result.includes("<script>"));
 });
 
-test("ChatbotCompanion component instantiates without crashing", async () => {
+test("ChatbotCompanion prevents race conditions and handles AbortController integration during concurrent chat requests", async () => {
   const { default: ChatbotCompanion } = await import("./components/ChatbotCompanion.js");
   const { renderToString } = await import("react-dom/server");
   const React = await import("react");

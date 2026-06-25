@@ -209,6 +209,7 @@ export function getShortRepoName(repoUrl: string): string {
 }
 
 export function parseUrlOrImplicitPath(inputUrl: string): string {
+  if (inputUrl.includes("..")) return "";
   let canParseInput = false;
   try {
     new URL(inputUrl);
