@@ -41,6 +41,9 @@ export function getSafeHref(href?: string) {
   }
   try {
     const strippedHref = decodedHref.replace(STRIP_CHARS_REGEX, '');
+    if (/^(?:javascript|vbscript|data):/i.test(strippedHref)) {
+      return undefined;
+    }
     let absoluteHref = strippedHref;
     if (strippedHref.startsWith('//')) {
       absoluteHref = 'https:' + strippedHref;

@@ -93,7 +93,9 @@ const markdownComponents = {
 
 export default function MarkdownLite({ text }: MarkdownLiteProps) {
   if (!text) return null;
-  const safeText = String(text).slice(0, 100000);
+  const safeText = React.useMemo(() => {
+    return String(text).slice(0, 100000);
+  }, [text]);
 
   return (
     <div className="space-y-3.5 text-sm leading-relaxed text-slate-800 dark:text-zinc-200">

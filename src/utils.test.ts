@@ -336,6 +336,12 @@ test("parseUrlOrImplicitPath correctly prefixes URLs", async () => {
   assert.strictEqual(parseUrlOrImplicitPath("https://www.github.com/owner/repo"), "https://www.github.com/owner/repo");
 });
 
+test("parseUrlOrImplicitPath parses non-repo paths and handles edge cases securely", async () => {
+  const { parseUrlOrImplicitPath } = await import("./utils.js");
+  assert.equal(parseUrlOrImplicitPath("just a string"), "");
+  assert.equal(parseUrlOrImplicitPath(""), "");
+  assert.equal(parseUrlOrImplicitPath("   "), "");
+});
 test("ChatbotCompanion serializes malformed reportContext without crashing", async () => {
   const { default: ChatbotCompanion } = await import("./components/ChatbotCompanion.js");
   const { renderToString } = await import("react-dom/server");

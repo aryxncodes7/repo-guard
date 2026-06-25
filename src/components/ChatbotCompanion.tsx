@@ -25,7 +25,22 @@ type ChatMessage = {
 
 // NOTE: Client-side redaction is defense-in-depth only.
 // Primary secret redaction is enforced server-side in server.ts /api/chat handler.
-const SECRET_REDACTION_REGEX = /(gh[pousr](?:_|%5F)[a-zA-Z0-9]{36}|AIza[0-9A-Za-z-_]{35}|AKIA[0-9A-Z]{16}|(?:sk|rk)_(?:live|test)(?:_|%5F)[0-9a-zA-Z]{24}|xox[baprs](?:-|%2D)[0-9a-zA-Z]{10,48})/gi;
+const REDACTION_PATTERNS = [
+  /gh[pousr](?:_|%5F)[a-zA-Z0-9]{36}/gi,
+  /AIza[0-9A-Za-z-_]{35}/gi,
+  /AKIA[0-9A-Z]{16}/gi,
+  /(?:sk|rk)_(?:live|test)(?:_|%5F)[0-9a-zA-Z]{24}/gi,
+  /xox[baprs](?:-|%2D)[0-9a-zA-Z]{10,48}/gi
+];
+
+function redactSecrets(text: string): string {
+  if (!text) return text;
+  let result = text;
+  for (const pattern of REDACTION_PATTERNS) {
+    result = result.replace(pattern, '***REDACTED***');
+  }
+  return result;
+}
 
 const INITIAL_MESSAGE: ChatMessage = {
   id: 'initial',
@@ -123,7 +138,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
         shortName = repoUrl.replace(/https?:\/\/[^\/]+\//, '');
       }
       try { shortName = decodeURIComponent(shortName); } catch (e) { /* ignore */ }
-      shortName = shortName.replace(SECRET_REDACTION_REGEX, '***REDACTED***');
+      shortName = redactSecrets(shortName);
       setMessages(prev => {
         const isFresh = prev.length === 1 && prev[0].id === '1';
         const newMsg = { 
@@ -146,7 +161,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
     const currentController = new AbortController();
     abortControllerRef.current = currentController;
 
-    const safeUserMsg = input;
+    const safeUserMsg = redactSecrets(input);
     setInput('');
     setMessages(prev => [...prev, { id: generateId(), sender: 'user', text: safeUserMsg }]);
     setIsTyping(true);
@@ -158,10 +173,10 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       const historyToKeep = messages.length > 20 ? [messages[0], ...messages.slice(-19)] : messages;
       const formattedHistory = historyToKeep.map(msg => ({
         role: msg.sender === 'user' ? 'user' : 'model',
-        content: String(msg.text).trim().slice(0, 4000).replace(SECRET_REDACTION_REGEX, '***REDACTED***')
+        content: redactSecrets(String(msg.text).trim().slice(0, 4000))
       }));
 
-      let finalMessage = String(safeUserMsg).trim().slice(0, 4000).replace(SECRET_REDACTION_REGEX, '***REDACTED***');
+      let finalMessage = redactSecrets(String(safeUserMsg).trim().slice(0, 4000));
       
       const chatHeaders: Record<string, string> = {
         'Content-Type': 'application/json'
@@ -170,10 +185,10 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       let reportContextBody: any = undefined;
 
       if (activeReportContext) {
-        const cleanRepoUrl = String(activeReportContext.repoUrl || '').replace(SECRET_REDACTION_REGEX, '***REDACTED***');
+        const cleanRepoUrl = redactSecrets(String(activeReportContext.repoUrl || ''));
         const cleanVerdict = String(activeReportContext.verdict || '');
         const cleanIssues = Array.isArray(activeReportContext.issues)
-          ? activeReportContext.issues.map((issue) => String(issue?.message || '').replace(SECRET_REDACTION_REGEX, '***REDACTED***')).filter(Boolean)
+          ? activeReportContext.issues.map((issue) => redactSecrets(String(issue?.message || ''))).filter(Boolean)
           : [];
 
         reportContextBody = {
