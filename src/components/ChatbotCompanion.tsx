@@ -156,19 +156,22 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
         mode: 'cors',
         signal: abortControllerRef.current.signal
       });
-      if (!response.ok) {
-        throw new Error(`HTTP Error: ${response.status}`);
-      }
       const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
+      let data: any = null;
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json();
+      }
+      if (!response.ok) {
+        throw new Error(data?.message || `HTTP Error: ${response.status}`);
+      }
+      if (!data) {
         throw new Error("Invalid content type");
       }
-      const data = await response.json();
       
       if (data.status === 'success') {
         setMessages(prev => [...prev, { id: generateId(), sender: 'assistant', text: data.reply }]);
       } else {
-        setMessages(prev => [...prev, { id: generateId(), sender: 'assistant', text: "I ran into a minor connection problem. Please confirm your local API server configuration is running." }]);
+        setMessages(prev => [...prev, { id: generateId(), sender: 'assistant', text: data.message || "I ran into a minor connection problem. Please confirm your local API server configuration is running." }]);
       }
     } catch (err: any) {
       if (err.name === 'AbortError') return;
