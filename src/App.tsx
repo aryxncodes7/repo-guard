@@ -812,8 +812,8 @@ export default function App() {
                             aria-invalid={Boolean(formValidationError)}
                             aria-describedby={formValidationError ? 'repo-form-error' : undefined}
                             className={`w-full px-3.5 py-2.5 rounded-lg border text-sm transition-all font-sans focus:outline-none ${formValidationError
-                                ? 'bg-rose-50/50 dark:bg-rose-950/15 border-rose-300 dark:border-rose-900 focus:border-rose-500 dark:focus:border-rose-400 focus:bg-white dark:focus:bg-zinc-900 focus:ring-4 focus:ring-rose-100 dark:focus:ring-rose-950 text-slate-800 dark:text-zinc-100'
-                                : 'bg-slate-50 dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:border-emerald-500 dark:focus:border-emerald-400 focus:bg-white dark:focus:bg-zinc-900 focus:ring-4 focus:ring-emerald-50 dark:focus:ring-emerald-950/50'
+                              ? 'bg-rose-50/50 dark:bg-rose-950/15 border-rose-300 dark:border-rose-900 focus:border-rose-500 dark:focus:border-rose-400 focus:bg-white dark:focus:bg-zinc-900 focus:ring-4 focus:ring-rose-100 dark:focus:ring-rose-950 text-slate-800 dark:text-zinc-100'
+                              : 'bg-slate-50 dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:border-emerald-500 dark:focus:border-emerald-400 focus:bg-white dark:focus:bg-zinc-900 focus:ring-4 focus:ring-emerald-50 dark:focus:ring-emerald-950/50'
                               }`}
                             id="repo-endpoint-input"
                           />
@@ -950,7 +950,7 @@ export default function App() {
           <footer className="border-t border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 py-4 px-4 text-center mt-auto">
             <div className="max-w-[1500px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2.5">
               <span className="text-[9.5px] font-sans text-slate-400 dark:text-zinc-500 tracking-wider font-extrabold uppercase">
-                &copy; REPOGUARD. ALL RIGHTS RESERVED.
+                &copy; REPOGUARD
               </span>
               <span className="text-[9.5px] font-sans text-slate-500 dark:text-zinc-400 font-extrabold uppercase tracking-wide">
                 BUILT BY <a href="https://github.com/aryxncodes7" target="_blank" rel="noopener noreferrer" className="text-emerald-600 dark:text-emerald-400 font-extrabold hover:underline transition-all" id="aryan-raj-footer-link">ARYAN RAJ</a>

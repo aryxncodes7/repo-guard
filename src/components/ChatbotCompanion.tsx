@@ -33,14 +33,7 @@ const INITIAL_MESSAGE: ChatMessage = {
 
 const generateId = () => typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2);
 
-function sanitizePayloadAttributes(text: string): string {
-  if (!text) return text;
-  // Use non-regex token length masking to sanitize potential secrets safely
-  return text.split(/(\s+)/).map(token => {
-    if (token.trim().length >= 24) return '***REDACTED***';
-    return token;
-  }).join('');
-}
+
 const markdownComponents = {
   p: ({ children, node, ...props }: React.HTMLAttributes<HTMLParagraphElement> & { node?: unknown }) => <p className="mb-1.5 last:mb-0 leading-relaxed" {...props}>{children}</p>,
   ul: ({ children, node, ...props }: React.HTMLAttributes<HTMLUListElement> & { node?: unknown }) => <ul className="list-disc pl-4 mb-1.5 space-y-0.5" {...props}>{children}</ul>,
@@ -152,7 +145,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
     const currentController = new AbortController();
     abortControllerRef.current = currentController;
 
-    const safeUserMsg = sanitizePayloadAttributes(input.slice(0, 2048));
+    const safeUserMsg = input.slice(0, 2048);
     setInput('');
     setMessages(prev => [...prev, { id: generateId(), sender: 'user', text: safeUserMsg }]);
     setIsTyping(true);
@@ -164,10 +157,10 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       const historyToKeep = messages.length > 20 ? [messages[0], ...messages.slice(-19)] : messages;
       const formattedHistory = historyToKeep.map(msg => ({
         role: msg.sender === 'user' ? 'user' : 'model',
-        content: sanitizePayloadAttributes(String(msg.text).trim().slice(0, 4000))
+        content: String(msg.text).trim().slice(0, 4000)
       }));
 
-      let finalMessage = sanitizePayloadAttributes(String(safeUserMsg).trim().slice(0, 4000));
+      let finalMessage = String(safeUserMsg).trim().slice(0, 4000);
       
       const chatHeaders: Record<string, string> = {
         'Content-Type': 'application/json'
@@ -176,10 +169,10 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       let reportContextBody: any = undefined;
 
       if (activeReportContext) {
-        const cleanRepoUrl = sanitizePayloadAttributes(String(activeReportContext.repoUrl || ''));
+        const cleanRepoUrl = String(activeReportContext.repoUrl || '');
         const cleanVerdict = String(activeReportContext.verdict || '');
         const cleanIssues = Array.isArray(activeReportContext.issues)
-          ? activeReportContext.issues.map((issue) => sanitizePayloadAttributes(String(issue?.message || ''))).filter(Boolean)
+          ? activeReportContext.issues.map((issue) => String(issue?.message || '')).filter(Boolean)
           : [];
 
         reportContextBody = {

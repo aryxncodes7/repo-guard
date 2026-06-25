@@ -452,8 +452,8 @@ app.post("/api/chat", async (req, res) => {
     let activeSystemInstruction = "You are RepoGuard Security AI, a friendly, intelligent companion and secure code advisor built by Aryan Raj (link: github.com/aryxncodes7). You specialize in finding leaked passwords, API keys, logic bugs, and documentation fixes in repos. Keep your tone helpful, concise, engaging, and clear.";
     const reportContext = (req.body as any)?.reportContext;
     if (reportContext) {
-      const issuesList = Array.isArray(reportContext.issues) ? reportContext.issues.slice(0, 50).join("\n- ") : "None";
-      activeSystemInstruction += `\n\nCurrent Report Context:\nRepository: ${reportContext.repository || "Unknown"}\nVerdict: ${reportContext.verdict || "Unknown"}\nGuide: ${reportContext.guide || "None"}\nIssues:\n- ${issuesList}`;
+      const issuesList = Array.isArray(reportContext.issues) ? reportContext.issues.slice(0, 50).map((i: unknown) => redactSecrets(String(i))).join("\n- ") : "None";
+      activeSystemInstruction += `\n\nCurrent Report Context:\nRepository: ${redactSecrets(String(reportContext.repository || "Unknown"))}\nVerdict: ${redactSecrets(String(reportContext.verdict || "Unknown"))}\nGuide: ${redactSecrets(String(reportContext.guide || "None"))}\nIssues:\n- ${issuesList}`;
     }
 
     const response = await generateContentWithFallback(chatContents, {

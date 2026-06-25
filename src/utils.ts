@@ -53,9 +53,6 @@ export function getSafeHref(href?: string) {
   } catch (e) {}
   try {
     const strippedHref = decodedHref.replace(STRIP_CHARS_REGEX, '');
-    if (/^(?:javascript|vbscript|data):/i.test(strippedHref)) {
-      return undefined;
-    }
     let absoluteHref = strippedHref;
     if (strippedHref.startsWith('//')) {
       absoluteHref = 'https:' + strippedHref;
@@ -257,18 +254,19 @@ export function getShortRepoName(repoUrl: string): string {
 
 export function parseUrlOrImplicitPath(inputUrl: string): string {
   if (inputUrl.includes("..")) return "";
+  const secureUrl = inputUrl.replace(/^http:/i, "https:");
   let canParseInput = false;
   try {
-    new URL(inputUrl);
+    new URL(secureUrl);
     canParseInput = true;
   } catch {}
   const ALLOWED_DOMAINS = ['github.com', 'www.github.com'];
 
   if (canParseInput) {
-    const parsed = new URL(inputUrl);
-    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return "";
+    const parsed = new URL(secureUrl);
+    if (parsed.protocol !== "https:") return "";
     if (!ALLOWED_DOMAINS.includes(parsed.hostname.toLowerCase())) return "";
-    return inputUrl.replace(/^http:/i, "https:");
+    return secureUrl;
   }
   
   if (inputUrl.startsWith("//")) {
