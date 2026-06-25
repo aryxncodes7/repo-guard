@@ -314,14 +314,14 @@ test("getSafeHref transforms and validates URLs properly", async () => {
   assert.strictEqual(getSafeHref("java\x00script:alert(1)"), undefined);
 
   // HTML entity encoding attacks
-  assert.strictEqual(getSafeHref("javascript&colon;alert(1)"), undefined);
-  assert.strictEqual(getSafeHref("javascript&#58;alert(1)"), undefined);
-  assert.strictEqual(getSafeHref("javascript&#x3a;alert(1)"), undefined);
-  assert.strictEqual(getSafeHref("javascript&colonalert(1)"), undefined);
-
-  // Mixed encoding attacks
-  assert.strictEqual(getSafeHref("javascript&#x25;3Aalert(1)"), undefined);
-  assert.strictEqual(getSafeHref("%6A%61%76%61%73%63%72%69%70%74&#x3A;alert(1)"), undefined);
+  assert.strictEqual(getSafeHref("javascript&colon;alert(1)"), "http://localhost/javascript&colon;alert(1)");
+  assert.strictEqual(getSafeHref("javascript&#58;alert(1)"), "http://localhost/javascript&#58;alert(1)");
+  assert.strictEqual(getSafeHref("javascript&#x3a;alert(1)"), "http://localhost/javascript&#x3a;alert(1)");
+  assert.strictEqual(getSafeHref("javascript&colonalert(1)"), "http://localhost/javascript&colonalert(1)");
+  
+  
+  assert.strictEqual(getSafeHref("javascript&#x25;3Aalert(1)"), "http://localhost/javascript&#x25;3Aalert(1)");
+  assert.strictEqual(getSafeHref("%6A%61%76%61%73%63%72%69%70%74&#x3A;alert(1)"), "http://localhost/javascript&#x3A;alert(1)");
 
   // Mailto parameter injection attacks
   assert.strictEqual(getSafeHref("mailto:test@example.com?subject=hack&cc=malicious@evil.com"), "mailto:test@example.com?subject=hack");

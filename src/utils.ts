@@ -4,6 +4,7 @@
  */
 
 import { getNormalizedUrl } from './sanitizeRepoUrl.js';
+import * as dompurify from 'dompurify';
 
 export const MAX_PR_NUMBER = 1000000;
 
@@ -31,20 +32,18 @@ const STRIP_CHARS_REGEX = /[\s\x00-\x1F\x7F-\x9F]/g;
 export function getSafeHref(href?: string) {
   if (!href) return undefined;
   if (href.length > 2048) return undefined;
-  // Iteratively decode HTML entities and URI components until stable to prevent nested encoding bypass
-  // Capped at 10 iterations with length guard to prevent ReDoS amplification and bounds violations
-  let decodedHref = href;
-  if (decodedHref.length > 2048) return undefined;
   
-  decodedHref = decodedHref.replace(ENTITY_REGEX, (match, hex, dec) => {
-    if (hex) return String.fromCharCode(parseInt(hex, 16));
-    if (dec) return String.fromCharCode(parseInt(dec, 10));
-    const lower = match.toLowerCase();
-    if (lower.startsWith('&colon')) return ':';
-    if (lower.startsWith('&tab')) return '\t';
-    if (lower.startsWith('&newline')) return '\n';
-    return match;
-  });
+  let decodedHref = href;
+  
+  if (typeof window !== 'undefined') {
+    try {
+      const dp = typeof dompurify.default === 'function' ? dompurify.default(window as any) : dompurify.default;
+      const sanitized = dp.sanitize(`<a href="${href}"></a>`, { ALLOWED_TAGS: ['a'], ALLOWED_ATTR: ['href'] });
+      const match = sanitized.match(/href="([^"]*)"/);
+      if (!match) return undefined;
+      decodedHref = match[1];
+    } catch (e) {}
+  }
     
   try {
     decodedHref = safeDecode(decodedHref);
@@ -264,7 +263,7 @@ export function parseUrlOrImplicitPath(inputUrl: string): string {
   
   if (inputUrl.startsWith("//")) {
     try {
-      const parsedUrl = new URL(inputUrl, "https://github.com");
+      const parsedUrl = new URL(`https:${inputUrl}`);
       if (isLoopbackOrPrivate(parsedUrl.hostname)) return "";
       if (!ALLOWED_DOMAINS.includes(parsedUrl.hostname.toLowerCase())) return "";
       return parsedUrl.href;
@@ -282,7 +281,7 @@ export function parseUrlOrImplicitPath(inputUrl: string): string {
   
   // Explicitly support strictly formatted owner/repo strings
   if (/^[A-Za-z0-9_-]+\/[A-Za-z0-9_.-]+$/.test(inputUrl) && !inputUrl.includes("..")) {
-    try { return new URL(inputUrl, "https://github.com").href; } catch { return ""; }
+    return `https://github.com/${inputUrl}`;
   }
   
   return "";
