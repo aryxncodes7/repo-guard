@@ -59,11 +59,11 @@ const markdownComponents = {
   a: ({ children, href, node, siblingIndex, index, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { node?: unknown; siblingIndex?: unknown; index?: unknown }) => {
     const safeUrl = getSafeHref(href);
     if (!safeUrl) {
-      return <span className="text-teal-700 dark:text-teal-400 font-semibold">{children}</span>;
+      return <span className="text-teal-700 dark:text-teal-400 font-semibold" {...props}>{children}</span>;
     }
     const isExternal = safeUrl.startsWith('http') || safeUrl.startsWith('//');
     return (
-      <a href={safeUrl} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noopener noreferrer" : undefined} className="text-teal-700 dark:text-teal-400 hover:underline font-semibold">
+      <a href={safeUrl} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noopener noreferrer" : undefined} className="text-teal-700 dark:text-teal-400 hover:underline font-semibold" {...props}>
         {children}
       </a>
     );
@@ -72,12 +72,12 @@ const markdownComponents = {
     const codeString = String(children || '').replace(/\n$/, '');
     const isInline = typeof inline === 'boolean' ? inline : !codeString.includes('\n');
     return isInline ? (
-      <code className={className || "px-1.5 py-0.5 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded font-sans text-[11px] text-teal-700 dark:text-teal-400 font-semibold"}>
+      <code className={className || "px-1.5 py-0.5 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded font-sans text-[11px] text-teal-700 dark:text-teal-400 font-semibold"} {...props}>
         {codeString}
       </code>
     ) : (
       <pre className="p-4 rounded-lg bg-slate-950 text-rose-300 font-sans text-[10.5px] overflow-x-auto whitespace-pre leading-normal border border-slate-800 shadow-inner w-full">
-        <code className={`block ${className || ''}`}>{codeString}</code>
+        <code className={`block ${className || ''}`} {...props}>{codeString}</code>
       </pre>
     );
   }

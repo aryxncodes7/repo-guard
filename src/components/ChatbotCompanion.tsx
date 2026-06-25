@@ -32,11 +32,11 @@ const INITIAL_MESSAGE: ChatMessage = {
 const generateId = () => typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2);
 
 const markdownComponents = {
-  p: ({ children }: any) => <p className="mb-1.5 last:mb-0 leading-relaxed">{children}</p>,
-  ul: ({ children }: any) => <ul className="list-disc pl-4 mb-1.5 space-y-0.5">{children}</ul>,
-  ol: ({ children }: any) => <ol className="list-decimal pl-4 mb-1.5 space-y-0.5">{children}</ol>,
-  li: ({ children }: any) => <li className="mb-0.5">{children}</li>,
-  strong: ({ children }: any) => <strong className="font-bold text-slate-900 dark:text-white">{children}</strong>,
+  p: ({ children, node, ...props }: React.HTMLAttributes<HTMLParagraphElement> & { node?: unknown }) => <p className="mb-1.5 last:mb-0 leading-relaxed" {...props}>{children}</p>,
+  ul: ({ children, node, ...props }: React.HTMLAttributes<HTMLUListElement> & { node?: unknown }) => <ul className="list-disc pl-4 mb-1.5 space-y-0.5" {...props}>{children}</ul>,
+  ol: ({ children, node, ...props }: React.HTMLAttributes<HTMLOListElement> & { node?: unknown }) => <ol className="list-decimal pl-4 mb-1.5 space-y-0.5" {...props}>{children}</ol>,
+  li: ({ children, node, ...props }: React.HTMLAttributes<HTMLLIElement> & { node?: unknown }) => <li className="mb-0.5" {...props}>{children}</li>,
+  strong: ({ children, node, ...props }: React.HTMLAttributes<HTMLElement> & { node?: unknown }) => <strong className="font-bold text-slate-900 dark:text-white" {...props}>{children}</strong>,
   a: ({ children, href, node, siblingIndex, index, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { node?: unknown; siblingIndex?: unknown; index?: unknown }) => {
     const safeUrl = getSafeHref(href);
     const isExternal = safeUrl?.startsWith('http') || safeUrl?.startsWith('//');
@@ -149,7 +149,8 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
         requestBody.reportContext = reportContextBody;
       }
 
-      const response = await fetch('/api/chat', {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+      const response = await fetch(`${baseUrl}/api/chat`, {
         method: 'POST',
         headers: chatHeaders,
         body: JSON.stringify(requestBody),
