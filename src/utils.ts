@@ -4,7 +4,9 @@
  */
 
 import { getNormalizedUrl } from './sanitizeRepoUrl.js';
-import * as dompurify from 'dompurify';
+import createDOMPurify from 'dompurify';
+
+const DOMPurify = typeof window !== 'undefined' ? createDOMPurify(window as any) : null;
 
 export const MAX_PR_NUMBER = 1000000;
 
@@ -35,10 +37,9 @@ export function getSafeHref(href?: string) {
   
   let decodedHref = href;
   
-  if (typeof window !== 'undefined') {
+  if (DOMPurify && typeof DOMPurify.sanitize === 'function') {
     try {
-      const dp = typeof dompurify.default === 'function' ? dompurify.default(window as any) : dompurify.default;
-      const sanitized = dp.sanitize(`<a href="${href}"></a>`, { ALLOWED_TAGS: ['a'], ALLOWED_ATTR: ['href'] });
+      const sanitized = DOMPurify.sanitize(`<a href="${href}"></a>`, { ALLOWED_TAGS: ['a'], ALLOWED_ATTR: ['href'] });
       const match = sanitized.match(/href="([^"]*)"/);
       if (!match) return undefined;
       decodedHref = match[1];
@@ -74,7 +75,7 @@ export function getSafeHref(href?: string) {
       if (email.length > 254) {
         return undefined;
       }
-      if (!/^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+      if (!/^[^@\s]+@[^@\s]+$/.test(email)) {
         return undefined;
       }
       
@@ -246,41 +247,26 @@ function isLoopbackOrPrivate(hostname: string): boolean {
 export function parseUrlOrImplicitPath(inputUrl: string): string {
   if (inputUrl.includes("..")) return "";
   const secureUrl = inputUrl.replace(/^http:/i, "https:");
-  let canParseInput = false;
-  try {
-    new URL(secureUrl);
-    canParseInput = true;
-  } catch {}
-  const ALLOWED_DOMAINS = ['github.com', 'www.github.com'];
-
-  if (canParseInput) {
-    const parsed = new URL(secureUrl);
-    if (parsed.protocol !== "https:") return "";
-    if (isLoopbackOrPrivate(parsed.hostname)) return "";
-    if (!ALLOWED_DOMAINS.includes(parsed.hostname.toLowerCase())) return "";
+  
+  const GITHUB_URL_REGEX = /^https:\/\/(?:www\.)?github\.com(?::\d+)?(?:\/[\s\S]*)?$/i;
+  if (GITHUB_URL_REGEX.test(secureUrl)) {
     return secureUrl;
   }
   
   if (inputUrl.startsWith("//")) {
-    try {
-      const parsedUrl = new URL(`https:${inputUrl}`);
-      if (isLoopbackOrPrivate(parsedUrl.hostname)) return "";
-      if (!ALLOWED_DOMAINS.includes(parsedUrl.hostname.toLowerCase())) return "";
-      return parsedUrl.href;
-    } catch { return ""; }
+    const protocolRelativeRegex = /^\/\/(?:www\.)?github\.com(?::\d+)?(?:\/[\s\S]*)?$/i;
+    if (protocolRelativeRegex.test(inputUrl)) {
+       return `https:${inputUrl}`;
+    }
+    return "";
   }
   
-  try {
-    const httpsUrl = new URL(`https://${inputUrl}`).href;
-    const tempParsed = new URL(httpsUrl);
-    if (isLoopbackOrPrivate(tempParsed.hostname)) return "";
-    if (tempParsed.hostname.toLowerCase() === "github.com" || tempParsed.hostname.toLowerCase() === "www.github.com") {
-      return httpsUrl;
-    }
-  } catch {}
+  const hostStartRegex = /^(?:www\.)?github\.com(?::\d+)?(?:\/[\s\S]*)?$/i;
+  if (hostStartRegex.test(inputUrl)) {
+    return `https://${inputUrl}`;
+  }
   
-  // Explicitly support strictly formatted owner/repo strings
-  if (/^[A-Za-z0-9_-]+\/[A-Za-z0-9_.-]+$/.test(inputUrl) && !inputUrl.includes("..")) {
+  if (/^[A-Za-z0-9_-]+\/[A-Za-z0-9_.-]+$/.test(inputUrl)) {
     return `https://github.com/${inputUrl}`;
   }
   
