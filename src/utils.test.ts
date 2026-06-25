@@ -10,6 +10,10 @@ import DOMPurify from 'dompurify';
 if (typeof DOMPurify.sanitize !== 'function') {
   (DOMPurify as any).sanitize = (val: string) => val;
 }
+
+if (typeof process !== "undefined" && process.env) {
+  process.env.VITE_ALLOWED_EMAIL_DOMAINS = "gmail.com, yahoo.com, outlook.com, hotmail.com, example.com";
+}
 import {
   clampText,
   normalizeGithubRepoUrl,

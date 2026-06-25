@@ -31,6 +31,56 @@ const HeadingComponent = ({ children, level, node, siblingIndex, index, ...props
   );
 };
 
+const markdownComponents = {
+  p: ({ children }: any) => (
+    <p className="text-[13px] text-slate-600 dark:text-zinc-400 leading-relaxed mb-2 last:mb-0">
+      {children}
+    </p>
+  ),
+  h1: (props: any) => <HeadingComponent level={1} {...props} />,
+  h2: (props: any) => <HeadingComponent level={2} {...props} />,
+  h3: (props: any) => <HeadingComponent level={3} {...props} />,
+  h4: (props: any) => <HeadingComponent level={4} {...props} />,
+  strong: ({ children }: any) => (
+    <strong className="font-semibold text-teal-700 dark:text-teal-400 tracking-normal">
+      {children}
+    </strong>
+  ),
+  ul: ({ children }: any) => (
+    <div className="space-y-1.5 my-2">
+      {children}
+    </div>
+  ),
+  li: ({ children }: any) => (
+    <div className="flex items-start gap-2.5 my-1 translate-x-1">
+      <span className="text-teal-500 dark:text-teal-400 font-bold text-xs mt-1 select-none" aria-hidden="true">&bull;</span>
+      <span className="flex-1 text-[13px] text-slate-700 dark:text-zinc-300">{children}</span>
+    </div>
+  ),
+  a: ({ children, href, node, siblingIndex, index, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { node?: unknown; siblingIndex?: unknown; index?: unknown }) => {
+    const safeUrl = getSafeHref(href);
+    const isExternal = safeUrl?.startsWith('http') || safeUrl?.startsWith('//');
+    return (
+      <a href={safeUrl} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noopener noreferrer" : undefined} className="text-teal-700 dark:text-teal-400 hover:underline font-semibold">
+        {children}
+      </a>
+    );
+  },
+  code: ({ inline, className, children, node, siblingIndex, index, ...props }: React.HTMLAttributes<HTMLElement> & { inline?: boolean; node?: unknown; siblingIndex?: number; index?: number }) => {
+    const codeString = String(children || '').replace(/\n$/, '');
+    const isInline = typeof inline === 'boolean' ? inline : !codeString.includes('\n');
+    return isInline ? (
+      <code className={className || "px-1.5 py-0.5 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded font-sans text-[11px] text-teal-700 dark:text-teal-400 font-semibold"}>
+        {codeString}
+      </code>
+    ) : (
+      <pre className="p-4 rounded-lg bg-slate-950 text-rose-300 font-sans text-[10.5px] overflow-x-auto whitespace-pre leading-normal border border-slate-800 shadow-inner w-full">
+        <code className={`block ${className || ''}`}>{codeString}</code>
+      </pre>
+    );
+  }
+};
+
 export default function MarkdownLite({ text }: MarkdownLiteProps) {
   if (!text) return null;
 
@@ -38,55 +88,7 @@ export default function MarkdownLite({ text }: MarkdownLiteProps) {
     <div className="space-y-3.5 text-sm leading-relaxed text-slate-800 dark:text-zinc-200">
       <ReactMarkdown
         urlTransform={getSafeHref}
-        components={{
-          p: ({ children }) => (
-            <p className="text-[13px] text-slate-600 dark:text-zinc-400 leading-relaxed mb-2 last:mb-0">
-              {children}
-            </p>
-          ),
-          h1: (props) => <HeadingComponent level={1} {...props} />,
-          h2: (props) => <HeadingComponent level={2} {...props} />,
-          h3: (props) => <HeadingComponent level={3} {...props} />,
-          h4: (props) => <HeadingComponent level={4} {...props} />,
-          strong: ({ children }) => (
-            <strong className="font-semibold text-teal-700 dark:text-teal-400 tracking-normal">
-              {children}
-            </strong>
-          ),
-          ul: ({ children }) => (
-            <div className="space-y-1.5 my-2">
-              {children}
-            </div>
-          ),
-          li: ({ children }) => (
-            <div className="flex items-start gap-2.5 my-1 translate-x-1">
-              <span className="text-teal-500 dark:text-teal-400 font-bold text-xs mt-1 select-none" aria-hidden="true">&bull;</span>
-              <span className="flex-1 text-[13px] text-slate-700 dark:text-zinc-300">{children}</span>
-            </div>
-          ),
-          a: ({ children, href, node, siblingIndex, index, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { node?: unknown; siblingIndex?: unknown; index?: unknown }) => {
-            const safeUrl = getSafeHref(href);
-            const isExternal = safeUrl?.startsWith('http') || safeUrl?.startsWith('//');
-            return (
-              <a href={safeUrl} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noopener noreferrer" : undefined} className="text-teal-700 dark:text-teal-400 hover:underline font-semibold">
-                {children}
-              </a>
-            );
-          },
-          code: ({ inline, className, children, node, siblingIndex, index, ...props }: React.HTMLAttributes<HTMLElement> & { inline?: boolean; node?: unknown; siblingIndex?: number; index?: number }) => {
-            const codeString = String(children || '').replace(/\n$/, '');
-            const isInline = typeof inline === 'boolean' ? inline : !codeString.includes('\n');
-            return isInline ? (
-              <code className={className || "px-1.5 py-0.5 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded font-sans text-[11px] text-teal-700 dark:text-teal-400 font-semibold"}>
-                {codeString}
-              </code>
-            ) : (
-              <pre className="p-4 rounded-lg bg-slate-950 text-rose-300 font-sans text-[10.5px] overflow-x-auto whitespace-pre leading-normal border border-slate-800 shadow-inner w-full">
-                <code className={`block ${className || ''}`}>{codeString}</code>
-              </pre>
-            );
-          }
-        }}
+        components={markdownComponents}
       >
         {text}
       </ReactMarkdown>

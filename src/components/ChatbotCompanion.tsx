@@ -31,7 +31,35 @@ const INITIAL_MESSAGE: ChatMessage = {
 
 const generateId = () => typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2);
 
-
+const markdownComponents = {
+  p: ({ children }: any) => <p className="mb-1.5 last:mb-0 leading-relaxed">{children}</p>,
+  ul: ({ children }: any) => <ul className="list-disc pl-4 mb-1.5 space-y-0.5">{children}</ul>,
+  ol: ({ children }: any) => <ol className="list-decimal pl-4 mb-1.5 space-y-0.5">{children}</ol>,
+  li: ({ children }: any) => <li className="mb-0.5">{children}</li>,
+  strong: ({ children }: any) => <strong className="font-bold text-slate-900 dark:text-white">{children}</strong>,
+  a: ({ children, href, node, siblingIndex, index, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { node?: unknown; siblingIndex?: unknown; index?: unknown }) => {
+    const safeUrl = getSafeHref(href);
+    const isExternal = safeUrl?.startsWith('http') || safeUrl?.startsWith('//');
+    return (
+      <a href={safeUrl} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noopener noreferrer" : undefined} className="text-emerald-600 dark:text-emerald-400 hover:underline font-semibold">
+        {children}
+      </a>
+    );
+  },
+  code: ({ inline, className, children, node, siblingIndex, index, ...props }: React.HTMLAttributes<HTMLElement> & { inline?: boolean; node?: unknown; siblingIndex?: number; index?: number }) => {
+    const codeString = String(children || '').replace(/\n$/, '');
+    const isInline = !codeString.includes('\n');
+    return isInline ? (
+      <code className="bg-slate-100 dark:bg-zinc-700/60 px-1 py-0.5 rounded text-[10px] font-sans font-bold text-emerald-600 dark:text-emerald-400" {...props}>
+        {codeString}
+      </code>
+    ) : (
+      <pre className="bg-slate-950 text-slate-100 p-2.5 rounded-lg text-[10px] font-sans overflow-x-auto my-1.5 border border-slate-800 w-full whitespace-pre-wrap break-all">
+        <code className="block" {...props}>{codeString}</code>
+      </pre>
+    );
+  }
+};
 
 export default function ChatbotCompanion({ activeReportContext }: ChatbotCompanionProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([INITIAL_MESSAGE]);
@@ -61,8 +89,8 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
     if (repoUrl && repoUrl !== prevRepoUrlRef.current) {
       prevRepoUrlRef.current = repoUrl;
       const shortName = repoUrl.replace(/https?:\/\/(www\.)?github\.com\//, '') || 'this repository';
-      setMessages(prev => [
-        ...prev,
+      setMessages([
+        INITIAL_MESSAGE,
         { 
           id: generateId(),
           sender: 'assistant', 
@@ -143,7 +171,9 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       if (err.name === 'AbortError') return;
       setMessages(prev => [...prev, { id: generateId(), sender: 'assistant', text: "Our backend audit network seems offline. Please retry in a few moments." }]);
     } finally {
-      setIsTyping(false);
+      if (!abortControllerRef.current?.signal.aborted) {
+        setIsTyping(false);
+      }
     }
   };
 
@@ -195,35 +225,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
               ) : (
                 <div className="markdown-body">
                   <ReactMarkdown
-                    components={{
-                      p: ({ children }) => <p className="mb-1.5 last:mb-0 leading-relaxed">{children}</p>,
-                      ul: ({ children }) => <ul className="list-disc pl-4 mb-1.5 space-y-0.5">{children}</ul>,
-                      ol: ({ children }) => <ol className="list-decimal pl-4 mb-1.5 space-y-0.5">{children}</ol>,
-                      li: ({ children }) => <li className="mb-0.5">{children}</li>,
-                      strong: ({ children }) => <strong className="font-bold text-slate-900 dark:text-white">{children}</strong>,
-                      a: ({ children, href, node, siblingIndex, index, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { node?: unknown; siblingIndex?: unknown; index?: unknown }) => {
-                        const safeUrl = getSafeHref(href);
-                        const isExternal = safeUrl?.startsWith('http') || safeUrl?.startsWith('//');
-                        return (
-                          <a href={safeUrl} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noopener noreferrer" : undefined} className="text-emerald-600 dark:text-emerald-400 hover:underline font-semibold">
-                            {children}
-                          </a>
-                        );
-                      },
-                      code: ({ inline, className, children, node, siblingIndex, index, ...props }: React.HTMLAttributes<HTMLElement> & { inline?: boolean; node?: unknown; siblingIndex?: number; index?: number }) => {
-                        const codeString = String(children || '').replace(/\n$/, '');
-                        const isInline = !codeString.includes('\n');
-                        return isInline ? (
-                          <code className="bg-slate-100 dark:bg-zinc-700/60 px-1 py-0.5 rounded text-[10px] font-sans font-bold text-emerald-600 dark:text-emerald-400" {...props}>
-                            {codeString}
-                          </code>
-                        ) : (
-                          <pre className="bg-slate-950 text-slate-100 p-2.5 rounded-lg text-[10px] font-sans overflow-x-auto my-1.5 border border-slate-800 w-full whitespace-pre-wrap break-all">
-                            <code className="block" {...props}>{codeString}</code>
-                          </pre>
-                        );
-                      }
-                    }}
+                    components={markdownComponents}
                     urlTransform={getSafeHref}
                   >
                     {m.text}
