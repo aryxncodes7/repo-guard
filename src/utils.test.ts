@@ -6,6 +6,9 @@
 import { test } from "node:test";
 import assert from "node:assert";
 
+if (typeof global !== "undefined" && !(global as any).process) {
+  (global as any).process = { env: {} };
+}
 if (typeof process !== "undefined" && process.env) {
   process.env.VITE_ALLOWED_EMAIL_DOMAINS = "gmail.com, yahoo.com, outlook.com, hotmail.com, example.com";
 }

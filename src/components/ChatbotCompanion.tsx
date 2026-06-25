@@ -140,7 +140,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       // Clean up messages format for backend history
       // NOTE: Client-side redaction is defense-in-depth only.
       // Primary secret redaction is enforced server-side in server.ts /api/chat handler.
-      const SECRET_REDACTION_REGEX = /(gh[pousr]_[a-zA-Z0-9]{36}|AIza[0-9A-Za-z-_]{35})/g;
+      const SECRET_REDACTION_REGEX = /(gh[pousr]_[a-zA-Z0-9]{36}|AIza[0-9A-Za-z-_]{35}|AKIA[0-9A-Z]{16}|(?:sk|rk)_(?:live|test)_[0-9a-zA-Z]{24}|xox[baprs]-[0-9a-zA-Z]{10,48})/g;
       const historyToKeep = messages.length > 20 ? [messages[0], ...messages.slice(-19)] : messages;
       const formattedHistory = historyToKeep.map(msg => ({
         role: msg.sender === 'user' ? 'user' : 'model',
@@ -209,14 +209,13 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
         setMessages(prev => [...prev, { id: generateId(), sender: 'assistant', text: data.message || "I ran into a minor connection problem. Please confirm your local API server configuration is running." }]);
       }
     } catch (err: any) {
-      if (err.name === 'AbortError') {
-        setMessages(prev => [...prev, { id: generateId(), sender: 'assistant', text: 'Chat request was cancelled.' }]);
+      if (err.name === 'AbortError' || abortControllerRef.current !== currentController) {
         return;
       }
       const errorMessage = err?.message || 'Network offline';
       setMessages(prev => [...prev, { id: generateId(), sender: 'assistant', text: `Backend Error: ${errorMessage}. Please retry in a few moments.` }]);
     } finally {
-      if (!currentController.signal.aborted) {
+      if (abortControllerRef.current === currentController) {
         setIsTyping(false);
       }
     }
