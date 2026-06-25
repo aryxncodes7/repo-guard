@@ -32,7 +32,7 @@ export function getSafeHref(href?: string) {
     const fallbackOrigin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
     const parsed = new URL(absoluteHref, fallbackOrigin);
     
-    if (['javascript:', 'data:', 'vbscript:', 'file:'].includes(parsed.protocol)) {
+    if (!['http:', 'https:', 'mailto:'].includes(parsed.protocol)) {
       return undefined;
     }
 

@@ -138,9 +138,7 @@ export default function App() {
   const [scanDepth, setScanDepth] = useState<string>(() => {
     return localStorage.getItem('repoguard-scan-depth') || 'standard';
   });
-  const [apiKey, setApiKey] = useState<string>(() => {
-    return sessionStorage.getItem('repoguard-gemini-key') || '';
-  });
+  const [apiKey, setApiKey] = useState<string>('');
   const [githubToken, setGithubToken] = useState<string>(() => {
     return localStorage.getItem('repoguard-github-token-custom') || '';
   });
@@ -240,7 +238,6 @@ export default function App() {
     const reviewHeaders: Record<string, string> = {
       'Content-Type': 'application/json'
     };
-    if (apiKey) reviewHeaders['x-api-key'] = apiKey;
     if (githubToken) reviewHeaders['x-github-token'] = githubToken;
 
     const requestBody = {
@@ -250,9 +247,10 @@ export default function App() {
 
     const fetchPromise = (async () => {
       try {
-        const response = await fetch('/api/review', {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/review`, {
           method: 'POST',
           headers: reviewHeaders,
+          credentials: 'include',
           body: JSON.stringify(requestBody)
         });
 
@@ -440,8 +438,13 @@ export default function App() {
                     placeholder="AIzaSy..."
                     value={apiKey}
                     onChange={(e) => {
-                      setApiKey(e.target.value);
-                      sessionStorage.setItem('repoguard-gemini-key', e.target.value);
+                      const val = e.target.value;
+                      setApiKey(val);
+                      fetch(import.meta.env.VITE_API_BASE_URL + '/api/set-key', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ apiKey: val })
+                      }).catch(() => {});
                     }}
                     className="w-full px-3 py-1.5 text-xs bg-white dark:bg-zinc-900 dark:text-zinc-200 border border-slate-300 dark:border-zinc-700 focus:border-emerald-500 rounded-lg text-slate-800 focus:outline-none transition font-sans"
                   />

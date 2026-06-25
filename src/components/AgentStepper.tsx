@@ -13,11 +13,12 @@ interface AgentStepperProps {
 }
 
 export default function AgentStepper({ agents = [] }: AgentStepperProps) {
-  const { completedCount, progressPercent } = React.useMemo(() => {
+  const { completedCount, progressPercent, hasError } = React.useMemo(() => {
     const safeAgents = agents || [];
-    const count = safeAgents.filter(a => a.status === 'completed' || a.status === 'error').length;
+    const errorCount = safeAgents.filter(a => a.status === 'error').length;
+    const count = safeAgents.filter(a => a.status === 'completed').length;
     const percent = safeAgents.length > 0 ? (count / safeAgents.length) * 100 : 0;
-    return { completedCount: count, progressPercent: percent };
+    return { completedCount: count, progressPercent: percent, hasError: errorCount > 0 };
   }, [agents]);
 
   return (
@@ -115,7 +116,7 @@ export default function AgentStepper({ agents = [] }: AgentStepperProps) {
         {/* Outer Linear loading progress bar */}
         <div className="space-y-1.5 pt-1">
           <div className="flex justify-between items-center text-[10px] font-sans font-semibold text-slate-400 dark:text-zinc-500">
-            <span>PIPELINE DISPATCHED</span>
+            <span>{hasError ? 'PIPELINE FAILED' : 'PIPELINE DISPATCHED'}</span>
             <span>{Math.round(progressPercent)}%</span>
           </div>
           <div
@@ -127,7 +128,7 @@ export default function AgentStepper({ agents = [] }: AgentStepperProps) {
             aria-valuenow={Math.round(progressPercent)}
           >
             <motion.div 
-              className="bg-emerald-500 h-full rounded-full"
+              className={`${hasError ? 'bg-rose-500' : 'bg-emerald-500'} h-full rounded-full`}
               initial={{ width: 0 }}
               animate={{ width: `${progressPercent}%` }}
               transition={{ duration: 0.5, ease: "easeOut" }}

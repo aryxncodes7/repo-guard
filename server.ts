@@ -108,8 +108,25 @@ function isSourceFile(filePath: string): boolean {
     return false;
   }
   const ext = filePath.split(".").pop()?.toLowerCase();
-  return ext ? CODE_EXTENSIONS.has(ext) : false;
+  if (ext && CODE_EXTENSIONS.has(ext)) return true;
+  return false;
 }
+
+function getCookie(req: any, name: string) {
+  const cookieHeader = req.headers.cookie;
+  if (!cookieHeader) return undefined;
+  const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : undefined;
+}
+
+app.post("/api/set-key", (req, res) => {
+  const apiKey = (req.body as any)?.apiKey;
+  if (typeof apiKey === "string") {
+    res.setHeader("Set-Cookie", `repoguard_gemini_key=${encodeURIComponent(apiKey)}; HttpOnly; Secure; SameSite=Strict; Path=/`);
+    return res.json({ status: "success" });
+  }
+  return res.status(400).json({ status: "error" });
+});
 
 async function fetchFileContent(owner: string, repo: string, branch: string, filePath: string, token?: string): Promise<string> {
   const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${filePath}`;
@@ -238,7 +255,7 @@ async function getRepositoryDetails(owner: string, repo: string, token?: string)
 app.post("/api/review", async (req, res) => {
   const repo_url = (req.body as any)?.repo_url;
   const pr_number = (req.body as any)?.pr_number;
-  const api_key = (req.headers["x-api-key"] as string) || (req.body as any)?.api_key;
+  const api_key = (req.headers["x-api-key"] as string) || (req.body as any)?.api_key || getCookie(req, "repoguard_gemini_key");
   const github_token = (req.headers["x-github-token"] as string) || (req.body as any)?.github_token;
 
   if (req.body) {
@@ -381,7 +398,7 @@ ${repoFilesText}
 app.post("/api/chat", async (req, res) => {
   const message = (req.body as any)?.message;
   const history = (req.body as any)?.history;
-  const api_key = (req.headers["x-api-key"] as string) || (req.body as any)?.api_key;
+  const api_key = (req.headers["x-api-key"] as string) || (req.body as any)?.api_key || getCookie(req, "repoguard_gemini_key");
 
   if (req.body) {
     delete (req.body as any).api_key;

@@ -130,10 +130,6 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       const chatHeaders: Record<string, string> = {
         'Content-Type': 'application/json'
       };
-      const customApiKey = sessionStorage.getItem('repoguard-gemini-key');
-      if (customApiKey) {
-        chatHeaders['x-api-key'] = customApiKey;
-      }
 
       let reportContextBody: any = undefined;
 
@@ -162,8 +158,8 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       const response = await fetch(`${baseUrl}/api/chat`, {
         method: 'POST',
         headers: chatHeaders,
+        credentials: 'include',
         body: JSON.stringify(requestBody),
-        mode: 'cors',
         signal: abortControllerRef.current.signal
       });
       const contentType = response.headers.get("content-type");
