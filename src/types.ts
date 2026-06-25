@@ -57,8 +57,9 @@ export interface ReviewResponse {
 export type ReviewState = 'idle' | 'reviewing' | 'report' | 'error';
 
 export interface AgentProgress {
-  id: 'triage' | 'code_review' | 'docs' | 'synthesizer';
+  id: string;
   name: string;
   description: string;
-  status: 'pending' | 'running' | 'completed' | 'error';
+  status: string;
+  [key: string]: any;
 }

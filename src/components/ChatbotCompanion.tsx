@@ -23,6 +23,10 @@ type ChatMessage = {
   text: string;
 };
 
+// NOTE: Client-side redaction is defense-in-depth only.
+// Primary secret redaction is enforced server-side in server.ts /api/chat handler.
+const SECRET_REDACTION_REGEX = /(gh[pousr](?:_|%5F)[a-zA-Z0-9]{36}|AIza[0-9A-Za-z-_]{35}|AKIA[0-9A-Z]{16}|(?:sk|rk)_(?:live|test)(?:_|%5F)[0-9a-zA-Z]{24}|xox[baprs](?:-|%2D)[0-9a-zA-Z]{10,48})/gi;
+
 const INITIAL_MESSAGE: ChatMessage = {
   id: 'initial',
   sender: 'assistant',
@@ -108,7 +112,9 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
   useEffect(() => {
     if (!initialized.current && repoUrl) {
       initialized.current = true;
-      const shortName = repoUrl.replace(/https?:\/\/(www\.)?github\.com\//, '') || 'this repository';
+      let shortName = repoUrl.replace(/https?:\/\/(www\.)?github\.com\//, '') || 'this repository';
+      try { shortName = decodeURIComponent(shortName); } catch (e) { /* ignore */ }
+      shortName = shortName.replace(SECRET_REDACTION_REGEX, '***REDACTED***');
       setMessages(prev => {
         const isFresh = prev.length === 1 && prev[0].id === '1';
         const newMsg = { 
@@ -140,7 +146,6 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       // Clean up messages format for backend history
       // NOTE: Client-side redaction is defense-in-depth only.
       // Primary secret redaction is enforced server-side in server.ts /api/chat handler.
-      const SECRET_REDACTION_REGEX = /(gh[pousr]_[a-zA-Z0-9]{36}|AIza[0-9A-Za-z-_]{35}|AKIA[0-9A-Z]{16}|(?:sk|rk)_(?:live|test)_[0-9a-zA-Z]{24}|xox[baprs]-[0-9a-zA-Z]{10,48})/g;
       const historyToKeep = messages.length > 20 ? [messages[0], ...messages.slice(-19)] : messages;
       const formattedHistory = historyToKeep.map(msg => ({
         role: msg.sender === 'user' ? 'user' : 'model',

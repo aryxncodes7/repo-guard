@@ -58,7 +58,7 @@ const markdownComponents = {
   ),
   li: ({ children, node, ...props }: React.HTMLAttributes<HTMLLIElement> & { node?: unknown }) => (
     <li className="my-1 translate-x-1 marker:text-teal-500 dark:marker:text-teal-400 text-[13px] text-slate-700 dark:text-zinc-300" {...props}>
-      {children}
+      <span className="-ml-1">{children}</span>
     </li>
   ),
   a: ({ children, href, node, siblingIndex, index, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { node?: unknown; siblingIndex?: unknown; index?: unknown }) => {
@@ -66,9 +66,8 @@ const markdownComponents = {
     if (!safeUrl) {
       return <span className="text-teal-700 dark:text-teal-400 font-semibold" {...props}>{children}</span>;
     }
-    const isExternal = safeUrl.startsWith('http') || safeUrl.startsWith('//');
     return (
-      <a href={safeUrl} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noopener noreferrer" : undefined} className="text-teal-700 dark:text-teal-400 hover:underline font-semibold" {...props}>
+      <a href={safeUrl} target="_blank" rel="noopener noreferrer" className="text-teal-700 dark:text-teal-400 hover:underline font-semibold" {...props}>
         {children}
       </a>
     );

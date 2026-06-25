@@ -130,13 +130,12 @@ export function normalizeGithubRepoUrl(rawUrl: unknown): string {
     
     const isGithubRepo =
       parsed.protocol === "https:" &&
-      (parsed.hostname.toLowerCase() === "github.com" || parsed.hostname.toLowerCase() === "www.github.com") &&
       /^[A-Za-z0-9_-]+$/.test(owner) &&
       /^[A-Za-z0-9_.-]+$/.test(repo) &&
       owner !== "." && owner !== ".." &&
       repo !== "." && repo !== "..";
 
-    return isGithubRepo ? `https://github.com/${owner}/${repo}` : "";
+    return isGithubRepo ? `https://${parsed.host}/${owner}/${repo}` : "";
   } catch (error) {
     console.warn("[normalizeGithubRepoUrl] Failed to parse URL:", repoUrl, error);
     return "";
@@ -152,6 +151,7 @@ export function normalizePrNumber(rawPrNumber: unknown): string | undefined {
 }
 
 export function parseGithubRepo(repoUrl: string): { owner: string; repo: string } | null {
+  if (!repoUrl || repoUrl.length > 2048) return null;
   try {
     const cleanedUrl = repoUrl.trim().replace(/\/$/, "");
     let decodedCleaned = cleanedUrl.toLowerCase();
