@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import { getNormalizedUrl } from './sanitizeRepoUrl';
+
 export const MAX_PR_NUMBER = 1000000;
 const rawDomains = import.meta.env?.VITE_ALLOWED_EMAIL_DOMAINS || (typeof process !== 'undefined' ? process.env.VITE_ALLOWED_EMAIL_DOMAINS : undefined);
 const parsedDomains = typeof rawDomains === 'string'
@@ -116,9 +118,9 @@ export function normalizeGithubRepoUrl(rawUrl: unknown): string {
   if (!repoUrl) return "";
 
   // Reject relative paths, double dots, or backslashes
-  let decodedUrl = repoUrl.toLowerCase();
+  let decodedUrl: string;
   try {
-    decodedUrl = decodeURIComponent(decodedUrl);
+    decodedUrl = getNormalizedUrl(repoUrl).toLowerCase();
   } catch {
     // Malformed percent-encoding — reject the input
     return "";
@@ -171,18 +173,11 @@ export function parseGithubRepo(repoUrl: string): { owner: string; repo: string 
   if (!repoUrl || repoUrl.length > 2048) return null;
   try {
     const cleanedUrl = repoUrl.trim().replace(/\/$/, "");
-    let decodedCleaned = cleanedUrl.toLowerCase();
-    
-    let prev = "";
-    let iter = 0;
-    while (decodedCleaned !== prev && iter < 5) {
-      prev = decodedCleaned;
-      try {
-        decodedCleaned = decodeURIComponent(decodedCleaned);
-      } catch {
-        return null;
-      }
-      iter++;
+    let decodedCleaned: string;
+    try {
+      decodedCleaned = getNormalizedUrl(cleanedUrl).toLowerCase();
+    } catch {
+      return null;
     }
     
     if (decodedCleaned.includes("../") || decodedCleaned.includes("\\")) {

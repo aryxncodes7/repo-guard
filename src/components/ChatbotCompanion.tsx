@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageSquare, Send } from 'lucide-react';
+import { MessageSquare, Send, Copy, XCircle, Check } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { getSafeHref } from '../utils';
 import rehypeSanitize from 'rehype-sanitize';
@@ -24,24 +24,6 @@ type ChatMessage = {
   text: string;
 };
 
-// Security utility to redact secrets directly on the client to prevent accidental UI persistence
-const REDACTION_PATTERNS = [
-  /gh[pousr](?:_|%5F)[a-zA-Z0-9]{36}/gi,
-  /github_pat_[a-zA-Z0-9_]{82}/gi,
-  /AIza[0-9A-Za-z_\-]{35}/gi,
-  /AKIA[0-9A-Z]{16}/gi,
-  /(?:sk|rk)_(?:live|test)(?:_|%5F)[0-9a-zA-Z]{24}/gi,
-  /xox[baprs](?:-|%2D)[0-9a-zA-Z]{10,48}/gi
-];
-
-function redactSecrets(text: string): string {
-  if (!text) return text;
-  let result = text;
-  for (const pattern of REDACTION_PATTERNS) {
-    result = result.replace(pattern, '***REDACTED***');
-  }
-  return result;
-}
 
 const INITIAL_MESSAGE: ChatMessage = {
   id: 'initial',
@@ -90,6 +72,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
   const [messages, setMessages] = useState<ChatMessage[]>([INITIAL_MESSAGE]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -161,7 +144,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
     const currentController = new AbortController();
     abortControllerRef.current = currentController;
 
-    const safeUserMsg = redactSecrets(input.slice(0, 2048));
+    const safeUserMsg = input.slice(0, 2048);
     setInput('');
     setMessages(prev => [...prev, { id: generateId(), sender: 'user', text: safeUserMsg }]);
     setIsTyping(true);
@@ -173,10 +156,10 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       const historyToKeep = messages.length > 20 ? [messages[0], ...messages.slice(-19)] : messages;
       const formattedHistory = historyToKeep.map(msg => ({
         role: msg.sender === 'user' ? 'user' : 'model',
-        content: redactSecrets(String(msg.text).trim().slice(0, 4000))
+        content: String(msg.text).trim().slice(0, 4000)
       }));
 
-      let finalMessage = redactSecrets(String(safeUserMsg).trim().slice(0, 4000));
+      let finalMessage = String(safeUserMsg).trim().slice(0, 4000);
       
       const chatHeaders: Record<string, string> = {
         'Content-Type': 'application/json'
@@ -185,10 +168,10 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       let reportContextBody: any = undefined;
 
       if (activeReportContext) {
-        const cleanRepoUrl = redactSecrets(String(activeReportContext.repoUrl || ''));
+        const cleanRepoUrl = String(activeReportContext.repoUrl || '');
         const cleanVerdict = String(activeReportContext.verdict || '');
         const cleanIssues = Array.isArray(activeReportContext.issues)
-          ? activeReportContext.issues.map((issue) => redactSecrets(String(issue?.message || ''))).filter(Boolean)
+          ? activeReportContext.issues.map((issue) => String(issue?.message || '')).filter(Boolean)
           : [];
 
         reportContextBody = {
@@ -239,6 +222,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       }
     } catch (err: any) {
       if (err.name === 'AbortError') {
+        setMessages(prev => [...prev, { id: generateId(), sender: 'assistant', text: `[Stream interrupted by user]` }]);
         return;
       }
       const errorMessage = err?.message || 'Network offline';
@@ -246,6 +230,12 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
     } finally {
       setIsTyping(false);
     }
+  };
+
+  const handleCopy = (id: string, text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
   };
 
   return (
@@ -286,10 +276,10 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       >
         {messages.map((m) => (
           <div key={m.id} className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}>
-            <div className={`max-w-[85%] rounded-xl px-3.5 py-2.5 text-xs leading-relaxed font-sans ${
+            <div className={`max-w-[85%] rounded-xl px-3.5 py-2.5 text-xs leading-relaxed font-sans relative group ${
               m.sender === 'user' 
                 ? 'bg-emerald-600 text-white rounded-br-none shadow-sm'
-                : 'bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200/80 dark:border-zinc-700 rounded-bl-none shadow-sm'
+                : 'bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200/80 dark:border-zinc-700 rounded-bl-none shadow-sm pb-8'
             }`}>
               {m.sender === 'user' ? (
                 m.text
@@ -302,18 +292,40 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
                   >
                     {m.text}
                   </ReactMarkdown>
+                  
+                  <div className="absolute bottom-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => handleCopy(m.id, m.text)}
+                      className="p-1.5 hover:bg-slate-100 dark:hover:bg-zinc-700 rounded text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 transition"
+                      title="Copy to clipboard"
+                    >
+                      {copiedId === m.id ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
           </div>
         ))}
         {isTyping && (
-          <div className="flex justify-start" role="status" aria-label="Assistant is typing">
+          <div className="flex justify-start items-center gap-2" role="status" aria-label="Assistant is typing">
             <div className="bg-white dark:bg-zinc-800 text-slate-500 border border-slate-200/85 dark:border-zinc-700 rounded-xl rounded-bl-none px-4 py-3 text-xs flex items-center gap-1 animate-pulse">
               <span className="w-1.5 h-1.5 bg-slate-400 dark:bg-zinc-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
               <span className="w-1.5 h-1.5 bg-slate-400 dark:bg-zinc-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
               <span className="w-1.5 h-1.5 bg-slate-400 dark:bg-zinc-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
             </div>
+            
+            <button
+              type="button"
+              onClick={() => {
+                abortControllerRef.current?.abort();
+                setIsTyping(false);
+              }}
+              className="p-1.5 rounded-full hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-500 hover:text-red-500 transition-colors flex items-center gap-1 text-[10px] font-bold shadow-sm"
+              title="Stop Conversation"
+            >
+              <XCircle className="w-4 h-4" /> Stop
+            </button>
           </div>
         )}
       </div>

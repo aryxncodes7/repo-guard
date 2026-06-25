@@ -115,7 +115,7 @@ export default function MarkdownLite({ text }: MarkdownLiteProps) {
           },
           protocols: {
             ...defaultSchema.protocols,
-            href: ['http', 'https', 'mailto']
+            href: ['http', 'https']
           }
         }]]}
       >
