@@ -28,7 +28,7 @@ const INITIAL_MESSAGE: ChatMessage = {
   text: "Hello! I am RepoGuard's Resident Auditor. Ask me about your security scan results, fixing plain-text secrets, resolving vulnerabilities, or modifying repository code structures."
 };
 
-export const sanitize = (val: string) => DOMPurify.sanitize(val || '', { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+export const sanitize = (val: string) => DOMPurify.sanitize(val || '', { ALLOWED_TAGS: ['pre', 'code', 'p'], ALLOWED_ATTR: [] });
 
 
 export default function ChatbotCompanion({ activeReportContext }: ChatbotCompanionProps) {
@@ -37,7 +37,6 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
-  const csrfTokenRef = useRef(typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2));
 
   useEffect(() => {
     return () => {
@@ -94,8 +93,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       let finalMessage = sanitize(String(safeUserMsg).trim().slice(0, 4000));
       
       const chatHeaders: Record<string, string> = {
-        'Content-Type': 'application/json',
-        'X-CSRF-Token': csrfTokenRef.current
+        'Content-Type': 'application/json'
       };
 
       let reportContextBody: any = undefined;

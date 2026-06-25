@@ -71,7 +71,7 @@ export function normalizeGithubRepoUrl(rawUrl: unknown): string {
   // Reject relative paths, double dots, or backslashes
   let decodedUrl = repoUrl.toLowerCase();
   try { decodedUrl = decodeURIComponent(decodedUrl); } catch {}
-  if (decodedUrl.includes("..") || decodedUrl.includes("\\") || decodedUrl.includes("%2e%2e") || decodedUrl.includes("%5c") || decodedUrl.includes("%2f")) {
+  if (decodedUrl.includes("..") || decodedUrl.includes("\\") || decodedUrl.includes("%2e%2e") || decodedUrl.includes("%5c")) {
     return "";
   }
 
@@ -114,7 +114,7 @@ export function parseGithubRepo(repoUrl: string): { owner: string; repo: string 
     const cleanedUrl = repoUrl.trim().replace(/\/$/, "");
     let decodedCleaned = cleanedUrl.toLowerCase();
     try { decodedCleaned = decodeURIComponent(decodedCleaned); } catch {}
-    if (decodedCleaned.includes("..") || decodedCleaned.includes("\\") || decodedCleaned.includes("%2e%2e") || decodedCleaned.includes("%5c") || decodedCleaned.includes("%2f")) {
+    if (decodedCleaned.includes("..") || decodedCleaned.includes("\\") || decodedCleaned.includes("%2e%2e") || decodedCleaned.includes("%5c")) {
       return null;
     }
     
