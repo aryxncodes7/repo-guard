@@ -189,7 +189,42 @@ export default function App() {
   }, [githubConnected, githubConnectedUser, githubToken]);
 
   const handleConnectGithub = () => {
-    window.location.href = 'https://github.com/login/oauth/authorize?client_id=Ov23liLdii0jEwXkFp9d&scope=repo&redirect_uri=https://repo-guard-io.vercel.app/&prompt=consent';
+    const redirectUri = encodeURIComponent(window.location.origin + '/');
+    const url = `https://github.com/login/oauth/authorize?client_id=Ov23liLdii0jEwXkFp9d&scope=repo&redirect_uri=${redirectUri}&prompt=consent`;
+    
+    const width = 600;
+    const height = 700;
+    const left = window.screen.width / 2 - width / 2;
+    const top = window.screen.height / 2 - height / 2;
+    
+    window.open(url, 'github-oauth', `width=${width},height=${height},top=${top},left=${left}`);
+  };
+
+  const handleCodeExchange = (code: string) => {
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+    fetch(`${baseUrl}/api/auth/callback`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        code, 
+        redirect_uri: window.location.origin + '/' 
+      })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.access_token && data.user) {
+          setGithubConnected(true);
+          setGithubConnectedUser(data.user);
+          setGithubAvatar(data.avatar || '');
+          localStorage.setItem('repoguard-github-linked', 'true');
+          localStorage.setItem('repoguard-github-user', data.user);
+          localStorage.setItem('repoguard-github-avatar', data.avatar || '');
+          localStorage.setItem('repoguard-github-token', data.access_token);
+        }
+      })
+      .finally(() => {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      });
   };
 
   // Check for session/token on mount
@@ -197,31 +232,25 @@ export default function App() {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
     if (code) {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
-      fetch(`${baseUrl}/api/auth/callback`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          code, 
-          redirect_uri: 'https://repo-guard-io.vercel.app/' 
-        })
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.access_token && data.user) {
-            setGithubConnected(true);
-            setGithubConnectedUser(data.user);
-            setGithubAvatar(data.avatar || '');
-            localStorage.setItem('repoguard-github-linked', 'true');
-            localStorage.setItem('repoguard-github-user', data.user);
-            localStorage.setItem('repoguard-github-avatar', data.avatar || '');
-            localStorage.setItem('repoguard-github-token', data.access_token);
-          }
-        })
-        .finally(() => {
-          window.history.replaceState({}, document.title, window.location.pathname);
-        });
+      if (window.opener && window.opener !== window) {
+        // We are inside the popup! Send code to parent and close
+        window.opener.postMessage({ type: 'GITHUB_OAUTH_CODE', code }, window.location.origin);
+        window.close();
+        return;
+      }
+      // Fallback if not in popup
+      handleCodeExchange(code);
     }
+
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+      if (event.data?.type === 'GITHUB_OAUTH_CODE') {
+        handleCodeExchange(event.data.code);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
   }, []);
 
   const [repoUrl, setRepoUrl] = useState<string>('https://github.com/');
