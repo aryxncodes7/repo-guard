@@ -579,7 +579,7 @@ export default function App() {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, filter: "blur(8px)" }}
           transition={{ duration: 0.45, ease: "easeInOut" }}
-          className="fixed inset-0 bg-zinc-950 text-zinc-100 z-50 flex flex-col items-center justify-center p-6 overflow-hidden select-none scale-125 origin-center"
+          className="fixed inset-0 bg-zinc-950 text-zinc-100 z-50 flex flex-col items-center justify-center p-6 overflow-hidden select-none scale-100 md:scale-125 origin-center"
         >
           {/* Glowing Grid Pattern */}
           <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_75%,transparent_100%)] opacity-40 pointer-events-none" />
@@ -953,7 +953,7 @@ export default function App() {
                   animate={{ opacity: 1, x: 0, scale: 1 }}
                   exit={{ opacity: 0, x: -60, scale: 0.98 }}
                   transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                  className="w-full scale-110 origin-center"
+                  className="w-full md:scale-110 origin-center"
                 >
                   <AgentStepper agents={agents} />
                 </motion.div>
