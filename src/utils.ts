@@ -36,14 +36,8 @@ export function getSafeHref(href?: string) {
   
   let decodedHref = href;
   
-  if (DOMPurify && typeof DOMPurify.sanitize === 'function') {
-    try {
-      const escapedHref = href.replace(/"/g, '%22').replace(/'/g, '%27').replace(/</g, '%3C').replace(/>/g, '%3E');
-      const sanitized = DOMPurify.sanitize(`<a href="${escapedHref}"></a>`, { ALLOWED_TAGS: ['a'], ALLOWED_ATTR: ['href'] });
-      const match = sanitized.match(/href="([^"]*)"/);
-      if (!match) return undefined;
-      decodedHref = match[1];
-    } catch (e) {
+  if (DOMPurify && typeof DOMPurify.isValidAttribute === 'function') {
+    if (!DOMPurify.isValidAttribute('a', 'href', href)) {
       return undefined;
     }
   } else if (typeof window !== 'undefined') {
@@ -250,11 +244,9 @@ function isLoopbackOrPrivate(hostname: string): boolean {
 
 export function parseUrlOrImplicitPath(inputUrl: string): string {
   if (inputUrl.includes("..")) return "";
-  const secureUrl = inputUrl.replace(/^http:/i, "https:");
-  
-  const GITHUB_URL_REGEX = /^https:\/\/(?:www\.)?github\.com(?::\d+)?(?:\/[^\s]{0,2000})?$/i;
-  if (GITHUB_URL_REGEX.test(secureUrl)) {
-    return secureUrl;
+  const GITHUB_URL_REGEX = /^https?:\/\/(?:www\.)?github\.com(?::\d+)?(?:\/[^\s]{0,2000})?$/i;
+  if (GITHUB_URL_REGEX.test(inputUrl)) {
+    return inputUrl.replace(/^http:/i, "https:");
   }
   
   if (inputUrl.startsWith("//")) {

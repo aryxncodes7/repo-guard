@@ -112,7 +112,9 @@ export default function MarkdownLite({ text }: MarkdownLiteProps) {
           protocols: {
             href: ['http', 'https', 'mailto']
           },
-          strip: ['script']
+          strip: ['script'],
+          clobberPrefix: 'user-content-',
+          clobber: ['name', 'id']
         }]]}
       >
         {safeText}
