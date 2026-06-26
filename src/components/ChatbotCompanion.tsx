@@ -166,7 +166,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
         const cleanRepoUrl = String(activeReportContext.repoUrl || '');
         const cleanVerdict = String(activeReportContext.verdict || '');
         const cleanIssues = Array.isArray(activeReportContext.issues)
-          ? activeReportContext.issues.map((issue) => String(issue?.message || '').replace(REDACT_REGEX, '[REDACTED]')).filter(Boolean)
+          ? activeReportContext.issues.map((issue) => `[${issue?.severity}] ${issue?.category} at ${issue?.file}:${issue?.line}`)
           : [];
 
         reportContextBody = {

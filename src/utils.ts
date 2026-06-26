@@ -38,7 +38,8 @@ export function getSafeHref(href?: string) {
   
   if (DOMPurify && typeof DOMPurify.sanitize === 'function') {
     try {
-      const sanitized = DOMPurify.sanitize(`<a href="${href}"></a>`, { ALLOWED_TAGS: ['a'], ALLOWED_ATTR: ['href'] });
+      const escapedHref = href.replace(/"/g, '%22').replace(/'/g, '%27').replace(/</g, '%3C').replace(/>/g, '%3E');
+      const sanitized = DOMPurify.sanitize(`<a href="${escapedHref}"></a>`, { ALLOWED_TAGS: ['a'], ALLOWED_ATTR: ['href'] });
       const match = sanitized.match(/href="([^"]*)"/);
       if (!match) return undefined;
       decodedHref = match[1];
