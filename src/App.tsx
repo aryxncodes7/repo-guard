@@ -252,43 +252,43 @@ export default function App() {
   };
 
   useEffect(() => {
-    // 1. Check if an auth code is present in the current URL path
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
 
-    // CONDITION A: This window is the TEMPORARY POPUP opened by the user
+    // CASE A: This window is a TEMPORARY POPUP tab authorized by GitHub
     if (code && window.opener) {
-      console.log("⚡ [Auth Popup] Code caught. Transmitting to parent workspace...");
-      
-      // Post message back to the exact domain origin that spawned this popup
+      console.log("⚡ [Auth Popup] Code caught in popup. Transmitting to parent workspace...");
       window.opener.postMessage(
         { type: 'GITHUB_OAUTH_SUCCESS', code }, 
         window.location.origin
       );
-      
-      // Kill the popup window immediately to return user focus to the main dashboard
       window.close();
       return;
     }
 
-    // CONDITION B: This window is the MAIN APPLICATION WORKSPACE
+    // CASE B: FALLBACK - The code landed DIRECTLY on the main workspace tab URL
+    if (code && !window.opener) {
+      console.log("🚀 [Workspace Fallback] Code detected directly in the main window URL. Processing login...");
+      
+      // Execute the token handshake directly
+      executeTokenExchangeHandshake(code);
+      
+      // Clean the address bar immediately so the code doesn't replay on manual refreshes
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    // CASE C: STANDARD POPUP LISTENER - This is the main workspace waiting for a popup window's message
     const handleOAuthMessage = async (event: MessageEvent) => {
-      // Security Guard: Ignore messages from unauthorized external domains
+      // Security check
       if (event.origin !== window.location.origin) return;
 
-      // Listen exclusively for our custom success token string payload
       if (event.data?.type === 'GITHUB_OAUTH_SUCCESS' && event.data.code) {
-        console.log("🎉 [Workspace] Successfully captured code from popup channel:", event.data.code);
-        
-        // Fire the asynchronous backend token exchange function
+        console.log("🎉 [Workspace] Captured code transmitted from popup window channel:", event.data.code);
         await executeTokenExchangeHandshake(event.data.code);
       }
     };
 
-    // Attach the message listener to the global window lifecycle
     window.addEventListener('message', handleOAuthMessage);
-    
-    // Cleanup listener on unmount to save engine performance memory
     return () => window.removeEventListener('message', handleOAuthMessage);
   }, []);
 
