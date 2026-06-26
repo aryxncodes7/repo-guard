@@ -128,6 +128,63 @@ app.post("/api/set-key", (req, res) => {
   return res.status(400).json({ status: "error" });
 });
 
+app.post("/api/auth/callback", async (req, res) => {
+  const code = (req.body as any)?.code;
+  if (!code) return res.status(400).json({ error: "No code provided" });
+  try {
+    const response = await fetch("https://github.com/login/oauth/access_token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({
+        client_id: process.env.GITHUB_CLIENT_ID,
+        client_secret: process.env.GITHUB_CLIENT_SECRET,
+        code
+      })
+    });
+    const data = await response.json() as any;
+    if (data.access_token) {
+      const userRes = await fetch("https://api.github.com/user", {
+        headers: {
+          "Authorization": `token ${data.access_token}`,
+          "User-Agent": "RepoGuard-App"
+        }
+      });
+      const userData = await userRes.json() as any;
+      return res.json({ access_token: data.access_token, user: userData.login, avatar: userData.avatar_url });
+    }
+    return res.status(400).json({ error: "Invalid code or exchange failed" });
+  } catch (e) {
+    return res.status(500).json({ error: "Internal error during OAuth exchange" });
+  }
+});
+
+app.post("/api/auth/revoke", async (req, res) => {
+  const access_token = (req.body as any)?.access_token;
+  if (!access_token) return res.status(400).json({ error: "No token provided" });
+  try {
+    const clientId = process.env.GITHUB_CLIENT_ID || "";
+    const clientSecret = process.env.GITHUB_CLIENT_SECRET || "";
+    const authHeader = "Basic " + Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
+    
+    await fetch(`https://api.github.com/applications/${clientId}/grant`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": authHeader,
+        "Accept": "application/vnd.github.v3+json",
+        "Content-Type": "application/json",
+        "User-Agent": "RepoGuard-App"
+      },
+      body: JSON.stringify({ access_token })
+    });
+    return res.json({ status: "success" });
+  } catch (e) {
+    return res.status(500).json({ error: "Internal error during token revocation" });
+  }
+});
+
 async function fetchFileContent(owner: string, repo: string, branch: string, filePath: string, token?: string): Promise<string> {
   const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${filePath}`;
   const headers: Record<string, string> = {

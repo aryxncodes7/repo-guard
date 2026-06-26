@@ -154,7 +154,7 @@ export default function App() {
       const fetchRepos = async () => {
         setReposLoading(true);
         try {
-          const token = githubToken || localStorage.getItem('repoguard-github-token-custom');
+          const token = githubToken || localStorage.getItem('repoguard-github-token-custom') || localStorage.getItem('repoguard-github-token');
           let url = 'https://api.github.com/user/repos?per_page=50&sort=updated';
           const headers: Record<string, string> = {
             'Accept': 'application/vnd.github.v3+json'
@@ -198,13 +198,27 @@ export default function App() {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
     if (code) {
-      // Simulate successful OAuth callback by setting logged in state
-      setGithubConnected(true);
-      setGithubConnectedUser('aryxncodes7'); // Mock fetched user
-      localStorage.setItem('repoguard-github-linked', 'true');
-      localStorage.setItem('repoguard-github-user', 'aryxncodes7');
-      // Clean up URL
-      window.history.replaceState({}, document.title, window.location.pathname);
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+      fetch(`${baseUrl}/api/auth/callback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.access_token && data.user) {
+            setGithubConnected(true);
+            setGithubConnectedUser(data.user);
+            setGithubAvatar(data.avatar || '');
+            localStorage.setItem('repoguard-github-linked', 'true');
+            localStorage.setItem('repoguard-github-user', data.user);
+            localStorage.setItem('repoguard-github-avatar', data.avatar || '');
+            localStorage.setItem('repoguard-github-token', data.access_token);
+          }
+        })
+        .finally(() => {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        });
     }
   }, []);
 
@@ -433,7 +447,17 @@ export default function App() {
       }
     };
 
-    const handleDisconnect = () => {
+    const handleDisconnect = async () => {
+      const token = localStorage.getItem('repoguard-github-token');
+      if (token) {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        await fetch(`${baseUrl}/api/auth/revoke`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ access_token: token })
+        }).catch(() => {});
+      }
+
       // Wipe the URL address query parameters completely clean
       window.history.replaceState({}, document.title, window.location.pathname);
       
@@ -441,6 +465,7 @@ export default function App() {
       localStorage.removeItem('repoguard-github-user');
       localStorage.removeItem('repoguard-github-avatar');
       localStorage.removeItem('repoguard-github-token-custom');
+      localStorage.removeItem('repoguard-github-token');
 
       setGithubConnected(false);
       setGithubConnectedUser('');
