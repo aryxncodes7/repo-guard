@@ -130,6 +130,7 @@ app.post("/api/set-key", (req, res) => {
 
 app.post("/api/auth/callback", async (req, res) => {
   const code = (req.body as any)?.code;
+  const redirect_uri = (req.body as any)?.redirect_uri;
   if (!code) return res.status(400).json({ error: "No code provided" });
   try {
     const response = await fetch("https://github.com/login/oauth/access_token", {
@@ -141,7 +142,8 @@ app.post("/api/auth/callback", async (req, res) => {
       body: JSON.stringify({
         client_id: process.env.GITHUB_CLIENT_ID,
         client_secret: process.env.GITHUB_CLIENT_SECRET,
-        code
+        code,
+        ...(redirect_uri ? { redirect_uri } : {})
       })
     });
     const data = await response.json() as any;

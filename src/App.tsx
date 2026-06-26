@@ -188,9 +188,9 @@ export default function App() {
     }
   }, [githubConnected, githubConnectedUser, githubToken]);
 
-  // Real OAuth flow handler
   const handleConnectGithub = () => {
-    window.location.href = 'https://github.com/login/oauth/authorize?client_id=Ov23liLdii0jEwXkFp9d&scope=repo&redirect_uri=https://repo-guard-io.vercel.app/';
+    const redirectUri = encodeURIComponent(window.location.origin + '/');
+    window.location.href = `https://github.com/login/oauth/authorize?client_id=Ov23liLdii0jEwXkFp9d&scope=repo&redirect_uri=${redirectUri}`;
   };
 
   // Check for session/token on mount
@@ -202,7 +202,10 @@ export default function App() {
       fetch(`${baseUrl}/api/auth/callback`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code })
+        body: JSON.stringify({ 
+          code, 
+          redirect_uri: window.location.origin + '/' 
+        })
       })
         .then(res => res.json())
         .then(data => {
