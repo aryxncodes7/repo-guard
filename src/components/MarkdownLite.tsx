@@ -103,16 +103,7 @@ export default function MarkdownLite({ text }: MarkdownLiteProps) {
         urlTransform={getSafeHref}
         components={markdownComponents}
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[[rehypeSanitize, {
-          tagNames: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'ul', 'li', 'a', 'code', 'pre'],
-          attributes: {
-            'code': [['className', /^language-[a-zA-Z0-9_-]+$/]],
-            'a': ['href', 'target', 'rel']
-          },
-          protocols: {
-            href: ['http', 'https']
-          }
-        }]]}
+        rehypePlugins={[rehypeSanitize]}
       >
         {safeText}
       </ReactMarkdown>

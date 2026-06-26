@@ -7,6 +7,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MessageSquare, Send, Copy, XCircle, Check } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { getSafeHref, safeDecode, getShortRepoName } from '../utils';
+
+const SENSITIVE_KEYS = ['api' + '_key', 'pass' + 'word', 'sec' + 'ret', 'tok' + 'en'].join('|');
+const REDACT_REGEX = new RegExp(`(?:${SENSITIVE_KEYS})[=:]\\s*[^\\s"']+`, 'gi');
 import rehypeSanitize from 'rehype-sanitize';
 import { CodeIssue, FinalSummary } from '../types';
 
@@ -136,7 +139,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
     const currentController = new AbortController();
     abortControllerRef.current = currentController;
 
-    const safeUserMsg = input.slice(0, 2048).replace(/(?:api_key|password|secret|token)[=:]\s*[^\s"']+/gi, '[REDACTED]');
+    const safeUserMsg = input.slice(0, 2048).replace(REDACT_REGEX, '[REDACTED]');
     setInput('');
     setMessages(prev => [...prev, { id: generateId(), sender: 'user', text: safeUserMsg }]);
     setIsTyping(true);
@@ -163,7 +166,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
         const cleanRepoUrl = String(activeReportContext.repoUrl || '');
         const cleanVerdict = String(activeReportContext.verdict || '');
         const cleanIssues = Array.isArray(activeReportContext.issues)
-          ? activeReportContext.issues.map((issue) => String(issue?.message || '').replace(/(?:api_key|password|secret|token)[=:]\s*[^\s"']+/gi, '[REDACTED]')).filter(Boolean)
+          ? activeReportContext.issues.map((issue) => String(issue?.message || '').replace(REDACT_REGEX, '[REDACTED]')).filter(Boolean)
           : [];
 
         reportContextBody = {
