@@ -192,19 +192,10 @@ export default function App() {
     const clientId = "Ov23liLdii0jEwXkFp9d"; 
     const redirectUri = window.location.origin + '/';
     
-    const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=repo,user&prompt=consent`;
+    const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=repo,user`;
     
-    const width = 600;
-    const height = 700;
-    const left = window.screen.width / 2 - width / 2;
-    const top = window.screen.height / 2 - height / 2;
-
-    console.log("🚀 Spawning centered GitHub authentication popup context...");
-    window.open(
-      githubAuthUrl,
-      'RepoGuard Authentication Terminal',
-      `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,resizable=yes`
-    );
+    // Clean redirect in the same tab
+    window.location.href = githubAuthUrl;
   };
 
   const executeTokenExchangeHandshake = async (code: string) => {
@@ -221,9 +212,7 @@ export default function App() {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error(`Proxy authentication network response returned status code: ${response.status}`);
-      }
+      if (!response.ok) throw new Error("Exchange failed");
 
       const data = await response.json();
       console.log("📥 Backend token exchange data payload received:", data);
@@ -242,12 +231,14 @@ export default function App() {
         if (data.user) setGithubConnectedUser(data.user);
         if (data.avatar) setGithubAvatar(data.avatar);
         
+        // ✨ CRITICAL: Clear the ?code=... from the URL bar immediately after login success
+        window.history.replaceState({}, document.title, window.location.pathname);
         console.log("🔥 State-flip complete. User is now authenticated into RepoGuard.");
       } else {
         console.error("❌ Token exchange succeeded but returned empty or invalid token field metadata.");
       }
     } catch (error) {
-      console.error("💥 Critical error encountered during OAuth token exchange execution:", error);
+      console.error("💥 Auth error:", error);
     }
   };
 
@@ -255,41 +246,10 @@ export default function App() {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
 
-    // CASE A: This window is a TEMPORARY POPUP tab authorized by GitHub
-    if (code && window.opener) {
-      console.log("⚡ [Auth Popup] Code caught in popup. Transmitting to parent workspace...");
-      window.opener.postMessage(
-        { type: 'GITHUB_OAUTH_SUCCESS', code }, 
-        window.location.origin
-      );
-      window.close();
-      return;
-    }
-
-    // CASE B: FALLBACK - The code landed DIRECTLY on the main workspace tab URL
-    if (code && !window.opener) {
-      console.log("🚀 [Workspace Fallback] Code detected directly in the main window URL. Processing login...");
-      
-      // Execute the token handshake directly
+    if (code) {
+      console.log("🎉 Code detected in URL, executing exchange...");
       executeTokenExchangeHandshake(code);
-      
-      // Clean the address bar immediately so the code doesn't replay on manual refreshes
-      window.history.replaceState({}, document.title, window.location.pathname);
     }
-
-    // CASE C: STANDARD POPUP LISTENER - This is the main workspace waiting for a popup window's message
-    const handleOAuthMessage = async (event: MessageEvent) => {
-      // Security check
-      if (event.origin !== window.location.origin) return;
-
-      if (event.data?.type === 'GITHUB_OAUTH_SUCCESS' && event.data.code) {
-        console.log("🎉 [Workspace] Captured code transmitted from popup window channel:", event.data.code);
-        await executeTokenExchangeHandshake(event.data.code);
-      }
-    };
-
-    window.addEventListener('message', handleOAuthMessage);
-    return () => window.removeEventListener('message', handleOAuthMessage);
   }, []);
 
   const [repoUrl, setRepoUrl] = useState<string>('https://github.com/');
