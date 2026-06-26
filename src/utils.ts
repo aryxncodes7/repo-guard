@@ -28,7 +28,6 @@ export const ALLOWED_EMAIL_DOMAINS = parsedDomains.length > 0
 
 const MAX_REPO_URL_LENGTH = 200;
 
-const ENTITY_REGEX = /&(?:#x([0-9a-fA-F]{1,6});?|#(\d{1,7});?|colon;?|tab;?|newline;?)/gi;
 const STRIP_CHARS_REGEX = /[\s\x00-\x1F\x7F-\x9F]/g;
 
 export function getSafeHref(href?: string) {
@@ -43,7 +42,11 @@ export function getSafeHref(href?: string) {
       const match = sanitized.match(/href="([^"]*)"/);
       if (!match) return undefined;
       decodedHref = match[1];
-    } catch (e) {}
+    } catch (e) {
+      return undefined;
+    }
+  } else if (typeof window !== 'undefined') {
+    return undefined;
   }
     
   try {

@@ -6,7 +6,7 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
+import rehypeSanitize from 'rehype-sanitize';
 import { getSafeHref } from '../utils';
 
 interface MarkdownLiteProps {
@@ -105,15 +105,12 @@ export default function MarkdownLite({ text }: MarkdownLiteProps) {
         components={markdownComponents}
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[[rehypeSanitize, {
-          ...defaultSchema,
           tagNames: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'ul', 'li', 'a', 'code', 'pre'],
           attributes: {
-            ...defaultSchema.attributes,
-            'code': [...(defaultSchema.attributes?.code || []), ['className', /^language-[a-zA-Z0-9_-]+$/]],
-            'a': [...(defaultSchema.attributes?.a || []), 'href', 'target', 'rel']
+            'code': [['className', /^language-[a-zA-Z0-9_-]+$/]],
+            'a': ['href', 'target', 'rel']
           },
           protocols: {
-            ...defaultSchema.protocols,
             href: ['http', 'https']
           }
         }]]}
