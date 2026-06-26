@@ -190,14 +190,8 @@ export default function App() {
 
   const handleConnectGithub = () => {
     const redirectUri = encodeURIComponent(window.location.origin + '/');
-    const url = `https://github.com/login/oauth/authorize?client_id=Ov23liLdii0jEwXkFp9d&scope=repo&redirect_uri=${redirectUri}&prompt=consent`;
-    
-    const width = 600;
-    const height = 700;
-    const left = window.screen.width / 2 - width / 2;
-    const top = window.screen.height / 2 - height / 2;
-    
-    window.open(url, 'github-oauth', `width=${width},height=${height},top=${top},left=${left}`);
+    const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=Ov23liLdii0jEwXkFp9d&scope=repo,user&redirect_uri=${redirectUri}&prompt=consent`;
+    window.location.href = githubAuthUrl;
   };
 
   const handleCodeExchange = (code: string) => {
@@ -232,25 +226,8 @@ export default function App() {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
     if (code) {
-      if (window.opener && window.opener !== window) {
-        // We are inside the popup! Send code to parent and close
-        window.opener.postMessage({ type: 'GITHUB_OAUTH_CODE', code }, window.location.origin);
-        window.close();
-        return;
-      }
-      // Fallback if not in popup
       handleCodeExchange(code);
     }
-
-    const handleMessage = (event: MessageEvent) => {
-      if (event.origin !== window.location.origin) return;
-      if (event.data?.type === 'GITHUB_OAUTH_CODE') {
-        handleCodeExchange(event.data.code);
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
   }, []);
 
   const [repoUrl, setRepoUrl] = useState<string>('https://github.com/');
