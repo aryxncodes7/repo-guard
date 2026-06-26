@@ -188,11 +188,7 @@ export default function App() {
     }
   }, [githubConnected, githubConnectedUser, githubToken]);
 
-  const handleConnectGithub = () => {
-    const redirectUri = encodeURIComponent(window.location.origin + '/');
-    const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=Ov23liLdii0jEwXkFp9d&scope=repo,user&redirect_uri=${redirectUri}&prompt=consent`;
-    window.location.href = githubAuthUrl;
-  };
+
 
   const handleCodeExchange = async (code: string) => {
     try {
@@ -759,16 +755,7 @@ export default function App() {
 
               {/* Actions segment right */}
               <div className="flex items-center gap-3">
-                {!githubConnected && (
-                  <button
-                    type="button"
-                    onClick={handleConnectGithub}
-                    className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-white dark:text-zinc-200 rounded-xl font-bold text-xs shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all border border-emerald-500/50 cursor-pointer"
-                  >
-                    <Github className="w-3.5 h-3.5" />
-                    <span>Connect GitHub</span>
-                  </button>
-                )}
+
                 {githubConnected && (
                   <motion.div
                     whileHover={{ scale: 1.02, y: -0.5 }}
@@ -907,23 +894,7 @@ export default function App() {
                       {!githubConnected ? (
                         <>
                           {/* Divider */}
-                          <div className="relative flex items-center py-2" aria-hidden="true">
-                            <div className="flex-grow border-t border-slate-200 dark:border-zinc-800"></div>
-                            <span className="flex-shrink-0 mx-4 text-[10px] text-slate-400 dark:text-zinc-500 font-extrabold uppercase tracking-widest bg-white dark:bg-zinc-900 px-2 rounded-full border border-slate-200 dark:border-zinc-800 shadow-sm relative">
-                              OR
-                            </span>
-                            <div className="flex-grow border-t border-slate-200 dark:border-zinc-800"></div>
-                          </div>
 
-                          {/* Path B: GitHub Import */}
-                          <button
-                            type="button"
-                            onClick={handleConnectGithub}
-                            className="w-full bg-slate-900 hover:bg-slate-800 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-white dark:text-zinc-200 font-sans font-semibold py-2.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.3)] border border-emerald-500/50 hover:translate-y-[-0.5px] active:translate-y-[0.5px]"
-                          >
-                            <Github className="w-4 h-4 fill-current opacity-80" />
-                            <span>Connect GitHub Account</span>
-                          </button>
                         </>
                       ) : (
                         <div className="mt-6 border-t border-slate-200 dark:border-zinc-800 pt-6 animate-fade-in">
