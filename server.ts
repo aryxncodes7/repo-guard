@@ -498,9 +498,10 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  const server = app.listen(PORT, "0.0.0.0", () => {
     console.log(`RepoGuard system server running on http://0.0.0.0:${PORT}`);
   });
+  server.setTimeout(300000);
 }
 
 if (!process.env.VERCEL) {
