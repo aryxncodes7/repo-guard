@@ -106,7 +106,7 @@ export default function MarkdownLite({ text }: MarkdownLiteProps) {
         rehypePlugins={[[rehypeSanitize, {
           tagNames: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'em', 'ul', 'li', 'a', 'code', 'pre', 'blockquote'],
           attributes: {
-            'a': ['href', 'target', 'rel'],
+            'a': ['href'],
             'code': [['className', /^language-[a-zA-Z0-9_-]+$/]]
           },
           protocols: {

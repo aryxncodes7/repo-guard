@@ -8,8 +8,7 @@ import { MessageSquare, Send, Copy, XCircle, Check } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { getSafeHref, safeDecode, getShortRepoName } from '../utils';
 
-const SENSITIVE_KEYS = ['api' + '_key', 'pass' + 'word', 'sec' + 'ret', 'tok' + 'en'].join('|');
-const REDACT_REGEX = new RegExp(`(?:${SENSITIVE_KEYS})[\\s"':=]+[^\\s"']+`, 'gi');
+// Client-side redaction removed in favor of robust server-side redaction
 import rehypeSanitize from 'rehype-sanitize';
 import { CodeIssue, FinalSummary } from '../types';
 
@@ -139,7 +138,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
     const currentController = new AbortController();
     abortControllerRef.current = currentController;
 
-    const safeUserMsg = input.slice(0, 2048).replace(REDACT_REGEX, '[REDACTED]');
+    const safeUserMsg = input.slice(0, 2048);
     setInput('');
     setMessages(prev => [...prev, { id: generateId(), sender: 'user', text: safeUserMsg }]);
     setIsTyping(true);
