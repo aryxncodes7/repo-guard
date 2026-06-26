@@ -133,6 +133,7 @@ app.post("/api/auth/callback", async (req, res) => {
   const redirect_uri = (req.body as any)?.redirect_uri;
   if (!code) return res.status(400).json({ error: "No code provided" });
   try {
+    console.log(`[OAuth Backend] Exchanging code: ${code} with redirect_uri: ${redirect_uri}`);
     const response = await fetch("https://github.com/login/oauth/access_token", {
       method: "POST",
       headers: {
@@ -146,8 +147,12 @@ app.post("/api/auth/callback", async (req, res) => {
         ...(redirect_uri ? { redirect_uri } : {})
       })
     });
+    
     const data = await response.json() as any;
+    console.log("[OAuth Backend] GitHub Token Exchange Response:", data);
+    
     if (data.access_token) {
+      console.log("[OAuth Backend] Successfully retrieved access_token. Fetching user profile...");
       const userRes = await fetch("https://api.github.com/user", {
         headers: {
           "Authorization": `token ${data.access_token}`,
@@ -155,11 +160,15 @@ app.post("/api/auth/callback", async (req, res) => {
         }
       });
       const userData = await userRes.json() as any;
+      console.log(`[OAuth Backend] Fetched user profile for: ${userData.login}`);
       return res.json({ access_token: data.access_token, user: userData.login, avatar: userData.avatar_url });
     }
-    return res.status(400).json({ error: "Invalid code or exchange failed" });
+    
+    console.error("[OAuth Backend] Exchange failed! GitHub responded with error:", data);
+    return res.status(400).json({ error: "Invalid code or exchange failed", details: data });
   } catch (e) {
-    return res.status(500).json({ error: "Internal error during OAuth exchange" });
+    console.error("[OAuth Backend] Internal error during exchange:", e);
+    return res.status(500).json({ error: "Internal error during OAuth exchange", details: String(e) });
   }
 });
 

@@ -194,31 +194,49 @@ export default function App() {
     window.location.href = githubAuthUrl;
   };
 
-  const handleCodeExchange = (code: string) => {
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
-    fetch(`${baseUrl}/api/auth/callback`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        code, 
-        redirect_uri: window.location.origin + '/' 
-      })
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.access_token && data.user) {
-          setGithubConnected(true);
-          setGithubConnectedUser(data.user);
-          setGithubAvatar(data.avatar || '');
-          localStorage.setItem('repoguard-github-linked', 'true');
-          localStorage.setItem('repoguard-github-user', data.user);
-          localStorage.setItem('repoguard-github-avatar', data.avatar || '');
-          localStorage.setItem('repoguard-github-token', data.access_token);
-        }
-      })
-      .finally(() => {
-        window.history.replaceState({}, document.title, window.location.pathname);
+  const handleCodeExchange = async (code: string) => {
+    try {
+      console.log("📡 [OAuth] Sending code to backend proxy...");
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+      const response = await fetch(`${baseUrl}/api/auth/callback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          code, 
+          redirect_uri: encodeURIComponent(window.location.origin + '/') 
+        })
       });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        console.error("❌ [OAuth] Backend exchange error payload:", errData);
+        throw new Error(`Backend token exchange failed with status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("✅ [OAuth] Received token payload from backend:", data);
+
+      if (data.access_token) {
+        // Commit to state and localStorage
+        setGithubConnected(true);
+        if (data.user) setGithubConnectedUser(data.user);
+        if (data.avatar) setGithubAvatar(data.avatar);
+        
+        localStorage.setItem('repoguard-github-linked', 'true');
+        if (data.user) localStorage.setItem('repoguard-github-user', data.user);
+        if (data.avatar) localStorage.setItem('repoguard-github-avatar', data.avatar);
+        localStorage.setItem('repoguard-github-token', data.access_token);
+        
+        console.log("🎉 [OAuth] State successfully updated! UI should now flip.");
+
+        // ONLY clear the URL parameters AFTER state is successfully committed
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } else {
+        console.error("❌ [OAuth] Backend responded but did not return an access token field.");
+      }
+    } catch (error) {
+      console.error("💥 [OAuth] Error during token exchange lifecycle:", error);
+    }
   };
 
   // Check for session/token on mount
@@ -226,6 +244,7 @@ export default function App() {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
     if (code) {
+      console.log("🚀 [OAuth] Found authorization code in URL:", code);
       handleCodeExchange(code);
     }
   }, []);
