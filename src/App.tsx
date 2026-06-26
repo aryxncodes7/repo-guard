@@ -304,6 +304,7 @@ export default function App() {
       'Content-Type': 'application/json'
     };
     if (githubToken) reviewHeaders['x-github-token'] = githubToken;
+    if (apiKey) reviewHeaders['x-gemini-key'] = apiKey;
 
     const requestBody = {
       repo_url: repoUrl.trim(),
@@ -432,7 +433,15 @@ export default function App() {
       }
     };
 
-    const handleDisconnectGithub = () => {
+    const handleDisconnect = () => {
+      // Wipe the URL address query parameters completely clean
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      localStorage.removeItem('repoguard-github-linked');
+      localStorage.removeItem('repoguard-github-user');
+      localStorage.removeItem('repoguard-github-avatar');
+      localStorage.removeItem('repoguard-github-token-custom');
+
       setGithubConnected(false);
       setGithubConnectedUser('');
       setGithubAvatar('');
@@ -441,13 +450,7 @@ export default function App() {
       setRepoSearchQuery('');
       setRepoUrl('https://github.com/');
       
-      localStorage.removeItem('repoguard-github-linked');
-      localStorage.removeItem('repoguard-github-user');
-      localStorage.removeItem('repoguard-github-avatar');
-      localStorage.removeItem('repoguard-github-token-custom');
-      
-      // Sanitize URL to prevent re-login loop
-      window.history.replaceState({}, document.title, window.location.pathname);
+      window.location.reload();
     };
 
     return (
@@ -548,82 +551,16 @@ export default function App() {
               </div>
             </div>
 
-            {/* GitHub Account Connection */}
-            <div className="p-4 rounded-xl border border-dashed border-slate-200 dark:border-zinc-700 bg-slate-50/50 dark:bg-zinc-950/10 space-y-3.5">
-              <div className="flex items-center gap-2">
-                <Github className="w-4 h-4 text-slate-800 dark:text-zinc-200" />
-                <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 font-sans">GitHub Identity Alignment</span>
-              </div>
-              <p className="text-[10.5px] text-slate-500 dark:text-zinc-400 leading-relaxed font-sans">
-                Authorize RepoGuard to retrieve and synchronize with branch changes from your repository staging workflows.
-              </p>
-
-              {githubConnected ? (
-                <div className="p-3 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-800 rounded-xl flex items-center justify-between shadow-sm animate-fade-in group">
-                  <div className="flex items-center gap-2.5">
-                    {githubAvatar ? (
-                      <img
-                        src={githubAvatar}
-                        alt={githubConnectedUser}
-                        referrerPolicy="no-referrer"
-                        className="w-8 h-8 rounded-full border border-slate-200 dark:border-zinc-700 shadow-sm"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-xs text-slate-600">
-                        GH
-                      </div>
-                    )}
-                    <div>
-                      <a
-                        href={`https://github.com/${githubConnectedUser}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-xs font-bold text-slate-800 dark:text-zinc-200 hover:text-emerald-600 transition flex items-center gap-1 font-sans"
-                      >
-                        @{githubConnectedUser}
-                      </a>
-                      <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold uppercase block tracking-wider font-sans">
-                        CONNECTED
-                      </span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleDisconnectGithub}
-                    type="button"
-                    className="p-1.5 text-[10px] font-bold text-rose-600 hover:text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/20 hover:bg-rose-100/55 dark:hover:bg-rose-900/30 rounded-lg transition cursor-pointer"
-                    aria-label="Disconnect GitHub profile"
-                  >
-                    Disconnect
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={handleLinkGithub} className="space-y-3">
-                  <div className="space-y-1">
-                    <label htmlFor="github-username-input" className="sr-only">GitHub username</label>
-                    <input
-                      id="github-username-input"
-                      type="text"
-                      placeholder="Enter GitHub username (e.g. aryxncodes7)"
-                      value={usernameInput}
-                      onChange={(e) => setUsernameInput(e.target.value)}
-                      className="w-full px-3 py-1.5 text-xs bg-white dark:bg-zinc-900 dark:text-zinc-200 border border-slate-300 dark:border-zinc-700 focus:border-emerald-500 rounded-lg text-slate-800 focus:outline-none transition font-sans"
-                    />
-                    {linkError && (
-                      <p className="text-[9px] font-semibold text-rose-600 dark:text-rose-400 animate-fade-in mt-1 font-sans">
-                        ⚠️ {linkError}
-                      </p>
-                    )}
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={isLinking}
-                    className="w-full py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50 transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
-                  >
-                    {isLinking ? 'Verifying profile...' : 'Align GitHub Profile'}
-                  </button>
-                </form>
-              )}
-            </div>
+            {/* GitHub Account Disconnect */}
+            {githubConnected && (
+              <button
+                onClick={handleDisconnect}
+                type="button"
+                className="w-full py-2.5 rounded-xl text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/50 hover:bg-rose-100 dark:hover:bg-rose-900/30 transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm font-sans"
+              >
+                Disconnect GitHub Account
+              </button>
+            )}
           </div>
 
           <div className="p-4 border-t border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-800 text-center text-[10px] text-slate-400 dark:text-zinc-500 font-extrabold uppercase tracking-wide font-sans">

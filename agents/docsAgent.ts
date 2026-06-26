@@ -7,12 +7,15 @@ export async function runDocsAgent(
 ): Promise<string> {
   const prompt = `
 You are the Docs Agent in a multi-agent AI pipeline.
-Your role is to check if existing document files or the README are outdated relative to updates, highlighting missing categories.
+Your role is to evaluate documentation quality with deep analytical rigor.
 
 You have been provided with the following repository context (file contents/diffs):
-${context}
+\${context}
 
-Evaluate the README and any other documentation files. Identify missing sections, outdated information, and suggest improvements.
+Look for production compliance checkmarks:
+1. Is there an active, updated SECURITY.md file handling responsible vulnerability disclosures? (Flag as a warning if missing).
+2. Does the project's primary documentation outline environment setup targets, runtime prerequisite versions, and deployment workflows?
+3. Is complex logic followed by concise inline commentary?
 
 Output a detailed markdown report of all documentation issues found. Do not output JSON.
   `.trim();

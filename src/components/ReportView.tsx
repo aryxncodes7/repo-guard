@@ -345,6 +345,28 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack }: Repo
                   <motion.div initial={{ width: 0 }} animate={{ width: "76%" }} transition={{ duration: 1, delay: 0.5 }} className="h-full bg-teal-500 rounded-full" />
                 </div>
               </div>
+
+              {/* Runtime Efficiency Bar */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-xs font-sans">
+                  <span className="font-extrabold text-slate-700 dark:text-zinc-300">Runtime Efficiency</span>
+                  <span className="font-extrabold text-cyan-600 dark:text-cyan-400">{activeReviewResult.metrics?.efficiency || 85}%</span>
+                </div>
+                <div className="h-1.5 w-full bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${activeReviewResult.metrics?.efficiency || 85}%` }} transition={{ duration: 1, delay: 0.6 }} className="h-full bg-cyan-500 rounded-full" />
+                </div>
+              </div>
+
+              {/* Architectural Quality Bar */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-xs font-sans">
+                  <span className="font-extrabold text-slate-700 dark:text-zinc-300">Architectural Quality</span>
+                  <span className="font-extrabold text-emerald-600 dark:text-emerald-400">{activeReviewResult.metrics?.codeQuality || 92}%</span>
+                </div>
+                <div className="h-1.5 w-full bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${activeReviewResult.metrics?.codeQuality || 92}%` }} transition={{ duration: 1, delay: 0.7 }} className="h-full bg-emerald-500 rounded-full" />
+                </div>
+              </div>
             </div>
           </div>
 

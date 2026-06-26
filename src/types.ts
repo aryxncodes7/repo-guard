@@ -40,6 +40,11 @@ export interface FinalSummary {
   top_priority_fixes: string[];
 }
 
+export interface ReportMetrics {
+  efficiency: number;
+  codeQuality: number;
+}
+
 export interface ReviewResponse {
   status: 'success' | 'error';
   message?: string;
@@ -52,6 +57,7 @@ export interface ReviewResponse {
   code_review: CodeReview;
   docs_review: DocsReview;
   final_summary: FinalSummary;
+  metrics: ReportMetrics;
 }
 
 export type ReviewState = 'idle' | 'reviewing' | 'report' | 'error';

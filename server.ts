@@ -258,7 +258,7 @@ async function getRepositoryDetails(owner: string, repo: string, token?: string)
 app.post("/api/review", async (req, res) => {
   const repo_url = (req.body as any)?.repo_url;
   const pr_number = (req.body as any)?.pr_number;
-  const api_key = (req.headers["x-api-key"] as string) || (req.body as any)?.api_key || getCookie(req, "repoguard_gemini_key");
+  const api_key = (req.headers["x-gemini-key"] as string) || (req.headers["x-api-key"] as string) || (req.body as any)?.api_key || getCookie(req, "repoguard_gemini_key");
   const github_token = (req.headers["x-github-token"] as string) || (req.body as any)?.github_token;
 
   if (req.body) {
@@ -400,7 +400,7 @@ ${repoFilesText}
 app.post("/api/chat", async (req, res) => {
   const message = (req.body as any)?.message;
   const history = (req.body as any)?.history;
-  const api_key = (req.headers["x-api-key"] as string) || (req.body as any)?.api_key || getCookie(req, "repoguard_gemini_key");
+  const api_key = (req.headers["x-gemini-key"] as string) || (req.headers["x-api-key"] as string) || (req.body as any)?.api_key || getCookie(req, "repoguard_gemini_key");
 
   if (req.body) {
     delete (req.body as any).api_key;

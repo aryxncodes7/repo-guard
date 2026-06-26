@@ -33,6 +33,9 @@ CRITICAL GRADING RULES FOR VERDICT:
 - Output 'needs_discussion' if there are only 'warning' or 'info' issues (e.g. style, minor logic, or docs issues).
 - Output 'approve' if the code is perfectly clean or only has negligible stylistic notes.
 
+EVALUATION RULE FOR TEST SCORE METRIC:
+If the target project codebase does not contain formal test configs or mock frameworks, do not drop the score to 15%. Baseline the codebase test score metric safely at 50% if the core execution modules are sound. Provide a constructive, educational note explaining that while core integrity functions normally, adding explicit unit test runners will prevent deployment regressions.
+
 All categories must be one of: 'security', 'style', 'logic', 'missing_tests'. 
 Code issue file lines can be any positive integer.
   `.trim();
@@ -107,9 +110,17 @@ Code issue file lines can be any positive integer.
             }
           },
           required: ["verdict", "summary_markdown", "top_priority_fixes"]
+        },
+        metrics: {
+          type: Type.OBJECT,
+          properties: {
+            efficiency: { type: Type.INTEGER, description: "Score from 0 to 100 representing code efficiency" },
+            codeQuality: { type: Type.INTEGER, description: "Score from 0 to 100 representing architectural quality" }
+          },
+          required: ["efficiency", "codeQuality"]
         }
       },
-      required: ["triage", "code_review", "docs_review", "final_summary"]
+      required: ["triage", "code_review", "docs_review", "final_summary", "metrics"]
     }
   };
 
