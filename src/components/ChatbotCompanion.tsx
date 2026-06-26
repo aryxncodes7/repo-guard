@@ -157,8 +157,14 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       let finalMessage = String(safeUserMsg).trim().slice(0, 4000);
       
       const chatHeaders: Record<string, string> = {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
       };
+      
+      const customApiKey = localStorage.getItem('repoguard-gemini-key');
+      if (customApiKey) {
+        chatHeaders['x-gemini-key'] = customApiKey;
+      }
 
       let reportContextBody: any = undefined;
 
@@ -327,6 +333,9 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
         )}
       </div>
 
+      <div className="px-3 py-1.5 bg-amber-50 dark:bg-amber-500/10 border-t border-amber-200/50 dark:border-amber-500/20 text-[10px] text-amber-700 dark:text-amber-400 font-sans flex items-center justify-center text-center">
+        ⚠️ Warning: Client-side redaction may not catch all secrets. Do not paste real production credentials.
+      </div>
       <form onSubmit={handleSendMessage} className="p-3 bg-white dark:bg-zinc-900 border-t border-slate-200 dark:border-zinc-800 flex gap-2">
         <label htmlFor="security-chat-input" className="sr-only">Type message to AI Security Companion</label>
         <input
