@@ -9,7 +9,7 @@ import ReactMarkdown from 'react-markdown';
 import { getSafeHref, safeDecode, getShortRepoName } from '../utils';
 
 const SENSITIVE_KEYS = ['api' + '_key', 'pass' + 'word', 'sec' + 'ret', 'tok' + 'en'].join('|');
-const REDACT_REGEX = new RegExp(`(?:${SENSITIVE_KEYS})[=:]\\s*[^\\s"']+`, 'gi');
+const REDACT_REGEX = new RegExp(`(?:${SENSITIVE_KEYS})[\\s"':=]+[^\\s"']+`, 'gi');
 import rehypeSanitize from 'rehype-sanitize';
 import { CodeIssue, FinalSummary } from '../types';
 
@@ -166,7 +166,9 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
         const cleanRepoUrl = String(activeReportContext.repoUrl || '');
         const cleanVerdict = String(activeReportContext.verdict || '');
         const cleanIssues = Array.isArray(activeReportContext.issues)
-          ? activeReportContext.issues.map((issue) => `[${issue?.severity}] ${issue?.category} at ${issue?.file}:${issue?.line}`)
+          ? activeReportContext.issues
+              .filter(issue => issue && typeof issue === 'object' && !Array.isArray(issue))
+              .map((issue: any) => `[${String(issue.severity || 'info')}] ${String(issue.category || 'general')} at ${String(issue.file || 'unknown')}:${Number(issue.line || 0)}`)
           : [];
 
         reportContextBody = {
