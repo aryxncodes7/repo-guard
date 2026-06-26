@@ -248,20 +248,20 @@ export function parseUrlOrImplicitPath(inputUrl: string): string {
   if (inputUrl.includes("..")) return "";
   const secureUrl = inputUrl.replace(/^http:/i, "https:");
   
-  const GITHUB_URL_REGEX = /^https:\/\/(?:www\.)?github\.com(?::\d+)?(?:\/[\s\S]*)?$/i;
+  const GITHUB_URL_REGEX = /^https:\/\/(?:www\.)?github\.com(?::\d+)?(?:\/[\s\S]{0,2000})?$/i;
   if (GITHUB_URL_REGEX.test(secureUrl)) {
     return secureUrl;
   }
   
   if (inputUrl.startsWith("//")) {
-    const protocolRelativeRegex = /^\/\/(?:www\.)?github\.com(?::\d+)?(?:\/[\s\S]*)?$/i;
+    const protocolRelativeRegex = /^\/\/(?:www\.)?github\.com(?::\d+)?(?:\/[\s\S]{0,2000})?$/i;
     if (protocolRelativeRegex.test(inputUrl)) {
        return `https:${inputUrl}`;
     }
     return "";
   }
   
-  const hostStartRegex = /^(?:www\.)?github\.com(?::\d+)?(?:\/[\s\S]*)?$/i;
+  const hostStartRegex = /^(?:www\.)?github\.com(?::\d+)?(?:\/[\s\S]{0,2000})?$/i;
   if (hostStartRegex.test(inputUrl)) {
     return `https://${inputUrl}`;
   }

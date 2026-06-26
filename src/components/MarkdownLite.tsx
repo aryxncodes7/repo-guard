@@ -106,11 +106,10 @@ export default function MarkdownLite({ text }: MarkdownLiteProps) {
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[[rehypeSanitize, {
           ...defaultSchema,
-          tagNames: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'ul', 'li', 'a', 'code', 'pre', 'span', 'div'],
+          tagNames: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'ul', 'li', 'a', 'code', 'pre'],
           attributes: {
             ...defaultSchema.attributes,
             'code': [...(defaultSchema.attributes?.code || []), ['className', /^language-[a-zA-Z0-9_-]+$/]],
-            'span': [...(defaultSchema.attributes?.span || []), 'className'],
             'a': [...(defaultSchema.attributes?.a || []), 'href', 'target', 'rel']
           },
           protocols: {
