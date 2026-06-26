@@ -54,8 +54,7 @@ const markdownComponents = {
   },
   code: ({ inline, className, children, node, siblingIndex, index, ...props }: React.HTMLAttributes<HTMLElement> & { inline?: boolean; node?: unknown; siblingIndex?: number; index?: number }) => {
     const codeString = String(children || '')
-      .replace(/\n$/, '')
-      .replace(/[\u200B-\u200D\uFEFF\u202A-\u202E]/g, '');
+      .replace(/\n$/, '');
     const isInline = typeof inline === 'boolean' ? inline : !codeString.includes('\n');
     return isInline ? (
       <code className={className || "bg-slate-100 dark:bg-zinc-700/60 px-1 py-0.5 rounded text-[10px] font-sans font-bold text-emerald-600 dark:text-emerald-400"} {...props}>
@@ -85,7 +84,10 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
   const prevContextRef = useRef(activeReportContext);
   const initialized = useRef(false);
   useEffect(() => {
-    if (prevContextRef.current !== activeReportContext && prevContextRef.current !== undefined) {
+    let isActive = true;
+    const isNewContext = prevContextRef.current !== activeReportContext && prevContextRef.current !== undefined;
+    
+    if (isNewContext) {
       setMessages([INITIAL_MESSAGE]);
       setInput('');
       setIsTyping(false);
@@ -96,26 +98,15 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       }
     }
     prevContextRef.current = activeReportContext;
-  }, [activeReportContext]);
 
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages]);
-
-  // If there is context and the chat just opened, we can customize the greeting
-  const repoUrl = activeReportContext?.repoUrl;
-  
-  useEffect(() => {
-    let isActive = true;
+    const repoUrl = activeReportContext?.repoUrl;
     if (!initialized.current && repoUrl) {
       initialized.current = true;
       let shortName = safeDecode(getShortRepoName(repoUrl) || 'this repository');
 
       if (isActive) {
         setMessages(prev => {
-          const isFresh = prev.length === 1 && prev[0].id === '1';
+          const isFresh = prev.length === 1 && (prev[0].id === '1' || prev[0].id === 'initial');
           const newMsg = { 
             id: generateId(),
             sender: 'assistant' as const, 
@@ -125,8 +116,15 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
         });
       }
     }
+
     return () => { isActive = false; };
-  }, [repoUrl]);
+  }, [activeReportContext]);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,7 +136,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
     const currentController = new AbortController();
     abortControllerRef.current = currentController;
 
-    const safeUserMsg = input.slice(0, 2048);
+    const safeUserMsg = input.slice(0, 2048).replace(/(?:api_key|password|secret|token)[=:]\s*[^\s"']+/gi, '[REDACTED]');
     setInput('');
     setMessages(prev => [...prev, { id: generateId(), sender: 'user', text: safeUserMsg }]);
     setIsTyping(true);
