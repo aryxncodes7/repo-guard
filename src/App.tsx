@@ -189,64 +189,107 @@ export default function App() {
   }, [githubConnected, githubConnectedUser, githubToken]);
 
   const handleConnectGithub = () => {
-    const redirectUri = encodeURIComponent(window.location.origin + '/');
-    const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=Ov23liLdii0jEwXkFp9d&scope=repo,user&redirect_uri=${redirectUri}&prompt=consent`;
-    window.location.href = githubAuthUrl;
+    const clientId = "Ov23liLdii0jEwXkFp9d"; 
+    const redirectUri = window.location.origin + '/';
+    
+    const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=repo,user&prompt=consent`;
+    
+    const width = 600;
+    const height = 700;
+    const left = window.screen.width / 2 - width / 2;
+    const top = window.screen.height / 2 - height / 2;
+
+    console.log("🚀 Spawning centered GitHub authentication popup context...");
+    window.open(
+      githubAuthUrl,
+      'RepoGuard Authentication Terminal',
+      `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,resizable=yes`
+    );
   };
 
-  const handleCodeExchange = async (code: string) => {
+  const executeTokenExchangeHandshake = async (code: string) => {
     try {
-      console.log("📡 [OAuth] Sending code to backend proxy...");
+      console.log("📡 Triggering secure backend exchange handler...");
       const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+      
       const response = await fetch(`${baseUrl}/api/auth/callback`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          code, 
-          redirect_uri: encodeURIComponent(window.location.origin + '/') 
-        })
+          code,
+          redirect_uri: encodeURIComponent(window.location.origin + '/')
+        }),
       });
 
       if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        console.error("❌ [OAuth] Backend exchange error payload:", errData);
-        throw new Error(`Backend token exchange failed with status: ${response.status}`);
+        throw new Error(`Proxy authentication network response returned status code: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log("✅ [OAuth] Received token payload from backend:", data);
-
+      console.log("📥 Backend token exchange data payload received:", data);
+      
       if (data.access_token) {
-        // Commit to state and localStorage
+        localStorage.setItem('repoguard-github-token', data.access_token);
+        localStorage.setItem('repoguard-github-linked', 'true');
+        if (data.user) {
+          localStorage.setItem('repoguard-github-user', data.user);
+        }
+        if (data.avatar) {
+          localStorage.setItem('repoguard-github-avatar', data.avatar);
+        }
+        
         setGithubConnected(true);
         if (data.user) setGithubConnectedUser(data.user);
         if (data.avatar) setGithubAvatar(data.avatar);
         
-        localStorage.setItem('repoguard-github-linked', 'true');
-        if (data.user) localStorage.setItem('repoguard-github-user', data.user);
-        if (data.avatar) localStorage.setItem('repoguard-github-avatar', data.avatar);
-        localStorage.setItem('repoguard-github-token', data.access_token);
-        
-        console.log("🎉 [OAuth] State successfully updated! UI should now flip.");
-
-        // ONLY clear the URL parameters AFTER state is successfully committed
-        window.history.replaceState({}, document.title, window.location.pathname);
+        console.log("🔥 State-flip complete. User is now authenticated into RepoGuard.");
       } else {
-        console.error("❌ [OAuth] Backend responded but did not return an access token field.");
+        console.error("❌ Token exchange succeeded but returned empty or invalid token field metadata.");
       }
     } catch (error) {
-      console.error("💥 [OAuth] Error during token exchange lifecycle:", error);
+      console.error("💥 Critical error encountered during OAuth token exchange execution:", error);
     }
   };
 
-  // Check for session/token on mount
   useEffect(() => {
+    // 1. Check if an auth code is present in the current URL path
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
-    if (code) {
-      console.log("🚀 [OAuth] Found authorization code in URL:", code);
-      handleCodeExchange(code);
+
+    // CONDITION A: This window is the TEMPORARY POPUP opened by the user
+    if (code && window.opener) {
+      console.log("⚡ [Auth Popup] Code caught. Transmitting to parent workspace...");
+      
+      // Post message back to the exact domain origin that spawned this popup
+      window.opener.postMessage(
+        { type: 'GITHUB_OAUTH_SUCCESS', code }, 
+        window.location.origin
+      );
+      
+      // Kill the popup window immediately to return user focus to the main dashboard
+      window.close();
+      return;
     }
+
+    // CONDITION B: This window is the MAIN APPLICATION WORKSPACE
+    const handleOAuthMessage = async (event: MessageEvent) => {
+      // Security Guard: Ignore messages from unauthorized external domains
+      if (event.origin !== window.location.origin) return;
+
+      // Listen exclusively for our custom success token string payload
+      if (event.data?.type === 'GITHUB_OAUTH_SUCCESS' && event.data.code) {
+        console.log("🎉 [Workspace] Successfully captured code from popup channel:", event.data.code);
+        
+        // Fire the asynchronous backend token exchange function
+        await executeTokenExchangeHandshake(event.data.code);
+      }
+    };
+
+    // Attach the message listener to the global window lifecycle
+    window.addEventListener('message', handleOAuthMessage);
+    
+    // Cleanup listener on unmount to save engine performance memory
+    return () => window.removeEventListener('message', handleOAuthMessage);
   }, []);
 
   const [repoUrl, setRepoUrl] = useState<string>('https://github.com/');
@@ -474,26 +517,27 @@ export default function App() {
       }
     };
 
-    const handleDisconnect = async () => {
+    const handleDisconnect = () => {
+      console.log("🗑️ Executing deep revocation cleanup routine...");
+      
       const token = localStorage.getItem('repoguard-github-token');
       if (token) {
         const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
-        await fetch(`${baseUrl}/api/auth/revoke`, {
+        fetch(`${baseUrl}/api/auth/revoke`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ access_token: token })
         }).catch(() => {});
       }
 
-      // Wipe the URL address query parameters completely clean
-      window.history.replaceState({}, document.title, window.location.pathname);
-      
+      // 1. Purge persistent client caches
       localStorage.removeItem('repoguard-github-linked');
       localStorage.removeItem('repoguard-github-user');
       localStorage.removeItem('repoguard-github-avatar');
       localStorage.removeItem('repoguard-github-token-custom');
       localStorage.removeItem('repoguard-github-token');
-
+      
+      // 2. Tear down active application engine contexts
       setGithubConnected(false);
       setGithubConnectedUser('');
       setGithubAvatar('');
@@ -502,6 +546,10 @@ export default function App() {
       setRepoSearchQuery('');
       setRepoUrl('https://github.com/');
       
+      // 3. Clean up the current URL string just in case an accidental artifact remains
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      // 4. Force a hard, clean window navigation refresh to ensure a perfectly fresh slate
       window.location.reload();
     };
 
