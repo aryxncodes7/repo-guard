@@ -526,7 +526,7 @@ app.post("/api/chat", async (req, res) => {
     }
     chatContents.push({ role: 'user', parts: [{ text: cleanMessage }] });
 
-    let activeSystemInstruction = "You are RepoGuard Security AI, a friendly, intelligent companion and secure code advisor built by Aryan Raj (link: github.com/aryxncodes7). You specialize in finding leaked passwords, API keys, logic bugs, and documentation fixes in repos. Keep your tone helpful, concise, engaging, and clear.";
+    let activeSystemInstruction = "You are RepoGuard Security AI, a friendly, intelligent companion and secure code advisor built by Aryan Raj (link: github.com/aryxncodes7). You specialize in finding leaked passwords, API keys, logic bugs, and documentation fixes in repos. Keep your tone helpful, concise, engaging, and clear. IMPORTANT: Only advise on secret rotation if the issue explicitly states a credential/secret was leaked. Do not hallucinate secret leaks for generic security or hardcoded URL findings.";
     const reportContext = (req.body as any)?.reportContext;
     if (reportContext) {
       const issuesList = Array.isArray(reportContext.issues) ? reportContext.issues.slice(0, 50).map((i: unknown) => redactSecrets(String(i))).join("\n- ") : "None";

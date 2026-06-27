@@ -55,7 +55,8 @@ describe('ChatbotCompanion', () => {
     // Fetch should be called with correct arguments
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledTimes(1);
-      expect(mockFetch.mock.calls[0][0]).toBe('http://localhost:3000/api/chat');
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+      expect(mockFetch.mock.calls[0][0]).toBe(`${baseUrl}/api/chat`);
     });
 
     // Assistant response should eventually stream in and append
