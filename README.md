@@ -1,6 +1,6 @@
 # 🛡️ RepoGuard: AI-Powered Repository Security Companion
 
-RepoGuard is a state-of-the-art multi-agent repository auditor and security companion designed to scan source code repositories and Pull Requests. It automatically identifies security vulnerabilities, exposes leaked secrets or API credentials, evaluates logic bugs, inspects code styles, and generates documentation verdicts. It also features a conversational AI companion to assist developers in reviewing findings and implementing immediate mitigations.
+RepoGuard is a smart AI teammate that watches your code repositories and Pull Requests to catch security bugs and quality issues before they hit production. Instead of dumping a massive list of confusing alerts on you, RepoGuard deploys a crew of specialized AI agents to hunt down leaked secrets, logic flaws, and messy documentation. Plus, it features a built-in chatbot sidebar so you can chat directly with the AI and get instant code fixes on the fly.
 
 ---
 
@@ -37,15 +37,11 @@ RepoGuard solves this by deploying a **Multi-Agent AI System** that acts as an i
 
 ---
 
-## 🛠️ Architecture Overview
-
-RepoGuard is built as a single-page application (SPA) backed by a secure proxy server to negotiate Gemini and GitHub API interactions without exposing secrets:
-
 ```mermaid
 graph TD
-    Client[Web Client<br>React + Tailwind + Framer Motion] -->|POST /api/review<br>or /api/chat| Proxy[Express Proxy Server<br>Node.js]
+    Client[Web Client<br>React + Tailwind + Framer Motion] -->|POST /api/review or /api/chat<br>+ x-gemini-key Header| Proxy[Express Proxy Server<br>Node.js]
     Proxy -->|Fetch Repo/PR Data| GitHub[GitHub API]
-    Proxy -->|Multi-Agent Analysis| Gemini[Gemini API]
+    Proxy -->|Dynamic Multi-Agent Analysis| Gemini[Gemini API]
     
     subgraph Multi-Agent System
         Gemini --> Triage[Triage Agent<br>Analyzes Scope & Risk]
@@ -118,11 +114,12 @@ npm install
 Create a `.env` file in the root directory (you can copy [.env.example](.env.example)):
 
 ```env
-# Your primary Gemini API credentials (fallback if not supplied in UI)
+# # Your primary Gemini API credentials (fallback if not supplied in UI)
 GEMINI_API_KEY=your_gemini_api_key_here
 
-# Optional: GitHub token to scan private repositories and prevent API rate-limiting
-GITHUB_TOKEN=your_github_personal_access_token
+# Required for processing GitHub OAuth token handshakes and repo file pipelines
+GITHUB_CLIENT_ID=your_github_oauth_client_id_here
+GITHUB_CLIENT_SECRET=your_github_oauth_client_secret_here
 ```
 
 ### 3. Run Locally
