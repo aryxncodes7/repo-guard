@@ -117,12 +117,18 @@ npm install
 Create a `.env` file in the root directory (you can copy [.env.example](.env.example)):
 
 ```env
-# # Your primary Gemini API credentials (fallback if not supplied in UI)
+# Your primary Gemini API credentials (fallback if not supplied in UI)
 GEMINI_API_KEY=your_gemini_api_key_here
 
 # Required for processing GitHub OAuth token handshakes and repo file pipelines
 GITHUB_CLIENT_ID=your_github_oauth_client_id_here
 GITHUB_CLIENT_SECRET=your_github_oauth_client_secret_here
+
+# Optional: GitHub PAT for fallback or backend scanning
+GITHUB_TOKEN=your_github_personal_access_token_here
+
+# Required for OAuth callbacks
+APP_URL=http://localhost:3000
 ```
 
 ### 3. Run Locally
@@ -178,7 +184,7 @@ Inside the **Analysis Settings** modal (accessed via the Settings gear icon in t
 > [!IMPORTANT]
 > RepoGuard handles sensitive codebase scans. For public deployments:
 > - Do not commit your `.env` files. Ensure they are listed in your `.gitignore`.
-> - If deploying to cloud platforms, store `GEMINI_API_KEY` and `GITHUB_TOKEN` as secure system environment variables.
+> - If deploying to cloud platforms, store `GEMINI_API_KEY`, `GITHUB_CLIENT_ID`, and `GITHUB_CLIENT_SECRET` as secure system environment variables.
 
 ---
 
