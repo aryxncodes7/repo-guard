@@ -3,16 +3,22 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { getNormalizedUrl } from './sanitizeRepoUrl.js';
+// Inlined from sanitizeRepoUrl.js
+export const getNormalizedUrl = (url: string): string | null => {
+    return safeDecode(url.trim());
+};
 import createDOMPurify from 'dompurify';
 
 const DOMPurify = typeof window !== 'undefined' && window.document ? createDOMPurify(window as unknown as Window) : null;
 
 export const MAX_PR_NUMBER = 1000000;
 
-export function safeDecode(str: string): string {
+export function safeDecode(str: string): string | null {
   try { return decodeURIComponent(str); }
-  catch (e) { return ""; }
+  catch (e) { 
+    console.error("[safeDecode] Error decoding:", str, e);
+    return null; 
+  }
 }
 
 const rawDomains = import.meta.env?.VITE_ALLOWED_EMAIL_DOMAINS || (typeof process !== 'undefined' ? process.env.VITE_ALLOWED_EMAIL_DOMAINS : undefined);
@@ -47,7 +53,9 @@ export function getSafeHref(href?: string) {
   }
 
   try {
-    decodedHref = safeDecode(decodedHref);
+    const dec = safeDecode(decodedHref);
+    if (dec === null) return undefined;
+    decodedHref = dec;
   } catch (e) { }
   try {
     const strippedHref = decodedHref.replace(STRIP_CHARS_REGEX, '');
@@ -119,10 +127,8 @@ export function normalizeGithubRepoUrl(rawUrl: unknown): string {
   if (!repoUrl) return "";
 
   const decodedUrl = safeDecode(repoUrl);
+  if (decodedUrl === null) return "";
   const lowerDecoded = decodedUrl.toLowerCase();
-  if (lowerDecoded.includes("..") || lowerDecoded.includes("%2e") || lowerDecoded.includes("\\") || lowerDecoded.includes("%5c")) {
-    return "";
-  }
 
   try {
     const normalizedInput = parseUrlOrImplicitPath(decodedUrl);
@@ -169,10 +175,8 @@ export function parseGithubRepo(repoUrl: string): { owner: string; repo: string 
     if (cleanedUrl.startsWith("//")) return null;
 
     const decodedUrl = safeDecode(cleanedUrl);
+    if (decodedUrl === null) return null;
     const lowerDecoded = decodedUrl.toLowerCase();
-    if (lowerDecoded.includes("..") || lowerDecoded.includes("%2e") || lowerDecoded.includes("\\") || lowerDecoded.includes("%5c")) {
-      return null;
-    }
 
     const urlToParse = parseUrlOrImplicitPath(decodedUrl.normalize('NFKC'));
     if (!urlToParse) return null;
@@ -232,7 +236,6 @@ function isLoopbackOrPrivate(hostname: string): boolean {
 }
 
 export function parseUrlOrImplicitPath(inputUrl: string): string {
-  if (inputUrl.includes("..")) return "";
 
   let normalizedUrl = inputUrl;
   

@@ -30,7 +30,7 @@ const HeadingComponent = ({ children, level, node, siblingIndex, index, ...props
   const Tag = HEADING_TAGS[level] || 'h4';
   const sizeClass = HEADING_STYLES[level] || 'text-xs';
   return (
-    <Tag {...props} className={`${sizeClass} font-sans`}>
+    <Tag className={`${sizeClass} font-sans`}>
       {children}
     </Tag>
   );
@@ -38,7 +38,7 @@ const HeadingComponent = ({ children, level, node, siblingIndex, index, ...props
 
 const markdownComponents = {
   p: ({ children, node, ...props }: React.HTMLAttributes<HTMLParagraphElement> & { node?: unknown }) => (
-    <p className="text-[13px] text-slate-600 dark:text-zinc-400 leading-relaxed mb-2 last:mb-0" {...props}>
+    <p className="text-[13px] text-slate-600 dark:text-zinc-400 leading-relaxed mb-2 last:mb-0">
       {children}
     </p>
   ),
@@ -49,27 +49,27 @@ const markdownComponents = {
   h5: (props: React.HTMLAttributes<HTMLHeadingElement> & { node?: unknown }) => <HeadingComponent level={5} {...props} />,
   h6: (props: React.HTMLAttributes<HTMLHeadingElement> & { node?: unknown }) => <HeadingComponent level={6} {...props} />,
   strong: ({ children, node, ...props }: React.HTMLAttributes<HTMLElement> & { node?: unknown }) => (
-    <strong className="font-semibold text-teal-700 dark:text-teal-400 tracking-normal" {...props}>
+    <strong className="font-semibold text-teal-700 dark:text-teal-400 tracking-normal">
       {children}
     </strong>
   ),
   ul: ({ children, node, ...props }: React.HTMLAttributes<HTMLUListElement> & { node?: unknown }) => (
-    <ul className="list-disc pl-4 space-y-1.5 my-2" {...props}>
+    <ul className="list-disc pl-4 space-y-1.5 my-2">
       {children}
     </ul>
   ),
   li: ({ children, node, ...props }: React.HTMLAttributes<HTMLLIElement> & { node?: unknown }) => (
-    <li className="my-1 translate-x-1 marker:text-teal-500 dark:marker:text-teal-400 text-[13px] text-slate-700 dark:text-zinc-300" {...props}>
+    <li className="my-1 translate-x-1 marker:text-teal-500 dark:marker:text-teal-400 text-[13px] text-slate-700 dark:text-zinc-300">
       <span className="-ml-1">{children}</span>
     </li>
   ),
   a: ({ children, href, node, siblingIndex, index, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { node?: unknown; siblingIndex?: unknown; index?: unknown }) => {
     const safeUrl = getSafeHref(href);
     if (!safeUrl) {
-      return <span className="text-teal-700 dark:text-teal-400 font-semibold" {...props}>{children}</span>;
+      return <span className="text-teal-700 dark:text-teal-400 font-semibold">{children}</span>;
     }
     return (
-      <a href={safeUrl} target="_blank" rel="noopener noreferrer" className="text-teal-700 dark:text-teal-400 hover:underline font-semibold" {...props}>
+      <a href={safeUrl} target="_blank" rel="noopener noreferrer" className="text-teal-700 dark:text-teal-400 hover:underline font-semibold">
         {children}
       </a>
     );
@@ -78,12 +78,12 @@ const markdownComponents = {
     const codeString = String(children || '').replace(/\n$/, '');
     const isInline = typeof inline === 'boolean' ? inline : !codeString.includes('\n');
     return isInline ? (
-      <code className={className || "px-1.5 py-0.5 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded font-sans text-[11px] text-teal-700 dark:text-teal-400 font-semibold"} {...props}>
+      <code className={className || "px-1.5 py-0.5 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded font-sans text-[11px] text-teal-700 dark:text-teal-400 font-semibold"}>
         {codeString}
       </code>
     ) : (
       <pre className="p-4 rounded-lg bg-slate-950 text-rose-300 font-sans text-[10.5px] overflow-x-auto whitespace-pre leading-normal border border-slate-800 shadow-inner w-full">
-        <code className={`block ${className || ''}`} {...props}>{codeString}</code>
+        <code className={`block ${className || ''}`}>{codeString}</code>
       </pre>
     );
   }
