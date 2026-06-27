@@ -154,6 +154,12 @@ export default function App() {
       setIsKeyApplied(false);
     }
   };
+
+  const handleSaveDepth = (val: string) => {
+    setScanDepth(val);
+    localStorage.setItem('repoguard-scan-depth', val);
+  };
+
   const [githubToken, setGithubToken] = useState<string>(() => {
     return localStorage.getItem('repoguard-github-token-custom') || '';
   });
@@ -977,42 +983,75 @@ export default function App() {
                     animate={{ scale: 1, y: 0 }}
                     exit={{ scale: 0.95, y: 10 }}
                     onClick={(e) => e.stopPropagation()}
-                    className="w-full max-w-md flex flex-col gap-2 p-6 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-2xl relative"
+                    className="w-full max-w-md flex flex-col gap-6 p-6 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-2xl relative"
                   >
                     <button 
                       onClick={() => setShowKeyModal(false)}
-                      className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-300"
+                      className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-300 transition-colors"
                     >
                       <X className="w-5 h-5" />
                     </button>
-                    <label className="text-sm font-bold text-slate-800 dark:text-zinc-100 flex items-center gap-2 mb-2 font-sans">
-                      <Key className="w-4.5 h-4.5 text-emerald-500" />
-                      Custom Gemini API Key
-                    </label>
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <input
-                        type="password"
-                        placeholder="AIzaSy..."
-                        value={customApiKey}
-                        onChange={(e) => {
-                          setCustomApiKey(e.target.value);
-                          setIsKeyApplied(false); // Reset status if they edit the string
-                        }}
-                        className="flex-1 px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg text-sm text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-emerald-500 font-sans"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleSaveApiKey(customApiKey)}
-                        className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors font-sans whitespace-nowrap ${
-                          isKeyApplied 
-                            ? 'bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-500 text-emerald-600 dark:text-emerald-400' 
-                            : 'bg-emerald-600 hover:bg-emerald-500 text-white'
-                        }`}
-                      >
-                        {isKeyApplied ? '✓ Applied' : 'Apply Key'}
-                      </button>
+                    
+                    <div className="flex flex-col gap-1 border-b border-slate-200 dark:border-zinc-800 pb-4">
+                      <h2 className="text-lg font-bold text-slate-900 dark:text-white font-sans flex items-center gap-2">
+                        <Sliders className="w-5 h-5 text-emerald-500" />
+                        Analysis Settings
+                      </h2>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 font-sans">Configure your audit preferences and API quotas.</p>
                     </div>
-                    <p className="text-xs text-slate-500 font-sans mt-2 leading-relaxed">If applied, requests will route using your personal token quota. The key is securely stored in your local browser storage.</p>
+
+                    <div className="flex flex-col gap-4">
+                      {/* Scan depth */}
+                      <div className="space-y-2">
+                        <label htmlFor="settings-scan-depth" className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-sans">
+                          Scan Intensity
+                        </label>
+                        <select 
+                          id="settings-scan-depth"
+                          value={scanDepth}
+                          onChange={(e) => handleSaveDepth(e.target.value)}
+                          className="w-full px-3 py-2.5 text-sm bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg focus:outline-none focus:border-emerald-500 text-slate-800 dark:text-zinc-200 cursor-pointer font-sans transition-colors"
+                        >
+                          <option value="concise">Concise - Rapid Threat Check</option>
+                          <option value="standard">Standard - Full Scope Engine</option>
+                          <option value="deep">Deep Audit - Cryptographic Trace</option>
+                        </select>
+                      </div>
+
+                      <div className="w-full h-px bg-slate-100 dark:bg-zinc-800/50 my-1" />
+
+                      {/* API Key */}
+                      <div className="space-y-2">
+                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-sans flex items-center gap-1.5">
+                          <Key className="w-3.5 h-3.5 text-emerald-500" />
+                          Custom Gemini API Key
+                        </label>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <input
+                            type="password"
+                            placeholder="AIzaSy..."
+                            value={customApiKey}
+                            onChange={(e) => {
+                              setCustomApiKey(e.target.value);
+                              setIsKeyApplied(false);
+                            }}
+                            className="flex-1 px-3 py-2.5 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg text-sm text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-emerald-500 font-sans transition-colors"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleSaveApiKey(customApiKey)}
+                            className={`px-4 py-2.5 text-sm font-medium rounded-lg transition-colors font-sans whitespace-nowrap ${
+                              isKeyApplied 
+                                ? 'bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-500 text-emerald-600 dark:text-emerald-400' 
+                                : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                            }`}
+                          >
+                            {isKeyApplied ? '✓ Applied' : 'Apply Key'}
+                          </button>
+                        </div>
+                        <p className="text-[11px] text-slate-500 font-sans mt-1 leading-relaxed">If applied, requests will route using your personal token quota. The key is securely stored in your local browser storage.</p>
+                      </div>
+                    </div>
                   </motion.div>
                 </motion.div>
               )}
