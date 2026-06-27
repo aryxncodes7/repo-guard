@@ -244,27 +244,29 @@ function isLoopbackOrPrivate(hostname: string): boolean {
 
 export function parseUrlOrImplicitPath(inputUrl: string): string {
   if (inputUrl.includes("..")) return "";
-  const GITHUB_URL_REGEX = /^https?:\/\/(?:www\.)?github\.com(?::\d+)?(?:\/[^\s]{0,2000})?$/i;
-  if (GITHUB_URL_REGEX.test(inputUrl)) {
-    return inputUrl.replace(/^http:/i, "https:");
-  }
-  
-  if (inputUrl.startsWith("//")) {
-    const protocolRelativeRegex = /^\/\/(?:www\.)?github\.com(?::\d+)?(?:\/[^\s]{0,2000})?$/i;
-    if (protocolRelativeRegex.test(inputUrl)) {
-       return `https:${inputUrl}`;
-    }
-    return "";
-  }
-  
-  const hostStartRegex = /^(?:www\.)?github\.com(?::\d+)?(?:\/[^\s]{0,2000})?$/i;
-  if (hostStartRegex.test(inputUrl)) {
-    return `https://${inputUrl}`;
-  }
-  
   if (/^[A-Za-z0-9_-]+\/[A-Za-z0-9_.-]+$/.test(inputUrl)) {
     return `https://github.com/${inputUrl}`;
   }
+
+  let normalizedUrl = inputUrl;
   
-  return "";
+  if (normalizedUrl.startsWith("//")) {
+    normalizedUrl = `https:${normalizedUrl}`;
+  } else if (!/^https?:\/\//i.test(normalizedUrl)) {
+    normalizedUrl = `https://${normalizedUrl}`;
+  }
+  
+  try {
+    const parsed = new URL(normalizedUrl);
+    const protocol = parsed.protocol.toLowerCase();
+    const hostname = parsed.hostname.toLowerCase();
+    
+    if (protocol !== "http:" && protocol !== "https:") return "";
+    if (hostname !== "github.com" && hostname !== "www.github.com") return "";
+    
+    parsed.protocol = "https:";
+    return parsed.toString();
+  } catch {
+    return "";
+  }
 }
