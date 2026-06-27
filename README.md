@@ -36,6 +36,9 @@ RepoGuard solves this by deploying a **Multi-Agent AI System** that acts as an i
 - **🎨 Premium Responsive UI**: Translucent glassmorphism header, smooth hardware-accelerated logo animations, dark/light theme alignment, and beautiful dashboard elements.
 
 ---
+## 🛠️ Architecture Overview
+
+RepoGuard is built as a single-page application (SPA) backed by a secure proxy server to negotiate Gemini and GitHub API interactions without exposing secrets:
 
 ```mermaid
 graph TD
