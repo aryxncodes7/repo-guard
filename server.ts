@@ -54,6 +54,18 @@ app.use((_req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
   res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  res.setHeader("Content-Security-Policy", "default-src 'self'; connect-src 'self' https://api.github.com https://raw.githubusercontent.com; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:;");
+  next();
+});
+
+// Middleware to explicitly scrub x-gemini-key headers from all server logs
+app.use((req, res, next) => {
+  if (req.headers && req.headers['x-gemini-key']) {
+    Object.defineProperty(req.headers, 'x-gemini-key', {
+      value: req.headers['x-gemini-key'],
+      enumerable: false
+    });
+  }
   next();
 });
 app.use((req, res, next) => {
