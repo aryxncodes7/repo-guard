@@ -31,7 +31,8 @@ import {
   Trash2,
   Sliders,
   Lock,
-  Search
+  Search,
+  Key
 } from 'lucide-react';
 import { ReviewResponse, ReviewState, AgentProgress } from './types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -138,6 +139,7 @@ export default function App() {
   const [scanDepth, setScanDepth] = useState<string>(() => {
     return localStorage.getItem('repoguard-scan-depth') || 'standard';
   });
+  const [showKeyModal, setShowKeyModal] = useState<boolean>(false);
   const [customApiKey, setCustomApiKey] = useState<string>(localStorage.getItem('user_gemini_key') || '');
   const [isKeyApplied, setIsKeyApplied] = useState<boolean>(!!localStorage.getItem('user_gemini_key'));
 
@@ -631,6 +633,22 @@ export default function App() {
                   </button>
                 )}
 
+                {/* Custom API Key Config button */}
+                <motion.button
+                  whileHover={{ scale: 1.05, y: -1 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowKeyModal(true)}
+                  className={`p-2 border rounded-xl transition-all cursor-pointer shadow-[0_1px_2px_rgba(0,0,0,0.02)] flex items-center justify-center w-9 h-9 ${
+                    isKeyApplied 
+                      ? 'bg-emerald-50 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400'
+                      : 'bg-white dark:bg-zinc-900/50 border-slate-200 dark:border-zinc-800 hover:border-emerald-500/35 hover:bg-slate-50 dark:hover:bg-zinc-800 text-slate-500 dark:text-zinc-400'
+                  }`}
+                  title="Configure Gemini API Key"
+                  type="button"
+                >
+                  <Key className="w-4.5 h-4.5" />
+                </motion.button>
+
                 {/* Dark mode switch */}
                 <motion.button
                   whileHover={{ scale: 1.05, y: -1 }}
@@ -832,34 +850,6 @@ export default function App() {
                         </div>
                       )}
                     </div>
-                    
-                    {/* API Key Configuration Block */}
-                    <div className="flex flex-col gap-2 p-4 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm transition-all duration-300">
-                      <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-sans">Custom Gemini API Key (Optional)</label>
-                      <div className="flex gap-2">
-                        <input
-                          type="password"
-                          placeholder="AIzaSy..."
-                          value={customApiKey}
-                          onChange={(e) => {
-                            setCustomApiKey(e.target.value);
-                            setIsKeyApplied(false); // Reset status if they edit the string
-                          }}
-                          className="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:border-emerald-500 font-sans"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => handleSaveApiKey(customApiKey)}
-                          className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors font-sans ${
-                            isKeyApplied 
-                              ? 'bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-500 text-emerald-600 dark:text-emerald-400' 
-                              : 'bg-emerald-600 hover:bg-emerald-500 text-white'
-                          }`}
-                        >
-                          {isKeyApplied ? '✓ Applied' : 'Apply Key'}
-                        </button>
-                      </div>
-                      <p className="text-xs text-slate-500 font-sans">If applied, requests will route using your personal token quota.</p>
                     </div>
 
                   </div>
@@ -969,6 +959,62 @@ export default function App() {
                       <span>Return to Setup</span>
                     </button>
                   </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* API Key Config Modal Overlay */}
+            <AnimatePresence>
+              {showKeyModal && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 dark:bg-black/50 backdrop-blur-sm p-4"
+                  onClick={() => setShowKeyModal(false)}
+                >
+                  <motion.div
+                    initial={{ scale: 0.95, y: 10 }}
+                    animate={{ scale: 1, y: 0 }}
+                    exit={{ scale: 0.95, y: 10 }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-full max-w-md flex flex-col gap-2 p-6 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-2xl relative"
+                  >
+                    <button 
+                      onClick={() => setShowKeyModal(false)}
+                      className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-300"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                    <label className="text-sm font-bold text-slate-800 dark:text-zinc-100 flex items-center gap-2 mb-2 font-sans">
+                      <Key className="w-4.5 h-4.5 text-emerald-500" />
+                      Custom Gemini API Key
+                    </label>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <input
+                        type="password"
+                        placeholder="AIzaSy..."
+                        value={customApiKey}
+                        onChange={(e) => {
+                          setCustomApiKey(e.target.value);
+                          setIsKeyApplied(false); // Reset status if they edit the string
+                        }}
+                        className="flex-1 px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg text-sm text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-emerald-500 font-sans"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleSaveApiKey(customApiKey)}
+                        className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors font-sans whitespace-nowrap ${
+                          isKeyApplied 
+                            ? 'bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-500 text-emerald-600 dark:text-emerald-400' 
+                            : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                        }`}
+                      >
+                        {isKeyApplied ? '✓ Applied' : 'Apply Key'}
+                      </button>
+                    </div>
+                    <p className="text-xs text-slate-500 font-sans mt-2 leading-relaxed">If applied, requests will route using your personal token quota. The key is securely stored in your local browser storage.</p>
+                  </motion.div>
                 </motion.div>
               )}
             </AnimatePresence>
