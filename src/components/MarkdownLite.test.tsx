@@ -14,17 +14,23 @@ describe('MarkdownLite Component Security', () => {
           const payload = `${randomString} <script>alert("xss")</script> [xss](javascript:alert(1)) <img src=x onerror=alert(1)>`;
           
           const { container } = render(<MarkdownLite text={payload} />);
-          const html = container.innerHTML;
 
-          // Ensure no script tags exist
-          expect(html).not.toContain('<script');
+          // Verify DOM elements directly instead of string matching
+          const scripts = container.querySelectorAll('script');
+          expect(scripts.length).toBe(0);
           
           // Ensure no javascript: protocol links are rendered in hrefs
-          expect(html.toLowerCase()).not.toContain('href="javascript:');
+          const links = container.querySelectorAll('a');
+          links.forEach(link => {
+            expect(link.getAttribute('href')?.toLowerCase()).not.toContain('javascript:');
+          });
           
-          // Ensure no onerror attributes
-          expect(html.toLowerCase()).not.toContain('onerror=');
-          expect(html.toLowerCase()).not.toContain('onload=');
+          // Ensure no dangerous attributes
+          const elements = container.querySelectorAll('*');
+          elements.forEach(el => {
+            expect(el.hasAttribute('onerror')).toBe(false);
+            expect(el.hasAttribute('onload')).toBe(false);
+          });
         }
       ),
       { numRuns: 100 } // Run 100 iterations of random strings
