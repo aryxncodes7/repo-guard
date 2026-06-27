@@ -44,6 +44,29 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack }: Repo
     return groups;
   };
 
+  const getResolutionText = (category: string, severity: string) => {
+    if (category === 'security') {
+      return severity === 'critical' 
+        ? 'Emergency security remediation required. Rotate any compromised credentials immediately, wipe historical references using BFG Repo Cleaner or filter-branch, and ensure robust client-side validation.'
+        : 'Security posture review recommended. Validate inputs, sanitize data payloads, and ensure proper boundary constraints are enforced before execution.';
+    }
+    if (category === 'logic') {
+      return severity === 'critical'
+        ? 'Critical logical flaw detected. This could lead to application crashes or data corruption. Halt execution paths, add fail-safes, and comprehensively test edge cases.'
+        : 'Potential logical oversight. Review state transitions, handle edge cases gracefully, and ensure execution pathways are predictable.';
+    }
+    if (category === 'missing_tests') {
+      return severity === 'critical'
+        ? 'Critical lack of test coverage for core business logic. Implement end-to-end integration tests and unit mocks to prevent catastrophic deployment regressions.'
+        : 'Test coverage gaps identified. Expand unit tests to cover error boundaries and edge-case payload scenarios.';
+    }
+    return severity === 'critical'
+      ? 'Critical formatting or structural failure violating core repository paradigms. Restructure architecture to match standards.'
+      : severity === 'warning'
+      ? 'Significant stylistic or structural deviation. Align with standardized project formatting rules to maintain maintainability.'
+      : 'Visual guide rule. Group standard import schemes, secure consistent spaces, and avoid repetitive naming profiles.';
+  };
+
   const groupedIssues = getGroupedIssues(activeReviewResult.code_review.issues);
   const totalIssuesCount = activeReviewResult.code_review.issues.length;
   const secretsCount = activeReviewResult.code_review.secrets_detected.length;
@@ -503,6 +526,12 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack }: Repo
                               <p className="text-[13px] text-slate-700 dark:text-zinc-200 leading-relaxed font-semibold">
                                 {issue.message}
                               </p>
+                              <div className="pt-2 border-t border-slate-100/80 dark:border-zinc-800 mt-2 space-y-1">
+                                <span className="text-[10px] uppercase font-sans tracking-wider font-extrabold text-slate-400 dark:text-zinc-500 block">Recommended Resolution Guide</span>
+                                <p className="text-[11.5px] text-slate-500 dark:text-zinc-400 leading-relaxed font-sans">
+                                  {getResolutionText(issue.category, issue.severity)}
+                                </p>
+                              </div>
                             </div>
                           </div>
                         );
