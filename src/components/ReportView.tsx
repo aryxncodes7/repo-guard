@@ -424,9 +424,9 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack }: Repo
                 Triage Overview Report
               </h3>
             </div>
-            <p className="text-[13.5px] text-slate-700 dark:text-zinc-300 leading-relaxed font-medium">
-              {activeReviewResult.triage.summary}
-            </p>
+            <div className="text-[13.5px] text-slate-700 dark:text-zinc-300 leading-relaxed font-medium">
+              <MarkdownLite text={activeReviewResult.triage.summary} />
+            </div>
           </motion.article>
 
           {/* 2. Code Review Section with group items */}
@@ -525,14 +525,14 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack }: Repo
                                   {issue.category}
                                 </span>
                               </div>
-                              <p className="text-[13px] text-slate-700 dark:text-zinc-200 leading-relaxed font-semibold">
-                                {issue.message}
-                              </p>
+                              <div className="text-[13px] text-slate-700 dark:text-zinc-200 leading-relaxed font-semibold">
+                                <MarkdownLite text={issue.message} />
+                              </div>
                               <div className="pt-2 border-t border-slate-100/80 dark:border-zinc-800 mt-2 space-y-1">
                                 <span className="text-[10px] uppercase font-sans tracking-wider font-extrabold text-slate-400 dark:text-zinc-500 block">Recommended Resolution Guide</span>
-                                <p className="text-[11.5px] text-slate-500 dark:text-zinc-400 leading-relaxed font-sans">
-                                  {issue.resolution || getResolutionText(issue.category, issue.severity)}
-                                </p>
+                                <div className="text-[11.5px] text-slate-500 dark:text-zinc-400 leading-relaxed font-sans">
+                                  <MarkdownLite text={issue.resolution || getResolutionText(issue.category, issue.severity)} />
+                                </div>
                               </div>
                             </div>
                           </div>
