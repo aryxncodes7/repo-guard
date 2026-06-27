@@ -489,7 +489,7 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack }: Repo
                   <div key={pathName} className="space-y-4">
 
                     {/* File Group Title */}
-                    <div className="flex items-center gap-2 text-slate-700 dark:text-zinc-300 font-bold bg-zinc-900 px-4 py-2 rounded-t-lg font-mono text-xs border-b border-zinc-800">
+                    <div className="flex items-center gap-2 text-zinc-300 dark:text-zinc-300 font-bold bg-zinc-900 px-4 py-2 rounded-t-lg font-mono text-xs border-b border-zinc-800">
                       <FileCode2 className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
                       <span className="truncate">{pathName}</span>
                     </div>
