@@ -31,8 +31,8 @@ RepoGuard solves this by deploying a **Multi-Agent AI System** that acts as an i
   - **Docs Agent**: Checks README compliance, inline code comments, and outdated documentation segments.
   - **Synthesizer Agent**: Compiles individual agent reports into a unified markdown summary.
 - **💬 AI Chatbot Companion**: An interactive sidebar assistant that lets you query the codebase, ask about specific vulnerabilities, and receive step-by-step remediation advice.
-- **⚙️ Configurable Audit Depth**: Toggle between **Rapid Threat Check** (Concise), **Full Scope Engine** (Standard), and **Cryptographic Trace** (Deep) to suit your speed and coverage needs.
-- **🔐 Secure API Key Sandbox**: Input your own Gemini API key or GitHub Personal Access Token (PAT) inside a secure client sandbox, which is saved locally in your browser.
+- **⚙️ Unified Analysis Settings**: Easily access a global settings modal from the header to configure both your preferred Scan Intensity and your custom API keys.
+- **🔐 Bring Your Own Key (BYOK)**: Input your own Gemini API key directly in the UI. It's securely saved locally in your browser and used dynamically by the backend, giving you full control over your personal token quotas.
 - **🎨 Premium Responsive UI**: Translucent glassmorphism header, smooth hardware-accelerated logo animations, dark/light theme alignment, and beautiful dashboard elements.
 
 ---
@@ -148,12 +148,13 @@ npm run start
 
 ## ⚙️ Configuration & Settings
 
-Inside the **Audit System Settings** panel in the UI:
-- **Analysis Type Selection**:
+Inside the **Analysis Settings** modal (accessed via the Settings gear icon in the header):
+- **Scan Intensity Selection**:
   - **Concise**: Fast scans for key risks.
   - **Standard**: Complete logic, security, and structure analysis.
   - **Deep**: Extensive cryptographic trace and risk simulation.
-- **GitHub Identity Alignment**: Align your GitHub profile handle to associate scans with your developer username.
+- **Custom Gemini API Key**:
+  - A secure local-storage input to apply your personal API token context to all security audits and chatbot operations (BYOK model).
 
 ---
 
