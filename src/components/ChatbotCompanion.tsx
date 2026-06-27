@@ -115,7 +115,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
   useEffect(() => {
     let isActive = true;
     const isNewContext = prevContextRef.current !== activeReportContext && prevContextRef.current !== undefined;
-    
+
     if (isNewContext) {
       setMessages([INITIAL_MESSAGE]);
       setInput('');
@@ -136,10 +136,10 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       if (isActive) {
         setMessages(prev => {
           const isFresh = prev.length === 1 && (prev[0].id === '1' || prev[0].id === 'initial');
-          const newMsg = { 
+          const newMsg = {
             id: generateId(),
-            sender: 'assistant' as const, 
-            text: `I've loaded the security context for ${shortName}. Ask me anything about the identified vulnerabilities, files scanned, or recommended resolution guides!` 
+            sender: 'assistant' as const,
+            text: `I've loaded the security context for ${shortName}. Ask me anything about the identified vulnerabilities, files scanned, or recommended resolution guides!`
           };
           return isFresh ? [prev[0], newMsg] : [...prev, newMsg];
         });
@@ -181,32 +181,49 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       }));
 
       let finalMessage = String(safeUserMsg).trim().slice(0, 4000);
-      
+
       const chatHeaders: Record<string, string> = {
         'Content-Type': 'application/json',
         'X-Requested-With': 'XMLHttpRequest'
       };
-      
+
       const customApiKey = localStorage.getItem('user_gemini_key');
       if (customApiKey) {
         chatHeaders['x-gemini-key'] = customApiKey;
       }
 
+      const redactSecrets = (text: string) => {
+        if (!text) return text;
+        let result = text;
+        const REDACTION_PATTERNS = [
+          /gh[pousr](?:_|%5F)[a-zA-Z0-9]{36}/gi,
+          /AIza[0-9A-Za-z-_]{35}/gi,
+          /AKIA[0-9A-Z]{16}/gi,
+          /(?:sk|rk)_(?:live|test)(?:_|%5F)[0-9a-zA-Z]{24}/gi,
+          /xox[baprs](?:-|%2D)[0-9a-zA-Z]{10,48}/gi
+        ];
+        for (const pattern of REDACTION_PATTERNS) {
+          result = result.replace(pattern, '***REDACTED***');
+        }
+        return result;
+      };
+
       let reportContextBody: any = undefined;
 
       if (activeReportContext) {
-        const cleanRepoUrl = String(activeReportContext.repoUrl || '');
-        const cleanVerdict = String(activeReportContext.verdict || '');
+        const cleanRepoUrl = redactSecrets(String(activeReportContext.repoUrl || '').slice(0, 500));
+        const cleanVerdict = redactSecrets(String(activeReportContext.verdict || '').slice(0, 100));
         const cleanIssues = Array.isArray(activeReportContext.issues)
           ? activeReportContext.issues
-              .filter(issue => issue && typeof issue === 'object' && !Array.isArray(issue))
-              .map((issue: any) => `[${String(issue.severity || 'info')}] ${String(issue.category || 'general')} at ${String(issue.file || 'unknown')}:${Number(issue.line || 0)}`)
+            .filter(issue => issue && typeof issue === 'object' && !Array.isArray(issue))
+            .map((issue: any) => redactSecrets(`[${String(issue.severity || 'info')}] ${String(issue.category || 'general')} at ${String(issue.file || 'unknown').slice(0, 255)}:${Number(issue.line || 0)}`))
           : [];
 
+        // Strict field allow-list
         reportContextBody = {
           repository: cleanRepoUrl,
           verdict: cleanVerdict,
-          issues: cleanIssues,
+          issues: cleanIssues.slice(0, 50),
           guide: cleanVerdict === 'request_changes' ? 'Wipe secrets using BFG Repo Cleaner or rotate keys.' : 'None.'
         };
       }
@@ -224,7 +241,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       }
 
       const baseUrl = import.meta.env.VITE_API_BASE_URL || window.location.origin;
-      
+
       const response = await fetch(`${baseUrl}/api/chat`, {
         method: 'POST',
         headers: chatHeaders,
@@ -243,7 +260,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       if (!data) {
         throw new Error("Invalid content type");
       }
-      
+
       if (data.status === 'success') {
         setMessages(prev => [...prev, { id: generateId(), sender: 'assistant', text: data.reply }]);
       } else {
@@ -285,7 +302,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
             </span>
           </div>
         </div>
-        <button 
+        <button
           type="button"
           onClick={() => setMessages([{ id: generateId(), sender: 'assistant', text: "Conversational logs purged. Ready for new security inquiries!" }])}
           className="p-1 px-2 text-[10px] bg-white hover:bg-slate-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-500 dark:text-zinc-400 rounded-lg border border-slate-200 dark:border-zinc-700 transition font-bold"
@@ -305,11 +322,10 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
       >
         {messages.map((m) => (
           <div key={m.id} className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}>
-            <div className={`max-w-[85%] rounded-xl px-3.5 py-2.5 text-xs leading-relaxed font-sans relative group ${
-              m.sender === 'user' 
+            <div className={`max-w-[85%] rounded-xl px-3.5 py-2.5 text-xs leading-relaxed font-sans relative group ${m.sender === 'user'
                 ? 'bg-emerald-600 text-white rounded-br-none shadow-sm'
                 : 'bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200/80 dark:border-zinc-700 rounded-bl-none shadow-sm pb-8'
-            }`}>
+              }`}>
               {m.sender === 'user' ? (
                 m.text
               ) : (
@@ -321,7 +337,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
                   >
                     {m.text}
                   </ReactMarkdown>
-                  
+
                   <div className="absolute bottom-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={() => handleCopy(m.id, m.text)}
@@ -343,7 +359,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
               <span className="w-1.5 h-1.5 bg-slate-400 dark:bg-zinc-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
               <span className="w-1.5 h-1.5 bg-slate-400 dark:bg-zinc-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
             </div>
-            
+
             <button
               type="button"
               onClick={() => {
@@ -359,9 +375,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
         )}
       </div>
 
-      <div className="px-3 py-1.5 bg-amber-50 dark:bg-amber-500/10 border-t border-amber-200/50 dark:border-amber-500/20 text-[10px] text-amber-700 dark:text-amber-400 font-sans flex items-center justify-center text-center">
-        ⚠️ Warning: Client-side redaction may not catch all secrets. Do not paste real production credentials.
-      </div>
+
       <form onSubmit={handleSendMessage} className="p-3 bg-white dark:bg-zinc-900 border-t border-slate-200 dark:border-zinc-800 flex gap-2">
         <label htmlFor="security-chat-input" className="sr-only">Type message to AI Security Companion</label>
         <input
