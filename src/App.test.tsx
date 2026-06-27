@@ -35,7 +35,17 @@ describe('App Component', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     mockFetch.mockClear();
-    localStorage.clear();
+    // Secure in-memory application state to replace raw localStorage
+    const localStorageMock = (() => {
+      let store: Record<string, string> = {};
+      return {
+        getItem: (key: string) => store[key] || null,
+        setItem: (key: string, value: string) => { store[key] = value.toString(); },
+        removeItem: (key: string) => { delete store[key]; },
+        clear: () => { store = {}; }
+      };
+    })();
+    Object.defineProperty(window, 'localStorage', { value: localStorageMock, writable: true });
     // Default mock response for /api/analyze to prevent crashes if it runs
     mockFetch.mockResolvedValue(new Response(new ReadableStream(), { status: 200 }));
   });
