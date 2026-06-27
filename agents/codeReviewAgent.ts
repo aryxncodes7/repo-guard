@@ -14,6 +14,9 @@ ${context}
 
 Conduct a highly comprehensive, technically concrete, and premium review of this project. Identify real code issues, logic bugs, test gaps, and secret leaks.
 Make sure you cite actual file paths and line numbers. Do NOT hallucinate files or issues that are not present.
+IMPORTANT CRITERIA:
+- Do NOT flag TypeScript declaration files (.d.ts) for lacking runtime validations or for having insecure client-side validations, as they are purely for compile-time types.
+- Do NOT hallucinate leaked credentials for generic security findings or test mock configurations.
 
 Output a detailed markdown report of all issues found. Do not output JSON.
   `.trim();
