@@ -173,27 +173,27 @@ export default function App() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
-    
+
     if (code) {
       const exchangeCode = async () => {
         try {
           const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
-          const redirect_uri = window.location.origin + window.location.pathname; 
-          
+          const redirect_uri = window.location.origin + window.location.pathname;
+
           const res = await fetch(`${baseUrl}/api/auth/callback`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ code, redirect_uri })
           });
-          
+
           if (!res.ok) throw new Error('Authentication failed');
-          
+
           const data = await res.json();
           if (data.access_token && data.user) {
             setGithubConnected(true);
             setGithubConnectedUser(data.user);
             setGithubAvatar(data.avatar || '');
-            
+
             localStorage.setItem('repoguard-github-linked', 'true');
             localStorage.setItem('repoguard-github-user', data.user);
             localStorage.setItem('repoguard-github-avatar', data.avatar || '');
@@ -206,7 +206,7 @@ export default function App() {
           window.history.replaceState({}, document.title, window.location.pathname);
         }
       };
-      
+
       exchangeCode();
     }
   }, []);
@@ -219,11 +219,11 @@ export default function App() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ access_token: token })
-      }).catch(() => {});
+      }).catch(() => { });
     }
 
     window.history.replaceState({}, document.title, window.location.pathname);
-    
+
     localStorage.removeItem('repoguard-github-linked');
     localStorage.removeItem('repoguard-github-user');
     localStorage.removeItem('repoguard-github-avatar');
@@ -253,7 +253,7 @@ export default function App() {
           const headers: Record<string, string> = {
             'Accept': 'application/vnd.github.v3+json'
           };
-          
+
           if (token) {
             headers['Authorization'] = `token ${token}`;
           } else if (githubConnectedUser) {
@@ -275,7 +275,7 @@ export default function App() {
           setReposLoading(false);
         }
       };
-      
+
       fetchRepos();
     } else {
       setRepositories([]);
@@ -632,10 +632,10 @@ export default function App() {
                 ) : (
                   <button
                     onClick={handleGithubSignIn}
-                    className="flex items-center gap-2 px-4 py-1.5 bg-slate-900 dark:bg-zinc-100 text-white dark:text-slate-900 rounded-xl font-sans text-xs font-bold shadow-[0_0_15px_-3px_rgba(16,185,129,0.4)] hover:shadow-[0_0_20px_-3px_rgba(16,185,129,0.6)] transition-all duration-300 cursor-pointer"
+                    className="flex items-center justify-center w-9 h-9 p-2 bg-slate-900 dark:bg-zinc-100 text-white dark:text-slate-900 rounded-xl shadow-[0_0_15px_-3px_rgba(16,185,129,0.4)] hover:shadow-[0_0_20px_-3px_rgba(16,185,129,0.6)] transition-all duration-300 cursor-pointer"
+                    title="Connect GitHub"
                   >
-                    <Github className="w-3.5 h-3.5" />
-                    Connect GitHub
+                    <Github className="w-4.5 h-4.5" />
                   </button>
                 )}
 
@@ -644,11 +644,10 @@ export default function App() {
                   whileHover={{ scale: 1.05, y: -1 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setShowKeyModal(true)}
-                  className={`p-2 border rounded-xl transition-all cursor-pointer shadow-[0_1px_2px_rgba(0,0,0,0.02)] flex items-center justify-center w-9 h-9 ${
-                    isKeyApplied 
+                  className={`p-2 border rounded-xl transition-all cursor-pointer shadow-[0_1px_2px_rgba(0,0,0,0.02)] flex items-center justify-center w-9 h-9 ${isKeyApplied
                       ? 'bg-emerald-50 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400'
                       : 'bg-white dark:bg-zinc-900/50 border-slate-200 dark:border-zinc-800 hover:border-emerald-500/35 hover:bg-slate-50 dark:hover:bg-zinc-800 text-slate-500 dark:text-zinc-400'
-                  }`}
+                    }`}
                   title="Analysis Settings"
                   type="button"
                 >
@@ -985,13 +984,13 @@ export default function App() {
                     onClick={(e) => e.stopPropagation()}
                     className="w-full max-w-md flex flex-col gap-6 p-6 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-2xl relative"
                   >
-                    <button 
+                    <button
                       onClick={() => setShowKeyModal(false)}
                       className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-300 transition-colors"
                     >
                       <X className="w-5 h-5" />
                     </button>
-                    
+
                     <div className="flex flex-col gap-1 border-b border-slate-200 dark:border-zinc-800 pb-4">
                       <h2 className="text-lg font-bold text-slate-900 dark:text-white font-sans flex items-center gap-2">
                         <Sliders className="w-5 h-5 text-emerald-500" />
@@ -1006,7 +1005,7 @@ export default function App() {
                         <label htmlFor="settings-scan-depth" className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-sans">
                           Scan Intensity
                         </label>
-                        <select 
+                        <select
                           id="settings-scan-depth"
                           value={scanDepth}
                           onChange={(e) => handleSaveDepth(e.target.value)}
@@ -1040,11 +1039,10 @@ export default function App() {
                           <button
                             type="button"
                             onClick={() => handleSaveApiKey(customApiKey)}
-                            className={`px-4 py-2.5 text-sm font-medium rounded-lg transition-colors font-sans whitespace-nowrap ${
-                              isKeyApplied 
-                                ? 'bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-500 text-emerald-600 dark:text-emerald-400' 
+                            className={`px-4 py-2.5 text-sm font-medium rounded-lg transition-colors font-sans whitespace-nowrap ${isKeyApplied
+                                ? 'bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-500 text-emerald-600 dark:text-emerald-400'
                                 : 'bg-emerald-600 hover:bg-emerald-500 text-white'
-                            }`}
+                              }`}
                           >
                             {isKeyApplied ? '✓ Applied' : 'Apply Key'}
                           </button>
