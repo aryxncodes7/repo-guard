@@ -503,14 +503,6 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack }: Repo
                               <p className="text-[13px] text-slate-700 dark:text-zinc-200 leading-relaxed font-semibold">
                                 {issue.message}
                               </p>
-                              <div className="pt-2 border-t border-slate-100/80 dark:border-zinc-800 mt-2 space-y-1">
-                                <span className="text-[10px] uppercase font-sans tracking-wider font-extrabold text-slate-400 dark:text-zinc-500 block">Recommended Resolution Guide</span>
-                                <p className="text-[11.5px] text-slate-500 dark:text-zinc-400 leading-relaxed font-sans">
-                                  {issue.severity === 'critical' ? 'Emergency security remediation. Wipe all historical references from branch tracking tools using BFG Repo Cleaner or filter-branch prior to merging.' :
-                                   issue.severity === 'warning' ? 'Bounds violation risk. Sanitize payload attributes, add bounds constraints, and properly handle execution exceptions.' :
-                                   'Visual guide rule. Group standard import schemes, secure consistent spaces, and avoid repetitive naming profiles.'}
-                                </p>
-                              </div>
                             </div>
                           </div>
                         );
