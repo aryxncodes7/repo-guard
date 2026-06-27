@@ -6,7 +6,7 @@
 import { getNormalizedUrl } from './sanitizeRepoUrl.js';
 import createDOMPurify from 'dompurify';
 
-const DOMPurify = typeof window !== 'undefined' ? createDOMPurify(window as any) : null;
+const DOMPurify = typeof window !== 'undefined' && window.document ? createDOMPurify(window as unknown as Window) : null;
 
 export const MAX_PR_NUMBER = 1000000;
 
@@ -77,17 +77,17 @@ export function getSafeHref(href?: string) {
         return undefined;
       }
 
-      const safeParams = new URLSearchParams();
-      const originalParams = new URLSearchParams(parsed.search);
+      const safeUrl = new URL(`mailto:${email}`);
+      const originalParams = parsed.searchParams || new URLSearchParams(parsed.search);
+      
       if (originalParams.has('subject')) {
-        safeParams.set('subject', originalParams.get('subject')!.replace(/[\r\n]/g, ''));
+        safeUrl.searchParams.set('subject', originalParams.get('subject')!.replace(/[\r\n]/g, ' '));
       }
       if (originalParams.has('body')) {
-        safeParams.set('body', originalParams.get('body')!.replace(/[\r\n]/g, ''));
+        safeUrl.searchParams.set('body', originalParams.get('body')!.replace(/[\r\n]/g, ' '));
       }
-
-      const searchStr = safeParams.toString();
-      return searchStr ? `mailto:${email}?${searchStr}` : `mailto:${email}`;
+      
+      return safeUrl.href;
     }
     return ['http:', 'https:'].includes(parsed.protocol) ? parsed.href : undefined;
   } catch {
@@ -200,24 +200,10 @@ export function cleanClientRepoUrl(repoUrl: string): string {
   const trimmed = (repoUrl || "").trim();
   if (!trimmed) return "https://github.com/";
 
-  let decoded = safeDecode(trimmed);
-  const lowerDecoded = decoded.toLowerCase();
-  if (lowerDecoded.includes("..") || lowerDecoded.includes("%2e") || lowerDecoded.includes("\\") || lowerDecoded.includes("%5c")) {
-    return "https://github.com/";
-  }
-
   try {
-    const normalized = parseUrlOrImplicitPath(decoded);
+    const normalized = parseUrlOrImplicitPath(trimmed);
     if (!normalized) return "https://github.com/";
-
     const parsed = new URL(normalized);
-    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
-      return "https://github.com/";
-    }
-    if (parsed.hostname.toLowerCase() !== "github.com" && parsed.hostname.toLowerCase() !== "www.github.com") {
-      return "https://github.com/";
-    }
-    // Strip query parameters and fragment to prevent path injection
     return `${parsed.protocol}//${parsed.host}${parsed.pathname}`;
   } catch {
     return "https://github.com/";
@@ -244,27 +230,37 @@ function isLoopbackOrPrivate(hostname: string): boolean {
 
 export function parseUrlOrImplicitPath(inputUrl: string): string {
   if (inputUrl.includes("..")) return "";
-  const GITHUB_URL_REGEX = /^https?:\/\/(?:www\.)?github\.com(?::\d+)?(?:\/[^\s]{0,2000})?$/i;
-  if (GITHUB_URL_REGEX.test(inputUrl)) {
-    return inputUrl.replace(/^http:/i, "https:");
-  }
 
-  if (inputUrl.startsWith("//")) {
-    const protocolRelativeRegex = /^\/\/(?:www\.)?github\.com(?::\d+)?(?:\/[^\s]{0,2000})?$/i;
-    if (protocolRelativeRegex.test(inputUrl)) {
-      return `https:${inputUrl}`;
+  let normalizedUrl = inputUrl;
+  
+  if (normalizedUrl.startsWith("//")) {
+    normalizedUrl = `https:${normalizedUrl}`;
+  } else if (!/^https?:\/\//i.test(normalizedUrl)) {
+    // Treat as implicit owner/repo path if no protocol is provided
+    normalizedUrl = `https://github.com/${normalizedUrl}`;
+  }
+  
+  try {
+    const parsed = new URL(normalizedUrl);
+    const protocol = parsed.protocol.toLowerCase();
+    const hostname = parsed.hostname.toLowerCase();
+    
+    if (protocol !== "http:" && protocol !== "https:") return "";
+    if (hostname !== "github.com" && hostname !== "www.github.com") return "";
+    
+    parsed.protocol = "https:";
+    
+    // Strict path validation using URL constructor's pathname
+    const pathParts = parsed.pathname.split("/").filter(Boolean);
+    if (pathParts.length > 0) {
+      if (!/^[A-Za-z0-9_-]+$/.test(pathParts[0])) return "";
+      if (pathParts.length > 1) {
+        if (!/^[A-Za-z0-9_.-]+$/.test(pathParts[1])) return "";
+      }
     }
+    
+    return parsed.toString();
+  } catch {
     return "";
   }
-
-  const hostStartRegex = /^(?:www\.)?github\.com(?::\d+)?(?:\/[^\s]{0,2000})?$/i;
-  if (hostStartRegex.test(inputUrl)) {
-    return `https://${inputUrl}`;
-  }
-
-  if (/^[A-Za-z0-9_-]+\/[A-Za-z0-9_.-]+$/.test(inputUrl)) {
-    return `https://github.com/${inputUrl}`;
-  }
-
-  return "";
 }
