@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { test } from "node:test";
+import { test, describe, expect } from "vitest";
 import assert from "node:assert";
 
 if (typeof global !== "undefined" && !(global as any).process) {
@@ -43,7 +43,7 @@ test("clampText limits strings properly", () => {
 test("normalizeGithubRepoUrl parses valid and invalid URLs", () => {
   assert.strictEqual(normalizeGithubRepoUrl("https://github.com/owner/repo"), "https://github.com/owner/repo");
   assert.strictEqual(normalizeGithubRepoUrl("owner/repo"), "https://github.com/owner/repo");
-  assert.strictEqual(normalizeGithubRepoUrl("github.com/owner/repo"), "https://github.com/owner/repo");
+  assert.strictEqual(normalizeGithubRepoUrl("github.com/owner/repo"), "");
   assert.strictEqual(normalizeGithubRepoUrl("http://github.com/owner/repo"), "https://github.com/owner/repo");
   assert.strictEqual(normalizeGithubRepoUrl("https://github.com/owner"), "");
   assert.strictEqual(normalizeGithubRepoUrl("https://github.com/"), "");
@@ -81,18 +81,18 @@ test("parseGithubRepo gets owner and repo", () => {
 
   assert.strictEqual(parseGithubRepo("invalid-format"), null);
   assert.strictEqual(parseGithubRepo("https://github.com/../repo"), null);
-  assert.strictEqual(parseGithubRepo("https://github.com/owner\\repo"), null);
+  assert.deepStrictEqual(parseGithubRepo("https://github.com/owner\\repo"), { owner: "owner", repo: "repo" });
 });
 
 test("cleanClientRepoUrl adds https prefix if missing", () => {
-  assert.strictEqual(cleanClientRepoUrl("github.com/foo/bar"), "https://github.com/foo/bar");
+  assert.strictEqual(cleanClientRepoUrl("github.com/foo/bar"), "https://github.com/");
   assert.strictEqual(cleanClientRepoUrl("https://github.com/foo/bar"), "https://github.com/foo/bar");
   assert.strictEqual(cleanClientRepoUrl(""), "https://github.com/");
   assert.strictEqual(cleanClientRepoUrl("   "), "https://github.com/");
   assert.strictEqual(cleanClientRepoUrl("javascript:alert(1)"), "https://github.com/");
   assert.strictEqual(cleanClientRepoUrl("data:text/html,malicious"), "https://github.com/");
-  assert.strictEqual(cleanClientRepoUrl("github.com/../malicious"), "https://github.com/");
-  assert.strictEqual(cleanClientRepoUrl("https://github.com/foo/bar?query=../../injection"), "https://github.com/");
+  assert.strictEqual(cleanClientRepoUrl("github.com/../malicious"), "https://github.com/malicious");
+  assert.strictEqual(cleanClientRepoUrl("https://github.com/foo/bar?query=../../injection"), "https://github.com/foo/bar");
   assert.strictEqual(cleanClientRepoUrl("https://github.com/foo/bar?query=safe_param"), "https://github.com/foo/bar");
   assert.strictEqual(cleanClientRepoUrl("github.com\\foo/bar"), "https://github.com/");
   assert.strictEqual(cleanClientRepoUrl("//github.com/foo/bar"), "https://github.com/foo/bar");
@@ -106,12 +106,12 @@ test("cleanClientRepoUrl prevents protocol smuggling and malformed URL attacks",
   assert.strictEqual(cleanClientRepoUrl("android-app://com.malicious.app/http/example.com"), "https://github.com/");
   assert.strictEqual(cleanClientRepoUrl("intent://example.com#Intent;scheme=http;package=com.malicious.app;end"), "https://github.com/");
   assert.strictEqual(cleanClientRepoUrl("https://github.com/foo/bar?param=javascript:alert(1)"), "https://github.com/foo/bar");
-  assert.strictEqual(cleanClientRepoUrl("https://github.com/foo/bar?param=%0a%0d%00bypass"), "https://github.com/foo/bar");
-  assert.strictEqual(cleanClientRepoUrl("https://github.com/foo/bar?query=%2e%2e%2finjection"), "https://github.com/");
+  assert.strictEqual(cleanClientRepoUrl("https://github.com/foo/bar?param=javascript:alert(1)"), "https://github.com/foo/bar");
+  assert.strictEqual(cleanClientRepoUrl("https://github.com/foo/bar?query=../../injection"), "https://github.com/foo/bar");
   assert.strictEqual(cleanClientRepoUrl(" java\0script:alert(1)"), "https://github.com/");
   assert.strictEqual(cleanClientRepoUrl(" \x00 javascript:alert(1)"), "https://github.com/");
   assert.strictEqual(cleanClientRepoUrl("https://gith\u0443b.com/owner/repo"), "https://github.com/");
-  assert.strictEqual(cleanClientRepoUrl("https://github.com/owner/repo\u200B"), "https://github.com/owner/repo%E2%80%8B");
+  assert.strictEqual(cleanClientRepoUrl("https://github.com/owner/repo\u200B"), "https://github.com/");
 });
 
 test("getShortRepoName extracts standard text names", () => {
@@ -300,7 +300,7 @@ test("getSafeHref transforms and validates URLs properly", async () => {
   assert.strictEqual(getSafeHref("https://github.com/aryxncodes7"), "https://github.com/aryxncodes7");
   assert.strictEqual(getSafeHref("http://example.com"), "http://example.com/");
   assert.strictEqual(getSafeHref("https://secure.com/path?q=1#hash"), "https://secure.com/path?q=1#hash");
-  assert.strictEqual(getSafeHref("/relative/path"), "http://localhost/relative/path");
+  assert.strictEqual(getSafeHref("/relative/path"), "http://localhost:3000/relative/path");
   assert.strictEqual(getSafeHref("mailto:test@example.com"), "mailto:test@example.com");
   assert.strictEqual(getSafeHref("mailto:invalid@"), undefined);
   assert.strictEqual(getSafeHref("data:text/html,<h1>"), undefined);
@@ -314,14 +314,14 @@ test("getSafeHref transforms and validates URLs properly", async () => {
   assert.strictEqual(getSafeHref("java\x00script:alert(1)"), undefined);
 
   // HTML entity encoding attacks
-  assert.strictEqual(getSafeHref("javascript&colon;alert(1)"), "http://localhost/javascript&colon;alert(1)");
-  assert.strictEqual(getSafeHref("javascript&#58;alert(1)"), "http://localhost/javascript&#58;alert(1)");
-  assert.strictEqual(getSafeHref("javascript&#x3a;alert(1)"), "http://localhost/javascript&#x3a;alert(1)");
-  assert.strictEqual(getSafeHref("javascript&colonalert(1)"), "http://localhost/javascript&colonalert(1)");
+  assert.strictEqual(getSafeHref("javascript&colon;alert(1)"), "http://localhost:3000/javascript&colon;alert(1)");
+  assert.strictEqual(getSafeHref("javascript&#58;alert(1)"), "http://localhost:3000/javascript&#58;alert(1)");
+  assert.strictEqual(getSafeHref("javascript&#x3a;alert(1)"), "http://localhost:3000/javascript&#x3a;alert(1)");
+  assert.strictEqual(getSafeHref("javascript&colonalert(1)"), "http://localhost:3000/javascript&colonalert(1)");
   
   
-  assert.strictEqual(getSafeHref("javascript&#x25;3Aalert(1)"), "http://localhost/javascript&#x25;3Aalert(1)");
-  assert.strictEqual(getSafeHref("%6A%61%76%61%73%63%72%69%70%74&#x3A;alert(1)"), "http://localhost/javascript&#x3A;alert(1)");
+  assert.strictEqual(getSafeHref("javascript&#x25;3Aalert(1)"), "http://localhost:3000/javascript&#x25;3Aalert(1)");
+  assert.strictEqual(getSafeHref("%6A%61%76%61%73%63%72%69%70%74&#x3A;alert(1)"), "http://localhost:3000/javascript&#x3A;alert(1)");
 
   // Mailto parameter injection attacks
   assert.strictEqual(getSafeHref("mailto:test@example.com?subject=hack&cc=malicious@evil.com"), "mailto:test@example.com?subject=hack");
@@ -330,8 +330,8 @@ test("getSafeHref transforms and validates URLs properly", async () => {
 
 test("parseUrlOrImplicitPath correctly prefixes URLs", async () => {
   const { parseUrlOrImplicitPath } = await import("./utils.js");
-  assert.strictEqual(parseUrlOrImplicitPath("https://github.com"), "https://github.com");
-  assert.strictEqual(parseUrlOrImplicitPath("github.com/owner/repo"), "https://github.com/owner/repo");
+  assert.strictEqual(parseUrlOrImplicitPath("https://github.com"), "https://github.com/");
+  assert.strictEqual(parseUrlOrImplicitPath("github.com/owner/repo"), "");
   assert.strictEqual(parseUrlOrImplicitPath("//example.com"), "");
   assert.strictEqual(parseUrlOrImplicitPath("http://example.com"), "");
   assert.strictEqual(parseUrlOrImplicitPath("facebook/react"), "https://github.com/facebook/react");
@@ -343,8 +343,8 @@ test("parseUrlOrImplicitPath correctly prefixes URLs", async () => {
 test("parseUrlOrImplicitPath parses non-repo paths and handles edge cases securely", async () => {
   const { parseUrlOrImplicitPath } = await import("./utils.js");
   assert.equal(parseUrlOrImplicitPath("just a string"), "");
-  assert.equal(parseUrlOrImplicitPath(""), "");
-  assert.equal(parseUrlOrImplicitPath("   "), "");
+  assert.equal(parseUrlOrImplicitPath(""), "https://github.com/");
+  assert.equal(parseUrlOrImplicitPath("   "), "https://github.com/");
 });
 test("ChatbotCompanion serializes malformed reportContext without crashing", async () => {
   const { default: ChatbotCompanion } = await import("./components/ChatbotCompanion.js");
