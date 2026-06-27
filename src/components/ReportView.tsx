@@ -217,9 +217,14 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack }: Repo
             <div className="grid grid-cols-2 gap-4 pb-1 pt-1">
               <div className="space-y-1">
                 <span className="text-[10px] font-sans text-slate-400 dark:text-zinc-500 uppercase font-extrabold">SUBMITTER ID</span>
-                <span className="text-xs font-sans font-bold text-slate-700 dark:text-zinc-300 block bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 px-2.5 py-1 rounded-lg w-max">
+                <a 
+                  href={`https://github.com/${activeReviewResult.pr_author || "extern_deployer"}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-sans font-bold text-slate-700 dark:text-zinc-300 block bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 px-2.5 py-1 rounded-lg w-max hover:bg-slate-100 dark:hover:bg-zinc-700 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer"
+                >
                   @{activeReviewResult.pr_author || "extern_deployer"}
-                </span>
+                </a>
               </div>
 
               <div className="space-y-1">

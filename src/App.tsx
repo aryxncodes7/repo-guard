@@ -785,6 +785,36 @@ export default function App() {
                               ))}
                             </div>
                           )}
+
+                          <div className="flex items-center gap-3 mt-6 mb-4">
+                            <div className="flex-1 h-px bg-slate-200 dark:bg-zinc-800" />
+                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider font-sans">Or audit custom URL</span>
+                            <div className="flex-1 h-px bg-slate-200 dark:bg-zinc-800" />
+                          </div>
+
+                          <form onSubmit={handleRunReview} className="flex gap-2">
+                            <input
+                              type="url"
+                              required
+                              value={repoUrl}
+                              onChange={(e) => {
+                                setRepoUrl(e.target.value);
+                                if (formValidationError) setFormValidationError('');
+                              }}
+                              placeholder="https://github.com/owner/repository"
+                              className={`flex-1 px-3 py-2 rounded-lg border text-sm transition-all font-sans focus:outline-none ${formValidationError
+                                ? 'bg-rose-50/50 dark:bg-rose-950/15 border-rose-300 dark:border-rose-900 focus:border-rose-500'
+                                : 'bg-slate-50 dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:border-emerald-500'
+                                }`}
+                            />
+                            <button
+                              type="submit"
+                              className="px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg flex items-center justify-center transition-all cursor-pointer shadow-sm hover:shadow-emerald-600/15 group"
+                              title="Run Security Audit"
+                            >
+                              <Play className="w-4 h-4 fill-current group-hover:scale-110 transition-transform" />
+                            </button>
+                          </form>
                         </div>
                       )}
                     </div>
