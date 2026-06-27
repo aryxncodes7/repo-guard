@@ -59,6 +59,14 @@ app.use((_req, res, next) => {
 });
 
 app.use((req, res, next) => {
+  // SSRF Prevention: strictly reject any client-provided destination paths for Gemini API
+  if (req.body?.baseUrl || req.headers['x-gemini-baseurl'] || req.query?.baseUrl) {
+    return res.status(403).json({ status: "error", message: "SSRF Prevention: Client-provided destination paths are strictly rejected." });
+  }
+  next();
+});
+
+app.use((req, res, next) => {
   // Vercel may pre-parse the body as a string or object
   if (req.body && typeof req.body === "object" && !Buffer.isBuffer(req.body)) {
     // Already a parsed object — skip express.json()

@@ -181,7 +181,7 @@ Inside the **Analysis Settings** modal (accessed via the Settings gear icon in t
   - **Standard**: Complete logic, security, and structure analysis.
   - **Deep**: Extensive cryptographic trace and risk simulation.
 - **Custom Gemini API Key**:
-  - A secure sessionStorage or ephemeral memory input to apply your personal API token context to all security audits and chatbot operations (BYOK model), preventing XSS-based exfiltration.
+  - A secure server-side key management system using encrypted HttpOnly cookies to apply your personal API token context to all security audits and chatbot operations (BYOK model), preventing XSS-based exfiltration.
 
 ---
 

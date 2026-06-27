@@ -28,6 +28,7 @@ export function getGeminiClient(customApiKey?: string) {
   return new GoogleGenAI({
     apiKey,
     httpOptions: {
+      baseUrl: process.env.GEMINI_BASE_URL || "https://generativelanguage.googleapis.com",
       headers: {
         'User-Agent': 'aistudio-build',
       }
