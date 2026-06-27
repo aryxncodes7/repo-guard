@@ -639,7 +639,7 @@ export default function App() {
                   </button>
                 )}
 
-                {/* Custom API Key Config button */}
+                {/* Analysis Settings button */}
                 <motion.button
                   whileHover={{ scale: 1.05, y: -1 }}
                   whileTap={{ scale: 0.95 }}
@@ -649,10 +649,10 @@ export default function App() {
                       ? 'bg-emerald-50 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400'
                       : 'bg-white dark:bg-zinc-900/50 border-slate-200 dark:border-zinc-800 hover:border-emerald-500/35 hover:bg-slate-50 dark:hover:bg-zinc-800 text-slate-500 dark:text-zinc-400'
                   }`}
-                  title="Configure Gemini API Key"
+                  title="Analysis Settings"
                   type="button"
                 >
-                  <Key className="w-4.5 h-4.5" />
+                  <Settings className="w-4.5 h-4.5" />
                 </motion.button>
 
                 {/* Dark mode switch */}
