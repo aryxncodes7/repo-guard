@@ -68,6 +68,7 @@ This architecture ensures that API keys (Gemini API Key, GitHub PAT) remain secu
 ```
 repoguard/
 ├── agents/
+│   ├── *.test.ts                   # Unit tests mocking Gemini outputs and schema validation
 │   ├── agentUtils.ts               # Core utility functions and Gemini client abstractions
 │   ├── codeReviewAgent.ts          # Line-by-line vulnerability and logic scanner
 │   ├── docsAgent.ts                # Documentation compliance and style evaluator
@@ -75,10 +76,13 @@ repoguard/
 │   └── triageAgent.ts              # Initial scope and risk metric analyzer
 ├── src/
 │   ├── components/
+│   │   ├── *.test.tsx              # Comprehensive component unit tests and UI state assertions
 │   │   ├── AgentStepper.tsx        # Multi-agent visual progression stepper
 │   │   ├── ChatbotCompanion.tsx    # Sidebar AI chat assistant interface
 │   │   ├── MarkdownLite.tsx        # Optimized lightweight markdown renderer
 │   │   └── ReportView.tsx          # Detailed audit reports and code patch diff views
+│   ├── App.test.tsx                # DOM rendering and timer integration tests for workspace
+│   ├── utils.test.ts               # Deep edge-case validation and security bounds testing
 │   ├── types.ts                    # TypeScript interfaces (ReviewResponse, CodeIssue, etc.)
 │   ├── App.tsx                     # Core workspace application page and splash screen
 │   ├── main.tsx                    # React client mounting entrypoint
@@ -88,6 +92,7 @@ repoguard/
 ├── package.json                    # Workspace dependencies, build, and start script hooks
 ├── tsconfig.json                   # Client and server TypeScript compilation config
 ├── vite.config.ts                  # Vite client dev server and asset bundler rules
+├── vitest.config.ts                # Unit testing framework and coverage generator config
 ├── vercel.json                     # Vercel deployment and routing configuration
 └── .env.example                    # Template for required environment variables
 ```
