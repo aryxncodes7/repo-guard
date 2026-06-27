@@ -80,9 +80,9 @@ describe('App Component', () => {
     fireEvent.click(analyzeBtn);
 
     await act(async () => {
-      vi.advanceTimersByTime(7000);
+      vi.advanceTimersByTime(13000);
     });
 
-    expect(screen.getByText(/Failed to construct structured AI report/i)).toBeInTheDocument();
+    expect(screen.getByText(/The backend endpoint returned status: 500/i)).toBeInTheDocument();
   });
 });
