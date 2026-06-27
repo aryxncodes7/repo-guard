@@ -22,11 +22,9 @@ export function safeDecode(str: string): string | null {
 }
 
 const rawDomains = import.meta.env?.VITE_ALLOWED_EMAIL_DOMAINS || (typeof process !== 'undefined' ? process.env.VITE_ALLOWED_EMAIL_DOMAINS : undefined);
+const DOMAIN_REGEX = /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 const parsedDomains = typeof rawDomains === 'string'
-  ? rawDomains.split(',').map((d: string) => d.trim()).filter((d: string) => {
-    try { return new URL(`https://${d}`).hostname === d; }
-    catch { return false; }
-  })
+  ? rawDomains.split(',').map((d: string) => d.trim()).filter((d: string) => DOMAIN_REGEX.test(d))
   : [];
 export const ALLOWED_EMAIL_DOMAINS = parsedDomains.length > 0
   ? parsedDomains
