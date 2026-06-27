@@ -7,6 +7,7 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSanitize from 'rehype-sanitize';
+import DOMPurify from 'dompurify';
 import { getSafeHref, ALLOWED_PROTOCOLS } from '../utils';
 
 interface MarkdownLiteProps {
@@ -93,7 +94,8 @@ export default function MarkdownLite({ text }: MarkdownLiteProps) {
   if (!text) return null;
   const safeText = React.useMemo(() => {
     const str = String(text);
-    return str.length > 100000 ? str.slice(0, 100000) + '\n\n**[TRUNCATED: Output exceeded 100k characters]**' : str;
+    const truncated = str.length > 100000 ? str.slice(0, 100000) + '\n\n**[TRUNCATED: Output exceeded 100k characters]**' : str;
+    return DOMPurify.sanitize(truncated);
   }, [text]);
 
   return (

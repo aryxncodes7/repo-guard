@@ -58,7 +58,7 @@ graph TD
     Proxy -.->|JSON/Markdown Response| Client
 ```
 
-This architecture ensures that API keys (Gemini API Key, GitHub PAT) remain secure within the proxy layer, while delivering a robust, dynamic experience to the user.
+This architecture ensures that API keys (Gemini API Key, GitHub PAT) remain secure within the proxy layer. The proxy server explicitly scrubs sensitive headers (like `x-gemini-key`) from the request object to prevent MitM logging leaks, while delivering a robust, dynamic experience to the user.
 
 ---
 

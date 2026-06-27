@@ -16,7 +16,7 @@ vi.mock('motion/react', () => {
 
 // Mock child components
 vi.mock('./components/AgentStepper', () => ({
-  default: () => <div data-testid="agent-stepper" />
+  default: (props: any) => <div data-testid="agent-stepper">{props.error}</div>
 }));
 
 vi.mock('./components/ReportView', () => ({
@@ -62,5 +62,27 @@ describe('App Component', () => {
     });
     expect(screen.getByText(/Find Bugs\. Secure Secrets\./i)).toBeInTheDocument();
     expect(screen.getByPlaceholderText('https://github.com/owner/repository')).toBeInTheDocument();
+  });
+
+  test('handles 4xx/5xx server failure states gracefully', async () => {
+    render(<App />);
+    act(() => {
+      vi.setSystemTime(new Date(Date.now() + 5000));
+      vi.advanceTimersByTime(5000);
+    });
+
+    mockFetch.mockResolvedValueOnce(new Response(JSON.stringify({ error: 'Internal Server Error' }), { status: 500 }));
+
+    const input = screen.getByPlaceholderText('https://github.com/owner/repository');
+    fireEvent.change(input, { target: { value: 'https://github.com/owner/repo' } });
+    
+    const analyzeBtn = screen.getByRole('button', { name: /Run Security Audit/i });
+    fireEvent.click(analyzeBtn);
+
+    await act(async () => {
+      vi.advanceTimersByTime(7000);
+    });
+
+    expect(screen.getByText(/Failed to construct structured AI report/i)).toBeInTheDocument();
   });
 });
