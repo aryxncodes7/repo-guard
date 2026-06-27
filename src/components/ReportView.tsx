@@ -340,10 +340,10 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack }: Repo
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs font-sans">
                   <span className="font-extrabold text-slate-700 dark:text-zinc-300">Accessibility Rating</span>
-                  <span className="font-extrabold text-emerald-600 dark:text-emerald-400">88%</span>
+                  <span className="font-extrabold text-emerald-600 dark:text-emerald-400">{activeReviewResult.metrics?.accessibility || 88}%</span>
                 </div>
                 <div className="h-1.5 w-full bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                  <motion.div initial={{ width: 0 }} animate={{ width: "88%" }} transition={{ duration: 1, delay: 0.3 }} className="h-full bg-emerald-500 rounded-full" />
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${activeReviewResult.metrics?.accessibility || 88}%` }} transition={{ duration: 1, delay: 0.3 }} className="h-full bg-emerald-500 rounded-full" />
                 </div>
               </div>
 
@@ -352,12 +352,14 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack }: Repo
                 <div className="flex items-center justify-between text-xs font-sans">
                   <span className="font-extrabold text-slate-700 dark:text-zinc-300">Test Coverage Metric</span>
                   <span className="font-extrabold text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
-                    15%
-                    <span className="text-[8.5px] uppercase tracking-wider bg-amber-50 dark:bg-amber-950/50 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-900/50 text-amber-700 dark:text-amber-400 font-extrabold">LOW</span>
+                    {activeReviewResult.metrics?.testCoverage || 15}%
+                    {(activeReviewResult.metrics?.testCoverage || 15) < 50 && (
+                      <span className="text-[8.5px] uppercase tracking-wider bg-amber-50 dark:bg-amber-950/50 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-900/50 text-amber-700 dark:text-amber-400 font-extrabold">LOW</span>
+                    )}
                   </span>
                 </div>
                 <div className="h-1.5 w-full bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                  <motion.div initial={{ width: 0 }} animate={{ width: "15%" }} transition={{ duration: 1, delay: 0.4 }} className="h-full bg-amber-500 rounded-full" />
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${activeReviewResult.metrics?.testCoverage || 15}%` }} transition={{ duration: 1, delay: 0.4 }} className="h-full bg-amber-500 rounded-full" />
                 </div>
               </div>
 
@@ -365,10 +367,10 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack }: Repo
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs font-sans">
                   <span className="font-extrabold text-slate-700 dark:text-zinc-300">Code Cleanliness & Style</span>
-                  <span className="font-extrabold text-teal-600 dark:text-teal-400">76%</span>
+                  <span className="font-extrabold text-teal-600 dark:text-teal-400">{activeReviewResult.metrics?.codeQuality || 76}%</span>
                 </div>
                 <div className="h-1.5 w-full bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                  <motion.div initial={{ width: 0 }} animate={{ width: "76%" }} transition={{ duration: 1, delay: 0.5 }} className="h-full bg-teal-500 rounded-full" />
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${activeReviewResult.metrics?.codeQuality || 76}%` }} transition={{ duration: 1, delay: 0.5 }} className="h-full bg-teal-500 rounded-full" />
                 </div>
               </div>
 

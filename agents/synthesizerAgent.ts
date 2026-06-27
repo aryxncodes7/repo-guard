@@ -117,9 +117,11 @@ For each code issue, provide an actionable, concise 'resolution' guiding the dev
           type: Type.OBJECT,
           properties: {
             efficiency: { type: Type.INTEGER, description: "Score from 0 to 100 representing code efficiency" },
-            codeQuality: { type: Type.INTEGER, description: "Score from 0 to 100 representing architectural quality" }
+            codeQuality: { type: Type.INTEGER, description: "Score from 0 to 100 representing architectural quality" },
+            testCoverage: { type: Type.INTEGER, description: "Score from 0 to 100 representing test coverage" },
+            accessibility: { type: Type.INTEGER, description: "Score from 0 to 100 representing UI accessibility or ease of use" }
           },
-          required: ["efficiency", "codeQuality"]
+          required: ["efficiency", "codeQuality", "testCoverage", "accessibility"]
         }
       },
       required: ["triage", "code_review", "docs_review", "final_summary", "metrics"]

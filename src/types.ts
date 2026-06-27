@@ -44,6 +44,8 @@ export interface FinalSummary {
 export interface ReportMetrics {
   efficiency: number;
   codeQuality: number;
+  testCoverage: number;
+  accessibility: number;
 }
 
 export interface ReviewResponse {

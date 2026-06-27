@@ -55,7 +55,9 @@ const mockReviewResponse: ReviewResponse = {
   },
   metrics: {
     efficiency: 85,
-    codeQuality: 70
+    codeQuality: 70,
+    testCoverage: 60,
+    accessibility: 90
   }
 };
 
