@@ -16,7 +16,7 @@ vi.mock('motion/react', () => {
 
 // Mock child components
 vi.mock('./components/AgentStepper', () => ({
-  default: (props: any) => <div data-testid="agent-stepper">{props.error}</div>
+  default: (props: any) => <div data-testid="agent-stepper">{props.errorMessage}</div>
 }));
 
 vi.mock('./components/ReportView', () => ({
