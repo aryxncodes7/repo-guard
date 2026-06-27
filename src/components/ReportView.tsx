@@ -529,7 +529,7 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack }: Repo
                               <div className="pt-2 border-t border-slate-100/80 dark:border-zinc-800 mt-2 space-y-1">
                                 <span className="text-[10px] uppercase font-sans tracking-wider font-extrabold text-slate-400 dark:text-zinc-500 block">Recommended Resolution Guide</span>
                                 <p className="text-[11.5px] text-slate-500 dark:text-zinc-400 leading-relaxed font-sans">
-                                  {getResolutionText(issue.category, issue.severity)}
+                                  {issue.resolution || getResolutionText(issue.category, issue.severity)}
                                 </p>
                               </div>
                             </div>

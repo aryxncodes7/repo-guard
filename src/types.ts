@@ -15,6 +15,7 @@ export interface CodeIssue {
   severity: 'info' | 'warning' | 'critical';
   category: 'security' | 'style' | 'logic' | 'missing_tests';
   message: string;
+  resolution?: string;
 }
 
 export interface SecretDetected {

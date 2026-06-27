@@ -38,6 +38,7 @@ If the target project codebase does not contain formal test configs or mock fram
 
 All categories must be one of: 'security', 'style', 'logic', 'missing_tests'. 
 Code issue file lines can be any positive integer.
+For each code issue, provide an actionable, concise 'resolution' guiding the developer on how to fix it.
   `.trim();
 
   const config: GeminiConfig = {
@@ -67,9 +68,10 @@ Code issue file lines can be any positive integer.
                   line: { type: Type.INTEGER },
                   severity: { type: Type.STRING, description: "Must be 'info', 'warning', or 'critical'" },
                   category: { type: Type.STRING, description: "Must be 'security', 'style', 'logic', or 'missing_tests'" },
-                  message: { type: Type.STRING }
+                  message: { type: Type.STRING },
+                  resolution: { type: Type.STRING, description: "Actionable resolution guide to fix the issue" }
                 },
-                required: ["file", "line", "severity", "category", "message"]
+                required: ["file", "line", "severity", "category", "message", "resolution"]
               }
             },
             secrets_detected: {
