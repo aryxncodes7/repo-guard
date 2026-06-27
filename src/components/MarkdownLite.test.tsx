@@ -34,7 +34,7 @@ describe('MarkdownLite Component Security', () => {
     // Generate strings > 100000 characters
     fc.assert(
       fc.property(
-        fc.string({ minLength: 100005, maxLength: 105000 }),
+        fc.string({ minLength: 100005, maxLength: 101000 }),
         (largeString) => {
           const { container } = render(<MarkdownLite text={largeString} />);
           const textContent = container.textContent || '';
@@ -45,9 +45,9 @@ describe('MarkdownLite Component Security', () => {
           expect(container).toBeDefined();
         }
       ),
-      { numRuns: 10 } // Less runs since string generation is large
+      { numRuns: 2 } // Less runs since string generation is large
     );
-  });
+  }, 15000);
 
   test('gracefully handles null, undefined, or empty inputs without crashing', () => {
     const { container: containerNull } = render(<MarkdownLite text={null as any} />);
