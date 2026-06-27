@@ -26,6 +26,8 @@ export const ALLOWED_EMAIL_DOMAINS = parsedDomains.length > 0
   ? parsedDomains
   : ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'example.com'];
 
+export const ALLOWED_PROTOCOLS = ['http', 'https', 'mailto'] as const;
+
 const MAX_REPO_URL_LENGTH = 200;
 
 const STRIP_CHARS_REGEX = /[\s\x00-\x1F\x7F-\x9F]/g;
@@ -59,8 +61,9 @@ export function getSafeHref(href?: string) {
 
     const fallbackOrigin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
     const parsed = new URL(absoluteHref, fallbackOrigin);
+    const protocolStr = parsed.protocol.replace(':', '');
 
-    if (!['http:', 'https:', 'mailto:'].includes(parsed.protocol)) {
+    if (!ALLOWED_PROTOCOLS.includes(protocolStr as any)) {
       return undefined;
     }
 
@@ -89,7 +92,7 @@ export function getSafeHref(href?: string) {
       
       return safeUrl.href;
     }
-    return ['http:', 'https:'].includes(parsed.protocol) ? parsed.href : undefined;
+    return ['http', 'https'].includes(protocolStr) ? parsed.href : undefined;
   } catch {
     return undefined;
   }
@@ -135,7 +138,7 @@ export function normalizeGithubRepoUrl(rawUrl: unknown): string {
 
     const isGithubRepo =
       parsed.protocol === "https:" &&
-      (parsed.hostname.toLowerCase() === "github.com" || parsed.hostname.toLowerCase() === "www.github.com") &&
+      /^(www\.)?github\.com$/.test(parsed.hostname.toLowerCase()) &&
       /^[A-Za-z0-9_-]+$/.test(owner) &&
       /^[A-Za-z0-9_.-]+$/.test(repo);
 
@@ -246,7 +249,7 @@ export function parseUrlOrImplicitPath(inputUrl: string): string {
     const hostname = parsed.hostname.toLowerCase();
     
     if (protocol !== "http:" && protocol !== "https:") return "";
-    if (hostname !== "github.com" && hostname !== "www.github.com") return "";
+    if (!/^(www\.)?github\.com$/.test(hostname)) return "";
     
     parsed.protocol = "https:";
     

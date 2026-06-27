@@ -7,7 +7,7 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSanitize from 'rehype-sanitize';
-import { getSafeHref } from '../utils';
+import { getSafeHref, ALLOWED_PROTOCOLS } from '../utils';
 
 interface MarkdownLiteProps {
   text: string;
@@ -75,8 +75,7 @@ const markdownComponents = {
     );
   },
   code: ({ inline, className, children, node, siblingIndex, index, ...props }: React.HTMLAttributes<HTMLElement> & { inline?: boolean; node?: unknown; siblingIndex?: number; index?: number }) => {
-    const codeString = String(children || '').slice(0, 10000)
-      .replace(/\n$/, '');
+    const codeString = String(children || '').replace(/\n$/, '');
     const isInline = typeof inline === 'boolean' ? inline : !codeString.includes('\n');
     return isInline ? (
       <code className={className || "px-1.5 py-0.5 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded font-sans text-[11px] text-teal-700 dark:text-teal-400 font-semibold"} {...props}>
@@ -110,7 +109,7 @@ export default function MarkdownLite({ text }: MarkdownLiteProps) {
             'code': [['className', /^language-[a-zA-Z0-9_-]+$/]]
           },
           protocols: {
-            href: ['http', 'https', 'mailto']
+            href: [...ALLOWED_PROTOCOLS]
           },
           strip: ['script'],
           clobberPrefix: 'user-content-',
