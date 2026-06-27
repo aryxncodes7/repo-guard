@@ -160,7 +160,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
         'X-Requested-With': 'XMLHttpRequest'
       };
       
-      const customApiKey = localStorage.getItem('repoguard-gemini-key');
+      const customApiKey = localStorage.getItem('user_gemini_key');
       if (customApiKey) {
         chatHeaders['x-gemini-key'] = customApiKey;
       }

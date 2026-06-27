@@ -138,7 +138,20 @@ export default function App() {
   const [scanDepth, setScanDepth] = useState<string>(() => {
     return localStorage.getItem('repoguard-scan-depth') || 'standard';
   });
-  const [apiKey, setApiKey] = useState<string>('');
+  const [customApiKey, setCustomApiKey] = useState<string>(localStorage.getItem('user_gemini_key') || '');
+  const [isKeyApplied, setIsKeyApplied] = useState<boolean>(!!localStorage.getItem('user_gemini_key'));
+
+  const handleSaveApiKey = (key: string) => {
+    if (key.trim()) {
+      localStorage.setItem('user_gemini_key', key.trim());
+      setCustomApiKey(key.trim());
+      setIsKeyApplied(true);
+    } else {
+      localStorage.removeItem('user_gemini_key');
+      setCustomApiKey('');
+      setIsKeyApplied(false);
+    }
+  };
   const [githubToken, setGithubToken] = useState<string>(() => {
     return localStorage.getItem('repoguard-github-token-custom') || '';
   });
@@ -362,7 +375,8 @@ export default function App() {
       'Content-Type': 'application/json'
     };
     if (githubToken) reviewHeaders['x-github-token'] = githubToken;
-    if (apiKey) reviewHeaders['x-gemini-key'] = apiKey;
+    const storedKey = localStorage.getItem('user_gemini_key');
+    if (storedKey) reviewHeaders['x-gemini-key'] = storedKey;
 
     const requestBody = {
       repo_url: trimmedUrl,
@@ -818,7 +832,35 @@ export default function App() {
                         </div>
                       )}
                     </div>
-
+                    
+                    {/* API Key Configuration Block */}
+                    <div className="flex flex-col gap-2 p-4 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm transition-all duration-300">
+                      <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-sans">Custom Gemini API Key (Optional)</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="password"
+                          placeholder="AIzaSy..."
+                          value={customApiKey}
+                          onChange={(e) => {
+                            setCustomApiKey(e.target.value);
+                            setIsKeyApplied(false); // Reset status if they edit the string
+                          }}
+                          className="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:border-emerald-500 font-sans"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleSaveApiKey(customApiKey)}
+                          className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors font-sans ${
+                            isKeyApplied 
+                              ? 'bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-500 text-emerald-600 dark:text-emerald-400' 
+                              : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                          }`}
+                        >
+                          {isKeyApplied ? '✓ Applied' : 'Apply Key'}
+                        </button>
+                      </div>
+                      <p className="text-xs text-slate-500 font-sans">If applied, requests will route using your personal token quota.</p>
+                    </div>
 
                   </div>
 
