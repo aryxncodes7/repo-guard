@@ -96,7 +96,7 @@ async function fetchFromGithub(url: string, token?: string) {
 }
 
 const CODE_EXTENSIONS = new Set([
-  "ts", "tsx", "js", "jsx", "py", "go", "rs", "java", "cpp", "h", "cs", "rb", "php", "c", "sh", "yml", "yaml", "json"
+  "ts", "tsx", "js", "jsx", "py", "go", "rs", "java", "cpp", "h", "cs", "rb", "php", "c", "sh", "yml", "yaml", "json", "md"
 ]);
 const EXCLUDED_PATHS = [
   "node_modules/", "dist/", ".git/", "build/", "vendor/", "coverage/", "package-lock.json", "yarn.lock", "pnpm-lock.yaml"
@@ -302,6 +302,12 @@ async function getRepositoryDetails(owner: string, repo: string, token?: string)
   // Sort files to prioritize source code directories (src, lib, app) for security analysis.
   // This ensures the AI scanner focuses on application logic rather than configuration boilerplate.
   allFiles.sort((a: any, b: any) => {
+    // Critical Fix: Prioritize documentation files so the Docs Agent actually sees them
+    const aIsDoc = a.path.toLowerCase() === "readme.md" || a.path.toLowerCase() === "security.md";
+    const bIsDoc = b.path.toLowerCase() === "readme.md" || b.path.toLowerCase() === "security.md";
+    if (aIsDoc && !bIsDoc) return -1;
+    if (!aIsDoc && bIsDoc) return 1;
+
     const aInSrc = a.path.startsWith("src/") || a.path.startsWith("lib/") || a.path.startsWith("app/");
     const bInSrc = b.path.startsWith("src/") || b.path.startsWith("lib/") || b.path.startsWith("app/");
     if (aInSrc && !bInSrc) return -1;
