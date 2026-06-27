@@ -726,7 +726,7 @@ export default function App() {
                             className="w-full bg-slate-900 dark:bg-zinc-100 hover:bg-slate-800 dark:hover:bg-white text-white dark:text-slate-900 font-sans font-semibold py-2.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md hover:shadow-lg"
                           >
                             <Github className="w-4 h-4" />
-                            <span>🔐 Connect GitHub Account</span>
+                            <span>Connect GitHub Account</span>
                           </button>
                         </div>
                       ) : (
@@ -740,8 +740,7 @@ export default function App() {
                               onClick={handleDisconnect}
                               className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition cursor-pointer flex items-center justify-center gap-1.5 w-full sm:w-auto shadow-sm"
                             >
-                              <Lock className="w-3 h-3" />
-                              Disconnect OAuth
+                              DISCONNECT
                             </button>
                           </div>
 
