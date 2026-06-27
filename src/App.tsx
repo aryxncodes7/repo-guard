@@ -322,10 +322,11 @@ export default function App() {
 
 
   // Trigger server-side multi-agent REST analysis
-  const handleRunReview = async (e?: React.FormEvent) => {
+  const handleRunReview = async (e?: React.FormEvent, urlOverride?: string) => {
     if (e) e.preventDefault();
 
-    const trimmedUrl = repoUrl.trim();
+    const targetUrl = urlOverride || repoUrl;
+    const trimmedUrl = targetUrl.trim();
     if (!trimmedUrl || trimmedUrl === 'https://github.com/' || !trimmedUrl.startsWith('https://github.com/')) {
       setFormValidationError('Please specify a valid GitHub repository URL (e.g. https://github.com/owner/repository)');
       return;
@@ -550,8 +551,8 @@ export default function App() {
       ) : (
         <motion.div
           key="workspace"
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
           className={`min-h-screen ${darkMode ? 'dark bg-zinc-950 text-zinc-100' : 'bg-slate-50 text-slate-800'} flex flex-col font-sans transition-all duration-300 relative overflow-hidden`}
         >
@@ -774,7 +775,7 @@ export default function App() {
                                     type="button"
                                     onClick={() => {
                                       setRepoUrl(repo.html_url);
-                                      setTimeout(() => handleRunReview(), 0);
+                                      handleRunReview(undefined, repo.html_url);
                                     }}
                                     className="w-full mt-auto py-1.5 rounded-lg bg-slate-50 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 font-sans text-xs font-bold border border-slate-200 dark:border-zinc-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-200 dark:hover:border-emerald-800 transition-all flex items-center justify-center gap-1.5 group-hover:shadow-sm"
                                   >
