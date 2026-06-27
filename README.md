@@ -100,9 +100,12 @@ repoguard/
 
 ## 🚀 Getting Started
 
-### Prerequisites
+### Environment Setup Targets & Runtime Prerequisite Versions
 
-Make sure you have [Node.js](https://nodejs.org/) installed (v18 or higher recommended).
+RepoGuard requires the following runtime prerequisite versions to function correctly in development and production environment setup targets:
+- **Node.js**: v18.0.0 or higher is required for the Express proxy server and Vite build tools.
+- **npm**: v9.0.0 or higher.
+- **Modern Browser**: Chrome, Firefox, or Safari (versions from 2022 onwards) for the React client.
 
 ### 1. Installation
 
@@ -138,19 +141,25 @@ npm run dev
 
 The application will launch on `http://localhost:3000`.
 
-### 4. Build for Production
+### 4. Build for Production & Deployment Workflows
 
-To bundle the client files and package the server code:
+To bundle the client files and package the server code for standard deployment workflows:
 
 ```bash
 npm run build
 ```
 
-To run the production build:
+To run the production build locally:
 
 ```bash
 npm run start
 ```
+
+**Cloud Deployment Workflows (e.g., Vercel, Railway, Render):**
+1. Set the Node.js version to `18.x` in your deployment settings.
+2. Define `GEMINI_API_KEY`, `GITHUB_CLIENT_ID`, and `GITHUB_CLIENT_SECRET` as production environment variables.
+3. Set the build command to `npm run build` and the start command to `npm run start`.
+4. RepoGuard utilizes a robust `vercel.json` for serverless function routing if deploying to Vercel.
 
 ### 5. Testing
 

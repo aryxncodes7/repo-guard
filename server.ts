@@ -299,7 +299,8 @@ async function getRepositoryDetails(owner: string, repo: string, token?: string)
     .filter((node: any) => node.type === "blob" && isSourceFile(node.path))
     .map((node: any) => ({ path: node.path, size: node.size || 0 }));
 
-  // Sort files to prioritize src/, lib/, etc.
+  // Sort files to prioritize source code directories (src, lib, app) for security analysis.
+  // This ensures the AI scanner focuses on application logic rather than configuration boilerplate.
   allFiles.sort((a: any, b: any) => {
     const aInSrc = a.path.startsWith("src/") || a.path.startsWith("lib/") || a.path.startsWith("app/");
     const bInSrc = b.path.startsWith("src/") || b.path.startsWith("lib/") || b.path.startsWith("app/");
@@ -335,9 +336,12 @@ async function getRepositoryDetails(owner: string, repo: string, token?: string)
 app.post("/api/review", async (req, res) => {
   const repo_url = (req.body as any)?.repo_url;
   const pr_number = (req.body as any)?.pr_number;
+  // Extract credentials from multiple secure transport mechanisms: Headers, Body Payload, or Encrypted HTTP-only Cookies
+  // This ensures resilient authentication even if the user drops the session midway.
   const api_key = (req.headers["x-gemini-key"] as string) || (req.headers["x-api-key"] as string) || (req.body as any)?.api_key || getCookie(req, "repoguard_gemini_key");
   const github_token = (req.headers["x-github-token"] as string) || (req.body as any)?.github_token;
 
+  // Sanitize the incoming request payload to prevent API key leaks in subsequent server logs
   if (req.body) {
     delete (req.body as any).api_key;
     delete (req.body as any).github_token;
