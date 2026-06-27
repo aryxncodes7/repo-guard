@@ -588,12 +588,9 @@ export default function App() {
               <div className="flex items-center gap-3">
 
                 {githubConnected ? (
-                  <motion.div
-                    whileHover={{ scale: 1.02, y: -0.5 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50/50 dark:bg-emerald-950/15 border border-emerald-100 dark:border-emerald-900/30 hover:border-emerald-250 dark:hover:border-emerald-800 rounded-xl shadow-[0_1px_2px_rgba(0,0,0,0.02)] cursor-pointer transition-all duration-300"
-                    onClick={handleDisconnect}
-                    title="Disconnect GitHub Account"
+                  <div
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50/50 dark:bg-emerald-950/15 border border-emerald-100 dark:border-emerald-900/30 rounded-xl shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all duration-300"
+                    title={`Connected as @${githubConnectedUser}`}
                   >
                     {githubAvatar ? (
                       <img
@@ -608,7 +605,7 @@ export default function App() {
                     <span className="text-[10.5px] font-bold text-slate-700 dark:text-zinc-300 font-sans hidden sm:inline">
                       @{githubConnectedUser}
                     </span>
-                  </motion.div>
+                  </div>
                 ) : (
                   <button
                     onClick={handleGithubSignIn}
@@ -734,9 +731,19 @@ export default function App() {
                         </div>
                       ) : (
                         <div className="animate-fade-in space-y-4">
-                          <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-100 mb-4 flex items-center gap-2 font-sans">
-                            <span className="text-lg">👋</span> Welcome back, {githubConnectedUser}! Select a repository to audit
-                          </h3>
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                            <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-100 flex items-center gap-2 font-sans">
+                              <span className="text-lg">👋</span> Welcome back, {githubConnectedUser}!
+                            </h3>
+                            <button
+                              type="button"
+                              onClick={handleDisconnect}
+                              className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition cursor-pointer flex items-center justify-center gap-1.5 w-full sm:w-auto shadow-sm"
+                            >
+                              <Lock className="w-3 h-3" />
+                              Disconnect OAuth
+                            </button>
+                          </div>
 
                           <div className="relative mb-4">
                             <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
