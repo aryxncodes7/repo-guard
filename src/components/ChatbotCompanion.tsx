@@ -192,31 +192,15 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
         chatHeaders['x-gemini-key'] = customApiKey;
       }
 
-      const redactSecrets = (text: string) => {
-        if (!text) return text;
-        let result = text;
-        const REDACTION_PATTERNS = [
-          /gh[pousr](?:_|%5F)[a-zA-Z0-9]{36}/gi,
-          /AIza[0-9A-Za-z-_]{35}/gi,
-          /AKIA[0-9A-Z]{16}/gi,
-          /(?:sk|rk)_(?:live|test)(?:_|%5F)[0-9a-zA-Z]{24}/gi,
-          /xox[baprs](?:-|%2D)[0-9a-zA-Z]{10,48}/gi
-        ];
-        for (const pattern of REDACTION_PATTERNS) {
-          result = result.replace(pattern, '***REDACTED***');
-        }
-        return result;
-      };
-
       let reportContextBody: any = undefined;
 
       if (activeReportContext) {
-        const cleanRepoUrl = redactSecrets(String(activeReportContext.repoUrl || '').slice(0, 500));
-        const cleanVerdict = redactSecrets(String(activeReportContext.verdict || '').slice(0, 100));
+        const cleanRepoUrl = String(activeReportContext.repoUrl || '').slice(0, 500);
+        const cleanVerdict = String(activeReportContext.verdict || '').slice(0, 100);
         const cleanIssues = Array.isArray(activeReportContext.issues)
           ? activeReportContext.issues
             .filter(issue => issue && typeof issue === 'object' && !Array.isArray(issue))
-            .map((issue: any) => redactSecrets(`[${String(issue.severity || 'info')}] ${String(issue.category || 'general')} at ${String(issue.file || 'unknown').slice(0, 255)}:${Number(issue.line || 0)}`))
+            .map((issue: any) => `[${String(issue.severity || 'info')}] ${String(issue.category || 'general')} at ${String(issue.file || 'unknown').slice(0, 255)}:${Number(issue.line || 0)}`)
           : [];
 
         // Strict field allow-list
