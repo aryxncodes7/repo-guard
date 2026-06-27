@@ -78,7 +78,7 @@ app.use((req, res, next) => {
 
 
 
-});
+
 
 // Define rate limiting middleware for sensitive endpoints to prevent API key exhaustion and DoS risks.
 // Limits each IP to 20 requests per 15 minutes.
