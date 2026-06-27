@@ -58,16 +58,6 @@ app.use((_req, res, next) => {
   next();
 });
 
-// Middleware to explicitly scrub x-gemini-key headers from all server logs
-app.use((req, res, next) => {
-  if (req.headers && req.headers['x-gemini-key']) {
-    Object.defineProperty(req.headers, 'x-gemini-key', {
-      value: req.headers['x-gemini-key'],
-      enumerable: false
-    });
-  }
-  next();
-});
 app.use((req, res, next) => {
   // Vercel may pre-parse the body as a string or object
   if (req.body && typeof req.body === "object" && !Buffer.isBuffer(req.body)) {
@@ -392,6 +382,11 @@ app.post("/api/review", apiLimiter, async (req, res) => {
   const github_token = (req.headers["x-github-token"] as string) || (req.body as any)?.github_token;
 
   // Sanitize the incoming request payload to prevent API key leaks in subsequent server logs
+  if (req.headers) {
+    delete req.headers["x-gemini-key"];
+    delete req.headers["x-api-key"];
+    delete req.headers["x-github-token"];
+  }
   if (req.body) {
     delete (req.body as any).api_key;
     delete (req.body as any).github_token;
@@ -533,6 +528,10 @@ app.post("/api/chat", apiLimiter, async (req, res) => {
   const history = (req.body as any)?.history;
   const api_key = (req.headers["x-gemini-key"] as string) || (req.headers["x-api-key"] as string) || (req.body as any)?.api_key || getCookie(req, "repoguard_gemini_key");
 
+  if (req.headers) {
+    delete req.headers["x-gemini-key"];
+    delete req.headers["x-api-key"];
+  }
   if (req.body) {
     delete (req.body as any).api_key;
   }
