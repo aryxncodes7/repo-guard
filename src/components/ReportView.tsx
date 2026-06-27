@@ -327,12 +327,14 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack }: Repo
                 <div className="flex items-center justify-between text-xs font-sans">
                   <span className="font-extrabold text-slate-700 dark:text-zinc-300">Security Rating</span>
                   <span className="font-extrabold text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
-                    42%
-                    <span className="text-[8.5px] uppercase tracking-wider bg-rose-50 dark:bg-rose-950/50 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-900/50 text-rose-700 dark:text-rose-400 font-extrabold">CRITICAL</span>
+                    {activeReviewResult.metrics?.security || 42}%
+                    {(activeReviewResult.metrics?.security || 42) < 50 && (
+                      <span className="text-[8.5px] uppercase tracking-wider bg-rose-50 dark:bg-rose-950/50 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-900/50 text-rose-700 dark:text-rose-400 font-extrabold">CRITICAL</span>
+                    )}
                   </span>
                 </div>
                 <div className="h-1.5 w-full bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                  <motion.div initial={{ width: 0 }} animate={{ width: "42%" }} transition={{ duration: 1, delay: 0.2 }} className="h-full bg-rose-500 rounded-full" />
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${activeReviewResult.metrics?.security || 42}%` }} transition={{ duration: 1, delay: 0.2 }} className="h-full bg-rose-500 rounded-full" />
                 </div>
               </div>
 
@@ -367,10 +369,10 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack }: Repo
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs font-sans">
                   <span className="font-extrabold text-slate-700 dark:text-zinc-300">Code Cleanliness & Style</span>
-                  <span className="font-extrabold text-teal-600 dark:text-teal-400">{activeReviewResult.metrics?.codeQuality || 76}%</span>
+                  <span className="font-extrabold text-teal-600 dark:text-teal-400">{activeReviewResult.metrics?.codeCleanliness || 76}%</span>
                 </div>
                 <div className="h-1.5 w-full bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                  <motion.div initial={{ width: 0 }} animate={{ width: `${activeReviewResult.metrics?.codeQuality || 76}%` }} transition={{ duration: 1, delay: 0.5 }} className="h-full bg-teal-500 rounded-full" />
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${activeReviewResult.metrics?.codeCleanliness || 76}%` }} transition={{ duration: 1, delay: 0.5 }} className="h-full bg-teal-500 rounded-full" />
                 </div>
               </div>
 
@@ -389,10 +391,10 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack }: Repo
               <div className="space-y-1.5">
                 <div className="flex justify-between text-xs font-sans">
                   <span className="font-extrabold text-slate-700 dark:text-zinc-300">Architectural Quality</span>
-                  <span className="font-extrabold text-emerald-600 dark:text-emerald-400">{activeReviewResult.metrics?.codeQuality || 92}%</span>
+                  <span className="font-extrabold text-emerald-600 dark:text-emerald-400">{activeReviewResult.metrics?.architecture || 92}%</span>
                 </div>
                 <div className="h-1.5 w-full bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                  <motion.div initial={{ width: 0 }} animate={{ width: `${activeReviewResult.metrics?.codeQuality || 92}%` }} transition={{ duration: 1, delay: 0.7 }} className="h-full bg-emerald-500 rounded-full" />
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${activeReviewResult.metrics?.architecture || 92}%` }} transition={{ duration: 1, delay: 0.7 }} className="h-full bg-emerald-500 rounded-full" />
                 </div>
               </div>
             </div>

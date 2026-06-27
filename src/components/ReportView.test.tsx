@@ -54,10 +54,12 @@ const mockReviewResponse: ReviewResponse = {
     top_priority_fixes: ['Fix XSS']
   },
   metrics: {
-    efficiency: 85,
-    codeQuality: 70,
+    security: 45,
+    accessibility: 90,
     testCoverage: 60,
-    accessibility: 90
+    codeCleanliness: 70,
+    efficiency: 85,
+    architecture: 80
   }
 };
 

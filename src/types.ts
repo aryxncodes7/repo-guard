@@ -42,10 +42,12 @@ export interface FinalSummary {
 }
 
 export interface ReportMetrics {
-  efficiency: number;
-  codeQuality: number;
-  testCoverage: number;
+  security: number;
   accessibility: number;
+  testCoverage: number;
+  codeCleanliness: number;
+  efficiency: number;
+  architecture: number;
 }
 
 export interface ReviewResponse {
