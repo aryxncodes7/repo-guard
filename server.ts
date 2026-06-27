@@ -8,6 +8,13 @@ import path from "path";
 import { GoogleGenAI, Type } from "@google/genai";
 import type { GenerateContentConfig } from "@google/genai";
 import dotenv from "dotenv";
+import rateLimit from "express-rate-limit";
+
+// Add a global process handler for unhandled promise rejections to prevent silent server crashes.
+// This ensures stability in long-running processes by logging errors gracefully rather than exiting unexpectedly.
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[Unhandled Rejection] at:', promise, 'reason:', reason);
+});
 
 import { 
   getErrorMessage, 
@@ -70,6 +77,18 @@ app.use((req, res, next) => {
 
 
 
+
+});
+
+// Define rate limiting middleware for sensitive endpoints to prevent API key exhaustion and DoS risks.
+// Limits each IP to 20 requests per 15 minutes.
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { status: "error", message: "Too many requests from this IP, please try again after 15 minutes" },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Helper to fetch from GitHub API with optional token
 async function fetchFromGithub(url: string, token?: string) {
@@ -339,7 +358,7 @@ async function getRepositoryDetails(owner: string, repo: string, token?: string)
 }
 
 // Real AI Multi-Agent PR Review Endpoint
-app.post("/api/review", async (req, res) => {
+app.post("/api/review", apiLimiter, async (req, res) => {
   const repo_url = (req.body as any)?.repo_url;
   const pr_number = (req.body as any)?.pr_number;
   // Extract credentials from multiple secure transport mechanisms: Headers, Body Payload, or Encrypted HTTP-only Cookies
@@ -484,7 +503,7 @@ ${repoFilesText}
 });
 
 // AI Chat Handler
-app.post("/api/chat", async (req, res) => {
+app.post("/api/chat", apiLimiter, async (req, res) => {
   const message = (req.body as any)?.message;
   const history = (req.body as any)?.history;
   const api_key = (req.headers["x-gemini-key"] as string) || (req.headers["x-api-key"] as string) || (req.body as any)?.api_key || getCookie(req, "repoguard_gemini_key");

@@ -36,6 +36,9 @@ CRITICAL GRADING RULES FOR VERDICT:
 EVALUATION RULE FOR TEST SCORE METRIC:
 If the target project codebase does not contain formal test configs or mock frameworks, do not drop the score to 15%. Baseline the codebase test score metric safely at 50% if the core execution modules are sound. Provide a constructive, educational note explaining that while core integrity functions normally, adding explicit unit test runners will prevent deployment regressions.
 
+EVALUATION RULE FOR DOCUMENTATION METRIC:
+If the repository contains an active README.md or SECURITY.md file that covers core environment setup and prerequisites, explicitly baseline the documentation score to 90% or higher. Do not output arbitrary low scores (e.g., 40%) unless the repository is entirely devoid of markdown documentation.
+
 All categories must be one of: 'security', 'style', 'logic', 'missing_tests'. 
 Code issue file lines can be any positive integer.
 For each code issue, provide an actionable, concise 'resolution' guiding the developer on how to fix it.
