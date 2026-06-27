@@ -48,6 +48,7 @@ export interface ReportMetrics {
   codeCleanliness: number;
   efficiency: number;
   architecture: number;
+  documentation: number;
 }
 
 export interface ReviewResponse {

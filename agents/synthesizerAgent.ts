@@ -121,9 +121,10 @@ For each code issue, provide an actionable, concise 'resolution' guiding the dev
             testCoverage: { type: Type.INTEGER, description: "Score from 0 to 100 representing test coverage" },
             codeCleanliness: { type: Type.INTEGER, description: "Score from 0 to 100 representing code cleanliness and style" },
             efficiency: { type: Type.INTEGER, description: "Score from 0 to 100 representing code runtime efficiency" },
-            architecture: { type: Type.INTEGER, description: "Score from 0 to 100 representing architectural quality" }
+            architecture: { type: Type.INTEGER, description: "Score from 0 to 100 representing architectural quality" },
+            documentation: { type: Type.INTEGER, description: "Score from 0 to 100 representing documentation quality and coverage" }
           },
-          required: ["security", "accessibility", "testCoverage", "codeCleanliness", "efficiency", "architecture"]
+          required: ["security", "accessibility", "testCoverage", "codeCleanliness", "efficiency", "architecture", "documentation"]
         }
       },
       required: ["triage", "code_review", "docs_review", "final_summary", "metrics"]

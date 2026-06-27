@@ -124,9 +124,6 @@ GEMINI_API_KEY=your_gemini_api_key_here
 GITHUB_CLIENT_ID=your_github_oauth_client_id_here
 GITHUB_CLIENT_SECRET=your_github_oauth_client_secret_here
 
-# Optional: GitHub PAT for fallback or backend scanning
-GITHUB_TOKEN=your_github_personal_access_token_here
-
 # Required for OAuth callbacks
 APP_URL=http://localhost:3000
 ```

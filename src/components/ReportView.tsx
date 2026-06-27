@@ -397,6 +397,17 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack }: Repo
                   <motion.div initial={{ width: 0 }} animate={{ width: `${activeReviewResult.metrics?.architecture || 92}%` }} transition={{ duration: 1, delay: 0.7 }} className="h-full bg-emerald-500 rounded-full" />
                 </div>
               </div>
+
+              {/* Documentation Quality Bar */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-xs font-sans">
+                  <span className="font-extrabold text-slate-700 dark:text-zinc-300">Documentation Quality</span>
+                  <span className="font-extrabold text-indigo-600 dark:text-indigo-400">{activeReviewResult.metrics?.documentation || 85}%</span>
+                </div>
+                <div className="h-1.5 w-full bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${activeReviewResult.metrics?.documentation || 85}%` }} transition={{ duration: 1, delay: 0.8 }} className="h-full bg-indigo-500 rounded-full" />
+                </div>
+              </div>
             </div>
           </div>
 

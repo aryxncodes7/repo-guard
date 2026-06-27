@@ -59,7 +59,8 @@ const mockReviewResponse: ReviewResponse = {
     testCoverage: 60,
     codeCleanliness: 70,
     efficiency: 85,
-    architecture: 80
+    architecture: 80,
+    documentation: 85
   }
 };
 
