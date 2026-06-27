@@ -1,4 +1,4 @@
-# 🛡️ RepoGuard: AI-Powered Repository Security Companion
+# 🛡️ RepoGuard: Smart Repository Security
 
 RepoGuard is a smart AI teammate that watches your code repositories and Pull Requests to catch security bugs and quality issues before they hit production. Instead of dumping a massive list of confusing alerts on you, RepoGuard deploys a crew of specialized AI agents to hunt down leaked secrets, logic flaws, and messy documentation. Plus, it features a built-in chatbot sidebar so you can chat directly with the AI and get instant code fixes on the fly.
 
