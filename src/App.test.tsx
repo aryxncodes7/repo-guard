@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import { test, describe, expect, vi, beforeEach } from 'vitest';
+import { test, describe, expect, vi, beforeEach, afterEach } from 'vitest';
 import App from './App';
 
 // Setup Mocks

@@ -32,8 +32,7 @@ describe('AgentStepper Component', () => {
     });
 
     test('handles undefined gracefully via default props', () => {
-      // @ts-expect-error testing undefined edge case
-      render(<AgentStepper agents={undefined} />);
+      render(<AgentStepper agents={undefined as any} />);
       expect(screen.getByText('PIPELINE DISPATCHED')).toBeInTheDocument();
       expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '0');
     });
@@ -42,9 +41,9 @@ describe('AgentStepper Component', () => {
   describe('Deduplication and State Transitions', () => {
     test('deduplicates agents by ID, keeping the first occurrence', () => {
       const agents: AgentProgress[] = [
-        { id: 'agent-1', name: 'First', status: 'running', output: '' },
-        { id: 'agent-1', name: 'First Duplicate', status: 'completed', output: '' },
-        { id: 'agent-2', name: 'Second', status: 'pending', output: '' },
+        { id: 'agent-1', name: 'First', status: 'running', output: '', description: '' },
+        { id: 'agent-1', name: 'First Duplicate', status: 'completed', output: '', description: '' },
+        { id: 'agent-2', name: 'Second', status: 'pending', output: '', description: '' },
       ];
 
       render(<AgentStepper agents={agents} />);
@@ -59,7 +58,7 @@ describe('AgentStepper Component', () => {
 
   describe('Status Indicator Branches', () => {
     test('renders pending (default) status UI correctly', () => {
-      render(<AgentStepper agents={[{ id: '1', name: 'Pending Agent', status: 'pending', output: '' }]} />);
+      render(<AgentStepper agents={[{ id: '1', name: 'Pending Agent', status: 'pending', output: '', description: '' }]} />);
       const item = screen.getByRole('listitem');
       
       // Verify pending styles (no active aria-current)
@@ -68,7 +67,7 @@ describe('AgentStepper Component', () => {
     });
 
     test('renders running status UI correctly', () => {
-      render(<AgentStepper agents={[{ id: '1', name: 'Running Agent', status: 'running', output: '' }]} />);
+      render(<AgentStepper agents={[{ id: '1', name: 'Running Agent', status: 'running', output: '', description: '' }]} />);
       const item = screen.getByRole('listitem');
       
       // aria-current is strictly used for running
@@ -77,7 +76,7 @@ describe('AgentStepper Component', () => {
     });
 
     test('renders completed status UI correctly', () => {
-      render(<AgentStepper agents={[{ id: '1', name: 'Completed Agent', status: 'completed', output: '' }]} />);
+      render(<AgentStepper agents={[{ id: '1', name: 'Completed Agent', status: 'completed', output: '', description: '' }]} />);
       const item = screen.getByRole('listitem');
       
       expect(item).not.toHaveAttribute('aria-current');
@@ -85,7 +84,7 @@ describe('AgentStepper Component', () => {
     });
 
     test('renders error status UI correctly and cascades to pipeline state', () => {
-      render(<AgentStepper agents={[{ id: '1', name: 'Error Agent', status: 'error', output: '' }]} />);
+      render(<AgentStepper agents={[{ id: '1', name: 'Error Agent', status: 'error', output: '', description: '' }]} />);
       const item = screen.getByRole('listitem');
       
       expect(item).not.toHaveAttribute('aria-current');
@@ -99,10 +98,10 @@ describe('AgentStepper Component', () => {
   describe('Progress Bar Mathematics', () => {
     test('calculates percentage accurately across mixed states', () => {
       const agents: AgentProgress[] = [
-        { id: '1', name: 'A1', status: 'completed', output: '' },
-        { id: '2', name: 'A2', status: 'completed', output: '' },
-        { id: '3', name: 'A3', status: 'running', output: '' },
-        { id: '4', name: 'A4', status: 'pending', output: '' },
+        { id: '1', name: 'A1', status: 'completed', output: '', description: '' },
+        { id: '2', name: 'A2', status: 'completed', output: '', description: '' },
+        { id: '3', name: 'A3', status: 'running', output: '', description: '' },
+        { id: '4', name: 'A4', status: 'pending', output: '', description: '' },
       ];
 
       render(<AgentStepper agents={agents} />);

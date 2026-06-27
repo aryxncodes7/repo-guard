@@ -9,7 +9,7 @@ export const getNormalizedUrl = (url: string): string | null => {
 };
 import createDOMPurify from 'dompurify';
 
-const DOMPurify = typeof window !== 'undefined' && window.document ? createDOMPurify(window as unknown as Window) : null;
+const DOMPurify = typeof window !== 'undefined' && window.document ? createDOMPurify(window as any) : null;
 
 export const MAX_PR_NUMBER = 1000000;
 

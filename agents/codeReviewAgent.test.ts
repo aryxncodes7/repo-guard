@@ -12,7 +12,7 @@ describe('codeReviewAgent', () => {
     // Setup mock return value
     vi.mocked(agentUtils.generateContentWithFallback).mockResolvedValueOnce({
       text: 'Mocked AI Review Output'
-    });
+    } as any);
 
     const result = await runCodeReviewAgent('const x = 1;', 'mock-api-key');
     
@@ -23,7 +23,7 @@ describe('codeReviewAgent', () => {
   test('returns fallback string when AI returns undefined text', async () => {
     vi.mocked(agentUtils.generateContentWithFallback).mockResolvedValueOnce({
       text: undefined
-    });
+    } as any);
 
     const result = await runCodeReviewAgent('const x = 1;', 'mock-api-key');
     
