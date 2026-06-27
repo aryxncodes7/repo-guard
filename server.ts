@@ -92,6 +92,19 @@ const apiLimiter = rateLimit({
 
 // Helper to fetch from GitHub API with optional token
 async function fetchFromGithub(url: string, token?: string) {
+  // SSRF Prevention: Validate URL and enforce hostname allow-list
+  try {
+    const parsedUrl = new URL(url);
+    if (parsedUrl.hostname !== "api.github.com" && parsedUrl.hostname !== "raw.githubusercontent.com") {
+      throw new Error(`SSRF Prevention: Hostname ${parsedUrl.hostname} is not in the allow-list.`);
+    }
+    if (parsedUrl.protocol !== "https:") {
+      throw new Error("SSRF Prevention: Only HTTPS protocol is allowed.");
+    }
+  } catch (e) {
+    throw new Error(`Invalid or blocked URL provided for GitHub fetch: ${(e as Error).message}`);
+  }
+
   const headers: Record<string, string> = {
     "Accept": "application/vnd.github.v3+json",
     "User-Agent": "RepoGuard-App"
