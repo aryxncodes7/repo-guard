@@ -365,7 +365,7 @@ export default function App() {
     if (apiKey) reviewHeaders['x-gemini-key'] = apiKey;
 
     const requestBody = {
-      repo_url: repoUrl.trim(),
+      repo_url: trimmedUrl,
       pr_number: prNumber ? parseInt(prNumber, 10) : undefined
     };
 
