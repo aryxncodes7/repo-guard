@@ -128,6 +128,15 @@ app.post("/api/set-key", (req, res) => {
   return res.status(400).json({ status: "error" });
 });
 
+app.get("/api/auth/login", (req, res) => {
+  const clientId = process.env.GITHUB_CLIENT_ID;
+  if (!clientId) {
+    return res.status(500).send("GITHUB_CLIENT_ID is not configured in backend.");
+  }
+  const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&scope=repo`;
+  res.redirect(authUrl);
+});
+
 app.post("/api/auth/callback", async (req, res) => {
   const code = (req.body as any)?.code;
   const redirect_uri = (req.body as any)?.redirect_uri;

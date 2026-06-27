@@ -144,14 +144,51 @@ export default function App() {
   });
 
   const handleGithubSignIn = () => {
-    // NextAuth signIn('github') equivalent for frontend UI flow
-    setGithubConnected(true);
-    setGithubConnectedUser('aryxncodes7'); 
-    setGithubAvatar('https://avatars.githubusercontent.com/u/101216543?v=4');
-    localStorage.setItem('repoguard-github-linked', 'true');
-    localStorage.setItem('repoguard-github-user', 'aryxncodes7');
-    localStorage.setItem('repoguard-github-avatar', 'https://avatars.githubusercontent.com/u/101216543?v=4');
+    // Redirect to backend OAuth login endpoint which will forward to GitHub
+    window.location.href = (import.meta.env.VITE_API_BASE_URL || '') + '/api/auth/login';
   };
+
+  // Handle GitHub OAuth callback
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    
+    if (code) {
+      const exchangeCode = async () => {
+        try {
+          const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+          const redirect_uri = window.location.origin + window.location.pathname; 
+          
+          const res = await fetch(`${baseUrl}/api/auth/callback`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code, redirect_uri })
+          });
+          
+          if (!res.ok) throw new Error('Authentication failed');
+          
+          const data = await res.json();
+          if (data.access_token && data.user) {
+            setGithubConnected(true);
+            setGithubConnectedUser(data.user);
+            setGithubAvatar(data.avatar || '');
+            
+            localStorage.setItem('repoguard-github-linked', 'true');
+            localStorage.setItem('repoguard-github-user', data.user);
+            localStorage.setItem('repoguard-github-avatar', data.avatar || '');
+            localStorage.setItem('repoguard-github-token', data.access_token);
+          }
+        } catch (error) {
+          console.error("OAuth flow failed:", error);
+        } finally {
+          // Clean up the URL to remove the code parameter
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      };
+      
+      exchangeCode();
+    }
+  }, []);
 
   const handleDisconnect = async () => {
     const token = localStorage.getItem('repoguard-github-token');
