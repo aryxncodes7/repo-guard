@@ -9,8 +9,24 @@ import ReactMarkdown from 'react-markdown';
 import { getSafeHref, safeDecode, getShortRepoName } from '../utils';
 
 // Client-side redaction removed in favor of robust server-side redaction
-import rehypeSanitize from 'rehype-sanitize';
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import { CodeIssue, FinalSummary } from '../types';
+
+const strictSchema = {
+  ...defaultSchema,
+  tagNames: ['p', 'a', 'strong', 'em', 'ul', 'ol', 'li', 'code', 'pre', 'br', 'span', 'div'],
+  attributes: {
+    ...defaultSchema.attributes,
+    a: ['href', 'title', 'target', 'rel'],
+    code: ['className'],
+    span: ['className'],
+    '*': ['className']
+  },
+  protocols: {
+    ...defaultSchema.protocols,
+    href: ['http', 'https']
+  }
+};
 
 interface ChatbotCompanionProps {
   activeReportContext?: {
@@ -78,8 +94,19 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  const isTypingRef = useRef(false);
   useEffect(() => {
-    return () => abortControllerRef.current?.abort();
+    isTypingRef.current = isTyping;
+  }, [isTyping]);
+
+  useEffect(() => {
+    let isActive = true;
+    return () => {
+      isActive = false;
+      if (isTypingRef.current && abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, []);
 
   // Clear chat state between audit sessions to prevent privacy leaks
@@ -290,7 +317,7 @@ export default function ChatbotCompanion({ activeReportContext }: ChatbotCompani
                   <ReactMarkdown
                     components={markdownComponents}
                     urlTransform={getSafeHref}
-                    rehypePlugins={[rehypeSanitize]}
+                    rehypePlugins={[[rehypeSanitize, strictSchema]]}
                   >
                     {m.text}
                   </ReactMarkdown>
