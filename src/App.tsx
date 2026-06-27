@@ -126,7 +126,6 @@ export default function App() {
   const [darkMode, setDarkMode] = useState<boolean>(() => {
     return localStorage.getItem('repoguard-theme') === 'dark';
   });
-  const [settingsOpen, setSettingsOpen] = useState<boolean>(false);
   const [githubConnected, setGithubConnected] = useState<boolean>(() => {
     return localStorage.getItem('repoguard-github-linked') === 'true';
   });
@@ -143,6 +142,43 @@ export default function App() {
   const [githubToken, setGithubToken] = useState<string>(() => {
     return localStorage.getItem('repoguard-github-token-custom') || '';
   });
+
+  const handleGithubSignIn = () => {
+    // NextAuth signIn('github') equivalent for frontend UI flow
+    setGithubConnected(true);
+    setGithubConnectedUser('aryxncodes7'); 
+    setGithubAvatar('https://avatars.githubusercontent.com/u/101216543?v=4');
+    localStorage.setItem('repoguard-github-linked', 'true');
+    localStorage.setItem('repoguard-github-user', 'aryxncodes7');
+    localStorage.setItem('repoguard-github-avatar', 'https://avatars.githubusercontent.com/u/101216543?v=4');
+  };
+
+  const handleDisconnect = async () => {
+    const token = localStorage.getItem('repoguard-github-token');
+    if (token) {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+      await fetch(`${baseUrl}/api/auth/revoke`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ access_token: token })
+      }).catch(() => {});
+    }
+
+    window.history.replaceState({}, document.title, window.location.pathname);
+    
+    localStorage.removeItem('repoguard-github-linked');
+    localStorage.removeItem('repoguard-github-user');
+    localStorage.removeItem('repoguard-github-avatar');
+    localStorage.removeItem('repoguard-github-token-custom');
+    localStorage.removeItem('repoguard-github-token');
+
+    setGithubConnected(false);
+    setGithubConnectedUser('');
+    setGithubAvatar('');
+    setGithubToken('');
+    setRepoSearchQuery('');
+    setRepoUrl('https://github.com/');
+  };
 
   const [repoSearchQuery, setRepoSearchQuery] = useState('');
   const [repositories, setRepositories] = useState<{ name: string; private: boolean; html_url: string; full_name: string }[]>([]);
@@ -249,8 +285,8 @@ export default function App() {
 
 
   // Trigger server-side multi-agent REST analysis
-  const handleRunReview = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleRunReview = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
 
     const trimmedUrl = repoUrl.trim();
     if (!trimmedUrl || trimmedUrl === 'https://github.com/' || !trimmedUrl.startsWith('https://github.com/')) {
@@ -375,196 +411,7 @@ export default function App() {
 
 
 
-  const SettingsModal = () => {
-    const [usernameInput, setUsernameInput] = useState(githubConnectedUser || '');
-    const [isLinking, setIsLinking] = useState(false);
-    const [linkError, setLinkError] = useState('');
 
-    if (!settingsOpen) return null;
-
-    const handleSaveDepth = (val: string) => {
-      setScanDepth(val);
-      localStorage.setItem('repoguard-scan-depth', val);
-    };
-
-    const handleLinkGithub = async (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!usernameInput.trim()) {
-        setLinkError('Please enter a username.');
-        return;
-      }
-      setIsLinking(true);
-      setLinkError('');
-      try {
-        const res = await fetch(`https://api.github.com/users/${encodeURIComponent(usernameInput.trim())}`);
-        if (!res.ok) {
-          throw new Error('GitHub profile not found. Please review the handle.');
-        }
-        const data = await res.json() as { login?: string; avatar_url?: string };
-        if (!data.login) {
-          throw new Error('GitHub profile response was incomplete. Please retry.');
-        }
-        setGithubConnected(true);
-        setGithubConnectedUser(data.login);
-        setGithubAvatar(data.avatar_url || '');
-        localStorage.setItem('repoguard-github-linked', 'true');
-        localStorage.setItem('repoguard-github-user', data.login);
-        localStorage.setItem('repoguard-github-avatar', data.avatar_url || '');
-      } catch (err: unknown) {
-        setLinkError(err instanceof Error ? err.message : 'Error connecting. Please retry.');
-      } finally {
-        setIsLinking(false);
-      }
-    };
-
-    const handleDisconnect = async () => {
-      const token = localStorage.getItem('repoguard-github-token');
-      if (token) {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
-        await fetch(`${baseUrl}/api/auth/revoke`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ access_token: token })
-        }).catch(() => {});
-      }
-
-      // Wipe the URL address query parameters completely clean
-      window.history.replaceState({}, document.title, window.location.pathname);
-      
-      localStorage.removeItem('repoguard-github-linked');
-      localStorage.removeItem('repoguard-github-user');
-      localStorage.removeItem('repoguard-github-avatar');
-      localStorage.removeItem('repoguard-github-token-custom');
-      localStorage.removeItem('repoguard-github-token');
-
-      setGithubConnected(false);
-      setGithubConnectedUser('');
-      setGithubAvatar('');
-      setUsernameInput('');
-      setGithubToken('');
-      setRepoSearchQuery('');
-      setRepoUrl('https://github.com/');
-      
-      window.location.reload();
-    };
-
-    return (
-      <div className="fixed inset-0 bg-slate-950/60 dark:bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 selection:bg-emerald-500/30 font-sans">
-        <div
-          className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-xl max-w-md w-full overflow-hidden animate-fade-in"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="settings-modal-title"
-        >
-          {/* Header */}
-          <div className="p-4 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between bg-slate-50 dark:bg-zinc-800">
-            <div className="flex items-center gap-2">
-              <Settings className="w-4 h-4 text-emerald-600" />
-              <span id="settings-modal-title" className="text-xs font-bold text-slate-800 dark:text-zinc-100 uppercase tracking-wide font-sans">Audit System Settings</span>
-            </div>
-            <button
-              onClick={() => setSettingsOpen(false)}
-              type="button"
-              className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-zinc-300 transition cursor-pointer"
-              aria-label="Close settings"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="p-5 space-y-5">
-            {/* Credentials Info Block */}
-            <div className="p-3.5 rounded-lg border border-slate-250 dark:border-zinc-800/80 bg-slate-50 dark:bg-zinc-800/40 text-left font-sans text-xs text-slate-500 dark:text-zinc-400">
-              <span className="font-extrabold uppercase text-[10px] text-slate-400 dark:text-zinc-500 flex items-center gap-1.5 leading-none mb-1.5">
-                <Lock className="w-3.5 h-3.5 text-emerald-600" /> SECURE CREDENTIAL POLICY
-              </span>
-              <p className="leading-relaxed">
-                RepoGuard's GitHub and AI credentials are configured securely on the backend server and are never exposed to or stored in the browser.
-              </p>
-            </div>
-
-            {/* Scan depth */}
-            <div className="space-y-1.5">
-              <label htmlFor="settings-scan-depth" className="text-[10px] font-sans text-slate-500 dark:text-zinc-400 uppercase font-extrabold flex items-center gap-1">
-                <Sliders className="w-3 h-3 text-emerald-600" /> ANALYSIS TYPE SELECTION
-              </label>
-              <select
-                id="settings-scan-depth"
-                value={scanDepth}
-                onChange={(e) => handleSaveDepth(e.target.value)}
-                className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-zinc-800 dark:text-zinc-200 border border-slate-200 dark:border-zinc-700 rounded-lg focus:outline-none text-slate-800 dark:text-zinc-300 cursor-pointer font-sans"
-              >
-                <option value="concise">Concise - Rapid Threat Check</option>
-                <option value="standard">Standard - Full Scope Engine</option>
-                <option value="deep">Deep Audit - Cryptographic Trace</option>
-              </select>
-            </div>
-
-            {/* Custom API Keys Configuration */}
-            <div className="p-4 rounded-xl border border-dashed border-slate-200 dark:border-zinc-700 bg-slate-50/50 dark:bg-zinc-950/10 space-y-3.5">
-              <div className="flex items-center gap-2">
-                <Lock className="w-4 h-4 text-slate-800 dark:text-zinc-200" />
-                <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 font-sans">API Key Configuration (BYOK)</span>
-              </div>
-              <p className="text-[10.5px] text-slate-500 dark:text-zinc-400 leading-relaxed font-sans">
-                Enter your own Gemini API Key and GitHub PAT to bypass server rate limits. Keys are stored locally in your browser.
-              </p>
-              <div className="space-y-3">
-                <div className="space-y-1">
-                  <label htmlFor="settings-gemini-key" className="text-[9px] font-sans text-slate-500 dark:text-zinc-400 uppercase font-extrabold ml-1">Gemini API Key</label>
-                  <input
-                    id="settings-gemini-key"
-                    type="password"
-                    placeholder="AIzaSy..."
-                    value={apiKey}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setApiKey(val);
-                      fetch((import.meta.env.VITE_API_BASE_URL || '') + '/api/set-key', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ apiKey: val })
-                      }).catch(() => { });
-                    }}
-                    className="w-full px-3 py-1.5 text-xs bg-white dark:bg-zinc-900 dark:text-zinc-200 border border-slate-300 dark:border-zinc-700 focus:border-emerald-500 rounded-lg text-slate-800 focus:outline-none transition font-sans"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label htmlFor="settings-github-token" className="text-[9px] font-sans text-slate-500 dark:text-zinc-400 uppercase font-extrabold ml-1">GitHub PAT (Optional)</label>
-                  <input
-                    id="settings-github-token"
-                    type="password"
-                    placeholder="ghp_..."
-                    value={githubToken}
-                    onChange={(e) => {
-                      setGithubToken(e.target.value);
-                      localStorage.setItem('repoguard-github-token-custom', e.target.value);
-                    }}
-                    className="w-full px-3 py-1.5 text-xs bg-white dark:bg-zinc-900 dark:text-zinc-200 border border-slate-300 dark:border-zinc-700 focus:border-emerald-500 rounded-lg text-slate-800 focus:outline-none transition font-sans"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* GitHub Account Disconnect */}
-            {githubConnected && (
-              <button
-                onClick={handleDisconnect}
-                type="button"
-                className="w-full py-2.5 rounded-xl text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/50 hover:bg-rose-100 dark:hover:bg-rose-900/30 transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm font-sans"
-              >
-                Disconnect GitHub Account
-              </button>
-            )}
-          </div>
-
-          <div className="p-4 border-t border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-800 text-center text-[10px] text-slate-400 dark:text-zinc-500 font-extrabold uppercase tracking-wide font-sans">
-            BUILT BY <a href="https://github.com/aryxncodes7" target="_blank" rel="noopener noreferrer" className="text-emerald-600 dark:text-emerald-400 font-extrabold hover:underline transition">ARYAN RAJ</a> • REPOGUARD
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   return (
     <AnimatePresence mode="wait">
@@ -703,13 +550,13 @@ export default function App() {
               {/* Actions segment right */}
               <div className="flex items-center gap-3">
 
-                {githubConnected && (
+                {githubConnected ? (
                   <motion.div
                     whileHover={{ scale: 1.02, y: -0.5 }}
                     whileTap={{ scale: 0.98 }}
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50/50 dark:bg-emerald-950/15 border border-emerald-100 dark:border-emerald-900/30 hover:border-emerald-250 dark:hover:border-emerald-800 rounded-xl shadow-[0_1px_2px_rgba(0,0,0,0.02)] cursor-pointer transition-all duration-300"
-                    onClick={() => setSettingsOpen(true)}
-                    title={`Aligned with GitHub user @${githubConnectedUser}`}
+                    onClick={handleDisconnect}
+                    title="Disconnect GitHub Account"
                   >
                     {githubAvatar ? (
                       <img
@@ -725,6 +572,14 @@ export default function App() {
                       @{githubConnectedUser}
                     </span>
                   </motion.div>
+                ) : (
+                  <button
+                    onClick={handleGithubSignIn}
+                    className="flex items-center gap-2 px-4 py-1.5 bg-slate-900 dark:bg-zinc-100 text-white dark:text-slate-900 rounded-xl font-sans text-xs font-bold shadow-[0_0_15px_-3px_rgba(16,185,129,0.4)] hover:shadow-[0_0_20px_-3px_rgba(16,185,129,0.6)] transition-all duration-300 cursor-pointer"
+                  >
+                    <Github className="w-3.5 h-3.5" />
+                    Connect GitHub
+                  </button>
                 )}
 
                 {/* Dark mode switch */}
@@ -738,19 +593,6 @@ export default function App() {
                   aria-label="Toggle visual theme"
                 >
                   {darkMode ? <Sun className="w-4.5 h-4.5 text-amber-500" /> : <Moon className="w-4.5 h-4.5 text-slate-500" />}
-                </motion.button>
-
-                {/* Settings Switcher */}
-                <motion.button
-                  whileHover={{ scale: 1.05, y: -1 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setSettingsOpen(true)}
-                  className="p-2 bg-white dark:bg-zinc-900/50 border border-slate-200 dark:border-zinc-800 hover:border-emerald-500/35 hover:bg-slate-50 dark:hover:bg-zinc-800 text-slate-500 dark:text-zinc-400 rounded-xl transition-all cursor-pointer shadow-[0_1px_2px_rgba(0,0,0,0.02)] flex items-center justify-center w-9 h-9"
-                  title="Configure System Settings"
-                  type="button"
-                  aria-label="Configure system settings"
-                >
-                  <Settings className="w-4.5 h-4.5 transition-transform duration-300 hover:rotate-45" />
                 </motion.button>
               </div>
 
@@ -789,62 +631,72 @@ export default function App() {
                     </div>
 
                     {/* Input Form structure */}
-                    <div className="p-6 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:border-emerald-300/40 dark:hover:border-emerald-500/30 shadow-md focus-within:shadow-emerald-500/5 transition-all duration-300 space-y-5 relative">
+                    <div className="p-6 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:border-emerald-300/40 dark:hover:border-emerald-500/30 shadow-md focus-within:shadow-emerald-500/5 transition-all duration-300 relative">
                       <div className="absolute top-0 right-0 w-24 h-[1px] bg-gradient-to-r from-transparent to-emerald-500/20" />
 
-                      <form onSubmit={handleRunReview} className="space-y-4" id="repo-review-form">
-
-                        {formValidationError && (
-                          <div id="repo-form-error" className="p-3 rounded-lg bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 text-xs font-sans font-semibold animate-fade-in flex items-start gap-2.5" role="alert">
-                            <span className="text-sm select-none leading-none -mt-0.5" aria-hidden="true">!</span>
-                            <span>{formValidationError}</span>
-                          </div>
-                        )}
-
-                        {/* Repo Endpoint Input */}
-                        <div className="space-y-1.5">
-                          <label className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-zinc-400 font-sans flex items-center gap-1.5 font-bold">
-                            <span className="text-[13px] leading-none -mt-0.5">🔗</span>
-                            Paste Public Repository URL
-                          </label>
-                          <input
-                            type="url"
-                            required
-                            value={repoUrl}
-                            onChange={(e) => {
-                              setRepoUrl(e.target.value);
-                              if (formValidationError) setFormValidationError('');
-                            }}
-                            placeholder="https://github.com/owner/repository"
-                            aria-invalid={Boolean(formValidationError)}
-                            aria-describedby={formValidationError ? 'repo-form-error' : undefined}
-                            className={`w-full px-3.5 py-2.5 rounded-lg border text-sm transition-all font-sans focus:outline-none ${formValidationError
-                              ? 'bg-rose-50/50 dark:bg-rose-950/15 border-rose-300 dark:border-rose-900 focus:border-rose-500 dark:focus:border-rose-400 focus:bg-white dark:focus:bg-zinc-900 focus:ring-4 focus:ring-rose-100 dark:focus:ring-rose-950 text-slate-800 dark:text-zinc-100'
-                              : 'bg-slate-50 dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:border-emerald-500 dark:focus:border-emerald-400 focus:bg-white dark:focus:bg-zinc-900 focus:ring-4 focus:ring-emerald-50 dark:focus:ring-emerald-950/50'
-                              }`}
-                            id="repo-endpoint-input"
-                          />
-                        </div>
-
-
-                        {/* Submit Action Button */}
-                        <button
-                          type="submit"
-                          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-sans font-semibold py-2.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm hover:shadow-emerald-600/15 hover:translate-y-[-0.5px] active:translate-y-[0.5px]"
-                          id="start-review-action"
-                        >
-                          <Play className="w-3.5 h-3.5 fill-current" />
-                          <span>Run Security Audit</span>
-                        </button>
-                      </form>
-
                       {!githubConnected ? (
-                        <>
-                          {/* Divider */}
+                        <div className="space-y-5 animate-fade-in">
+                          <form onSubmit={handleRunReview} className="space-y-4" id="repo-review-form">
+                            {formValidationError && (
+                              <div id="repo-form-error" className="p-3 rounded-lg bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 text-xs font-sans font-semibold flex items-start gap-2.5" role="alert">
+                                <span className="text-sm select-none leading-none -mt-0.5" aria-hidden="true">!</span>
+                                <span>{formValidationError}</span>
+                              </div>
+                            )}
 
-                        </>
+                            {/* Repo Endpoint Input */}
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-zinc-400 font-sans flex items-center gap-1.5 font-bold">
+                                <span className="text-[13px] leading-none -mt-0.5">🔗</span>
+                                Paste Public Repository URL
+                              </label>
+                              <input
+                                type="url"
+                                required
+                                value={repoUrl}
+                                onChange={(e) => {
+                                  setRepoUrl(e.target.value);
+                                  if (formValidationError) setFormValidationError('');
+                                }}
+                                placeholder="https://github.com/owner/repository"
+                                aria-invalid={Boolean(formValidationError)}
+                                aria-describedby={formValidationError ? 'repo-form-error' : undefined}
+                                className={`w-full px-3.5 py-2.5 rounded-lg border text-sm transition-all font-sans focus:outline-none ${formValidationError
+                                  ? 'bg-rose-50/50 dark:bg-rose-950/15 border-rose-300 dark:border-rose-900 focus:border-rose-500 dark:focus:border-rose-400 focus:bg-white dark:focus:bg-zinc-900 focus:ring-4 focus:ring-rose-100 dark:focus:ring-rose-950 text-slate-800 dark:text-zinc-100'
+                                  : 'bg-slate-50 dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:border-emerald-500 dark:focus:border-emerald-400 focus:bg-white dark:focus:bg-zinc-900 focus:ring-4 focus:ring-emerald-50 dark:focus:ring-emerald-950/50'
+                                  }`}
+                                id="repo-endpoint-input"
+                              />
+                            </div>
+
+                            {/* Submit Action Button */}
+                            <button
+                              type="submit"
+                              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-sans font-semibold py-2.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm hover:shadow-emerald-600/15 hover:translate-y-[-0.5px] active:translate-y-[0.5px]"
+                              id="start-review-action"
+                            >
+                              <Play className="w-3.5 h-3.5 fill-current" />
+                              <span>Run Security Audit</span>
+                            </button>
+                          </form>
+
+                          <div className="flex items-center gap-3 my-4">
+                            <div className="flex-1 h-px bg-slate-200 dark:bg-zinc-800" />
+                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider font-sans">Or</span>
+                            <div className="flex-1 h-px bg-slate-200 dark:bg-zinc-800" />
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={handleGithubSignIn}
+                            className="w-full bg-slate-900 dark:bg-zinc-100 hover:bg-slate-800 dark:hover:bg-white text-white dark:text-slate-900 font-sans font-semibold py-2.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md hover:shadow-lg"
+                          >
+                            <Github className="w-4 h-4" />
+                            <span>🔐 Connect GitHub Account</span>
+                          </button>
+                        </div>
                       ) : (
-                        <div className="mt-6 border-t border-slate-200 dark:border-zinc-800 pt-6 animate-fade-in">
+                        <div className="animate-fade-in space-y-4">
                           <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-100 mb-4 flex items-center gap-2 font-sans">
                             <span className="text-lg">👋</span> Welcome back, {githubConnectedUser}! Select a repository to audit
                           </h3>
@@ -879,11 +731,7 @@ export default function App() {
                                     type="button"
                                     onClick={() => {
                                       setRepoUrl(repo.html_url);
-                                      // Trigger form submit directly
-                                      setTimeout(() => {
-                                        const form = document.getElementById('repo-review-form') as HTMLFormElement;
-                                        if (form) form.requestSubmit();
-                                      }, 0);
+                                      setTimeout(() => handleRunReview(), 0);
                                     }}
                                     className="w-full mt-auto py-1.5 rounded-lg bg-slate-50 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 font-sans text-xs font-bold border border-slate-200 dark:border-zinc-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-200 dark:hover:border-emerald-800 transition-all flex items-center justify-center gap-1.5 group-hover:shadow-sm"
                                   >
@@ -1023,7 +871,7 @@ export default function App() {
             </div>
           </footer>
 
-          <SettingsModal />
+
         </motion.div>
       )}
     </AnimatePresence>

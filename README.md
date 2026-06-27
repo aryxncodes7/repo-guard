@@ -4,6 +4,21 @@ RepoGuard is a state-of-the-art multi-agent repository auditor and security comp
 
 ---
 
+## 🛑 The Problem
+
+Modern software development moves incredibly fast. Developers continuously push code to repositories, but comprehensive security audits, code quality checks, and documentation reviews often lag behind. Traditional static analysis tools generate noisy, context-less alerts that developers ignore, while manual code reviews are time-consuming and prone to human error. There is a critical need for an automated, context-aware system that doesn't just flag issues but understands the codebase, explains vulnerabilities, and helps remediate them intelligently.
+
+## 💡 The Solution & Why Agents?
+
+RepoGuard solves this by deploying a **Multi-Agent AI System** that acts as an intelligent security and review companion. Instead of relying on a single monolithic LLM prompt, RepoGuard utilizes specialized, autonomous AI agents powered by the Gemini API. 
+
+**Why Agents uniquely help solve this problem:**
+- **Specialization**: Each agent has a distinct persona and focus (e.g., the Code Review Agent strictly looks for vulnerabilities and logic bugs, while the Docs Agent evaluates documentation compliance). This separation of concerns significantly improves the accuracy and depth of the analysis.
+- **Contextual Understanding**: Agents can synthesize findings across the repository, understanding how a vulnerability in one file might impact another, a feat static analyzers struggle with.
+- **Actionable Remediation**: Beyond static reports, our Conversational AI Companion agent allows developers to chat directly about the findings, ask for specific mitigation strategies, and get step-by-step guidance dynamically.
+
+---
+
 ## ✨ Features
 
 - **🔐 Real GitHub OAuth Integration**: Securely connect your GitHub account via a seamless OAuth flow with robust local state wiping on disconnect.
@@ -24,28 +39,27 @@ RepoGuard is a state-of-the-art multi-agent repository auditor and security comp
 
 ## 🛠️ Architecture Overview
 
-RepoGuard is built as a single-page application (SPA) backed by a secure proxy server to negotiate Gemini and GitHub MCP interactions without exposing secrets:
+RepoGuard is built as a single-page application (SPA) backed by a secure proxy server to negotiate Gemini and GitHub API interactions without exposing secrets:
 
+```mermaid
+graph TD
+    Client[Web Client<br>React + Tailwind + Framer Motion] -->|POST /api/review<br>or /api/chat| Proxy[Express Proxy Server<br>Node.js]
+    Proxy -->|Fetch Repo/PR Data| GitHub[GitHub API]
+    Proxy -->|Multi-Agent Analysis| Gemini[Gemini API]
+    
+    subgraph Multi-Agent System
+        Gemini --> Triage[Triage Agent<br>Analyzes Scope & Risk]
+        Triage --> Review[Code Review Agent<br>Scans for Vulnerabilities]
+        Triage --> Docs[Docs Agent<br>Evaluates Documentation]
+        Review --> Synth[Synthesizer Agent<br>Compiles Final Report]
+        Docs --> Synth
+    end
+    
+    Synth -.->|Formatted Report| Proxy
+    Proxy -.->|JSON/Markdown Response| Client
 ```
-┌────────────────────────────────────────────────────────┐
-│                      Web Client                        │
-│ (React + Tailwind CSS + Lucide Icons + Framer Motion) │
-└──────────────────────────┬─────────────────────────────┘
-                           │ POST /api/review or /api/chat
-                           ▼
-┌────────────────────────────────────────────────────────┐
-│                    Express Proxy                       │
-│    (Node.js + tsx server + dynamic Gemini Clients)     │
-└──────────────────────────┬─────────────────────────────┘
-                           │ Scans & API Calls
-                           ▼
-             ┌─────────────┴─────────────┐
-             ▼                           ▼
- ┌───────────────────────┐   ┌───────────────────────┐
- │      GitHub API       │   │      Gemini API       │
- │ (Fetch repo tree/PRs) │   │ (Multi-agent reviews) │
- └───────────────────────┘   └───────────────────────┘
-```
+
+This architecture ensures that API keys (Gemini API Key, GitHub PAT) remain secure within the proxy layer, while delivering a robust, dynamic experience to the user.
 
 ---
 
