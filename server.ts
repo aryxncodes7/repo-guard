@@ -50,13 +50,24 @@ app.use((req, _res, next) => {
   }
   next();
 });
-app.use((_req, res, next) => {
-  res.setHeader("X-Content-Type-Options", "nosniff");
-  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
-  res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
-  res.setHeader("Content-Security-Policy", "default-src 'self'; connect-src 'self' https://api.github.com https://raw.githubusercontent.com; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:;");
-  next();
-});
+import helmet from "helmet";
+
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      connectSrc: ["'self'", "https://api.github.com", "https://raw.githubusercontent.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+    },
+  },
+  crossOriginEmbedderPolicy: false,
+}));
+
+// Potential DoS vulnerability due to lack of request body size limits resolution:
+// Implement body-parser limits in Express using app.use(express.json({ limit: '1mb' })) to prevent large payload attacks.
+app.use(express.json({ limit: '1mb' }));
 
 app.use((req, res, next) => {
   // SSRF Prevention: strictly reject any client-provided destination paths for Gemini API
@@ -64,24 +75,6 @@ app.use((req, res, next) => {
     return res.status(403).json({ status: "error", message: "SSRF Prevention: Client-provided destination paths are strictly rejected." });
   }
   next();
-});
-
-app.use((req, res, next) => {
-  // Vercel may pre-parse the body as a string or object
-  if (req.body && typeof req.body === "object" && !Buffer.isBuffer(req.body)) {
-    // Already a parsed object — skip express.json()
-    next();
-  } else if (typeof req.body === "string") {
-    // Vercel sometimes passes body as a raw string — parse it
-    try {
-      req.body = JSON.parse(req.body);
-    } catch {
-      // If it's not valid JSON, leave it as-is
-    }
-    next();
-  } else {
-    express.json({ limit: "32kb" })(req, res, next);
-  }
 });
 
 
