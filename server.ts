@@ -16,10 +16,10 @@ process.on('unhandledRejection', (reason, promise) => {
   console.error('[Unhandled Rejection] at:', promise, 'reason:', reason);
 });
 
-import { 
-  getErrorMessage, 
-  parseJsonSafe, 
-  generateContentWithFallback 
+import {
+  getErrorMessage,
+  parseJsonSafe,
+  generateContentWithFallback
 } from "./agents/agentUtils.js";
 import type { GeminiConfig, GeminiChatContent } from "./agents/agentUtils.js";
 
@@ -30,11 +30,11 @@ import { runSynthesizerAgent } from "./agents/synthesizerAgent.js";
 
 dotenv.config();
 
-import { 
-  clampText, 
-  normalizeGithubRepoUrl, 
-  normalizePrNumber, 
-  parseGithubRepo 
+import {
+  clampText,
+  normalizeGithubRepoUrl,
+  normalizePrNumber,
+  parseGithubRepo
 } from "./src/utils.js";
 
 const app = express();
@@ -131,7 +131,7 @@ async function fetchFromGithub(url: string, token?: string) {
       if (errJson.message) {
         errorMsg += `: ${errJson.message}`;
       }
-    } catch {}
+    } catch { }
     throw new Error(errorMsg);
   }
   return res.json();
@@ -198,10 +198,10 @@ app.post("/api/auth/callback", async (req, res) => {
         ...(redirect_uri ? { redirect_uri } : {})
       })
     });
-    
+
     const data = await response.json() as any;
     console.log("[OAuth Backend] GitHub Token Exchange Response:", data);
-    
+
     if (data.access_token) {
       console.log("[OAuth Backend] Successfully retrieved access_token. Fetching user profile...");
       const userRes = await fetch("https://api.github.com/user", {
@@ -212,10 +212,9 @@ app.post("/api/auth/callback", async (req, res) => {
       });
       const userData = await userRes.json() as any;
       console.log(`[OAuth Backend] Fetched user profile for: ${userData.login}`);
-      res.setHeader("Set-Cookie", `repoguard_github_token=${encodeURIComponent(data.access_token)}; HttpOnly; Secure; SameSite=Strict; Path=/`);
-      return res.json({ user: userData.login, avatar: userData.avatar_url });
+      return res.json({ access_token: data.access_token, user: userData.login, avatar: userData.avatar_url });
     }
-    
+
     console.error("[OAuth Backend] Exchange failed! GitHub responded with error:", data);
     return res.status(400).json({ error: "Invalid code or exchange failed", details: data });
   } catch (e) {
@@ -225,14 +224,13 @@ app.post("/api/auth/callback", async (req, res) => {
 });
 
 app.post("/api/auth/revoke", async (req, res) => {
-  const access_token = getCookie(req, "repoguard_github_token") || (req.body as any)?.access_token;
-  res.setHeader("Set-Cookie", "repoguard_github_token=; HttpOnly; Secure; SameSite=Strict; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT");
+  const access_token = (req.body as any)?.access_token;
   if (!access_token) return res.status(400).json({ error: "No token provided" });
   try {
     const clientId = process.env.GITHUB_CLIENT_ID || "";
     const clientSecret = process.env.GITHUB_CLIENT_SECRET || "";
     const authHeader = "Basic " + Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
-    
+
     await fetch(`https://api.github.com/applications/${clientId}/grant`, {
       method: "DELETE",
       headers: {
@@ -246,36 +244,6 @@ app.post("/api/auth/revoke", async (req, res) => {
     return res.json({ status: "success" });
   } catch (e) {
     return res.status(500).json({ error: "Internal error during token revocation" });
-  }
-});
-
-app.get("/api/repos", async (req, res) => {
-  const token = getCookie(req, "repoguard_github_token");
-  const user = req.query.user as string;
-  let url = 'https://api.github.com/user/repos?per_page=50&sort=updated';
-  const headers: Record<string, string> = {
-    'Accept': 'application/vnd.github.v3+json',
-    "User-Agent": "RepoGuard-App"
-  };
-  
-  if (token) {
-    headers['Authorization'] = `token ${token}`;
-  } else if (user) {
-    url = `https://api.github.com/users/${user}/repos?per_page=50&sort=updated`;
-  } else {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-
-  try {
-    const response = await fetch(url, { headers });
-    if (response.ok) {
-      const data = await response.json();
-      return res.json(data);
-    } else {
-      return res.status(response.status).json({ error: "Failed to fetch repositories" });
-    }
-  } catch (err) {
-    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -402,9 +370,9 @@ async function getRepositoryDetails(owner: string, repo: string, token?: string)
       return null;
     }
   });
-  
+
   const resolvedFiles = await Promise.all(fetchPromises);
-  const files = resolvedFiles.filter((f): f is {path: string, content: string} => f !== null);
+  const files = resolvedFiles.filter((f): f is { path: string, content: string } => f !== null);
 
   return {
     defaultBranch,
@@ -419,7 +387,7 @@ app.post("/api/review", apiLimiter, async (req, res) => {
   // Extract credentials from multiple secure transport mechanisms: Headers, Body Payload, or Encrypted HTTP-only Cookies
   // This ensures resilient authentication even if the user drops the session midway.
   const api_key = getCookie(req, "repoguard_gemini_key");
-  const github_token = getCookie(req, "repoguard_github_token");
+  const github_token = (req.headers["x-github-token"] as string) || (req.body as any)?.github_token;
 
   // Sanitize the incoming request payload to prevent API key leaks in subsequent server logs
   if (req.headers) {
@@ -526,17 +494,17 @@ ${repoFilesText}
   // Real Gemini Multi-Agent Review execution
   try {
     const prDetailsPrompt = normalizedPrNumber ? `PR #${normalizedPrNumber}` : "the latest commits";
-    
+
     console.log(`[API Review] Starting multi-agent pipeline for ${normalizedRepoUrl}`);
-    
+
     console.log(`[API Review] Running Triage, Code Review, and Docs Agents concurrently...`);
-    
+
     const [triageOutput, codeReviewOutput, docsOutput] = await Promise.all([
       runTriageAgent(normalizedRepoUrl, prDetailsPrompt, promptContext, activeApiKey),
       runCodeReviewAgent(promptContext, activeApiKey),
       runDocsAgent(promptContext, activeApiKey)
     ]);
-    
+
     console.log(`[API Review] Running Synthesizer Agent...`);
     const parsedData = await runSynthesizerAgent(triageOutput, codeReviewOutput, docsOutput, activeApiKey);
 
@@ -546,7 +514,7 @@ ${repoFilesText}
     parsedData.pr_title = prTitle;
     parsedData.pr_author = prAuthor;
     parsedData.files_changed = filesChanged;
-    
+
     return res.json(parsedData);
 
   } catch (err: unknown) {

@@ -32,7 +32,7 @@ RepoGuard solves this by deploying a **Multi-Agent AI System** that acts as an i
   - **Synthesizer Agent**: Compiles individual agent reports into a unified markdown summary.
 - **💬 AI Chatbot Companion**: An interactive sidebar assistant that lets you query the codebase, ask about specific vulnerabilities, and receive step-by-step remediation advice.
 - **⚙️ Unified Analysis Settings**: Easily access a global settings modal from the header to configure both your preferred Scan Intensity and your custom API keys.
-- **🔐 Bring Your Own Key (BYOK)**: Input your own Gemini API key directly in the UI. It's securely managed via an encrypted HttpOnly cookie and used dynamically by the backend, giving you full control over your personal token quotas without client-side XSS risks.
+- **🔐 Bring Your Own Key (BYOK)**: Input your own Gemini API key directly in the UI. It's securely saved locally in your browser and used dynamically by the backend, giving you full control over your personal token quotas.
 - **🎨 Premium Responsive UI**: Translucent glassmorphism header, smooth hardware-accelerated logo animations, dark/light theme alignment, and beautiful dashboard elements.
 
 ---

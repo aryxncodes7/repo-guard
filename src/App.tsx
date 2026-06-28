@@ -168,6 +168,9 @@ export default function App() {
     localStorage.setItem('repoguard-scan-depth', val);
   };
 
+  const [githubToken, setGithubToken] = useState<string>(() => {
+    return localStorage.getItem('repoguard-github-token-custom') || '';
+  });
 
   const handleGithubSignIn = () => {
     // Redirect to backend OAuth login endpoint which will forward to GitHub
@@ -202,6 +205,7 @@ export default function App() {
             localStorage.setItem('repoguard-github-linked', 'true');
             localStorage.setItem('repoguard-github-user', data.user);
             localStorage.setItem('repoguard-github-avatar', data.avatar || '');
+            localStorage.setItem('repoguard-github-token', data.access_token);
           }
         } catch (error) {
           console.error("OAuth flow failed:", error);
@@ -216,22 +220,28 @@ export default function App() {
   }, []);
 
   const handleDisconnect = async () => {
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
-    await fetch(`${baseUrl}/api/auth/revoke`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include'
-    }).catch(() => { });
+    const token = localStorage.getItem('repoguard-github-token');
+    if (token) {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+      await fetch(`${baseUrl}/api/auth/revoke`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ access_token: token })
+      }).catch(() => { });
+    }
 
     window.history.replaceState({}, document.title, window.location.pathname);
 
     localStorage.removeItem('repoguard-github-linked');
     localStorage.removeItem('repoguard-github-user');
     localStorage.removeItem('repoguard-github-avatar');
+    localStorage.removeItem('repoguard-github-token-custom');
+    localStorage.removeItem('repoguard-github-token');
 
     setGithubConnected(false);
     setGithubConnectedUser('');
     setGithubAvatar('');
+    setGithubToken('');
     setRepoSearchQuery('');
     setRepoUrl('https://github.com/');
   };
@@ -246,14 +256,20 @@ export default function App() {
       const fetchRepos = async () => {
         setReposLoading(true);
         try {
-          const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
-          let url = `${baseUrl}/api/repos`;
-          
-          if (githubConnectedUser) {
-             url += `?user=${encodeURIComponent(githubConnectedUser)}`;
+          const token = githubToken || localStorage.getItem('repoguard-github-token-custom') || localStorage.getItem('repoguard-github-token');
+          let url = 'https://api.github.com/user/repos?per_page=50&sort=updated';
+          const headers: Record<string, string> = {
+            'Accept': 'application/vnd.github.v3+json'
+          };
+
+          if (token) {
+            headers['Authorization'] = `token ${token}`;
+          } else if (githubConnectedUser) {
+            // Fallback for public repos if no token is available
+            url = `https://api.github.com/users/${githubConnectedUser}/repos?per_page=50&sort=updated`;
           }
 
-          const response = await fetch(url, { credentials: 'include' });
+          const response = await fetch(url, { headers });
           if (response.ok) {
             const data = await response.json();
             setRepositories(data);
@@ -272,7 +288,7 @@ export default function App() {
     } else {
       setRepositories([]);
     }
-  }, [githubConnected, githubConnectedUser]);
+  }, [githubConnected, githubConnectedUser, githubToken]);
 
 
 
@@ -374,6 +390,7 @@ export default function App() {
     const reviewHeaders: Record<string, string> = {
       'Content-Type': 'application/json'
     };
+    if (githubToken) reviewHeaders['x-github-token'] = githubToken;
     const requestBody = {
       repo_url: trimmedUrl,
       pr_number: prNumber ? parseInt(prNumber, 10) : undefined
@@ -633,8 +650,8 @@ export default function App() {
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setShowKeyModal(true)}
                   className={`p-2 border rounded-xl transition-all cursor-pointer shadow-[0_1px_2px_rgba(0,0,0,0.02)] flex items-center justify-center w-9 h-9 ${isKeyApplied
-                      ? 'bg-emerald-50 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400'
-                      : 'bg-white dark:bg-zinc-900/50 border-slate-200 dark:border-zinc-800 hover:border-emerald-500/35 hover:bg-slate-50 dark:hover:bg-zinc-800 text-slate-500 dark:text-zinc-400'
+                    ? 'bg-emerald-50 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400'
+                    : 'bg-white dark:bg-zinc-900/50 border-slate-200 dark:border-zinc-800 hover:border-emerald-500/35 hover:bg-slate-50 dark:hover:bg-zinc-800 text-slate-500 dark:text-zinc-400'
                     }`}
                   title="Analysis Settings"
                   type="button"
@@ -1028,8 +1045,8 @@ export default function App() {
                             type="button"
                             onClick={() => handleSaveApiKey(customApiKey)}
                             className={`px-4 py-2.5 text-sm font-medium rounded-lg transition-colors font-sans whitespace-nowrap ${isKeyApplied
-                                ? 'bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-500 text-emerald-600 dark:text-emerald-400'
-                                : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                              ? 'bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-500 text-emerald-600 dark:text-emerald-400'
+                              : 'bg-emerald-600 hover:bg-emerald-500 text-white'
                               }`}
                           >
                             {isKeyApplied ? '✓ Applied' : 'Apply Key'}
