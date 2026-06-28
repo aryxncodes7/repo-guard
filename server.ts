@@ -84,32 +84,10 @@ app.use((req, res, next) => {
   }
 });
 
-// Add CSRF validation middleware for API routes to prevent unauthorized cross-site requests
-app.use('/api', (req, res, next) => {
-  if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
-    const origin = req.headers.origin;
-    const referer = req.headers.referer;
-    
-    // Only allow requests from our own hostname or localhost during development
-    const isAllowed = (urlStr: string | undefined) => {
-      if (!urlStr) return true; // Some valid clients might not send these headers
-      try {
-        const url = new URL(urlStr);
-        return url.hostname === req.hostname || url.hostname === 'localhost' || url.hostname === '127.0.0.1';
-      } catch {
-        return false;
-      }
-    };
 
-    if (origin && !isAllowed(origin)) {
-      return res.status(403).json({ error: "CSRF protection: unauthorized origin" });
-    }
-    if (referer && !isAllowed(referer)) {
-      return res.status(403).json({ error: "CSRF protection: unauthorized referer" });
-    }
-  }
-  next();
-});
+
+
+
 
 
 // Define rate limiting middleware for sensitive endpoints to prevent API key exhaustion and DoS risks.
@@ -124,17 +102,17 @@ const apiLimiter = rateLimit({
 
 // Helper to fetch from GitHub API with optional token
 async function fetchFromGithub(url: string, token?: string) {
-  // SSRF Prevention: Validate URL and enforce hostname allow-list
+  // SSRF Prevention: strictly validate URL and enforce api.github.com allow-list
   try {
     const parsedUrl = new URL(url);
-    if (parsedUrl.hostname !== "api.github.com" && parsedUrl.hostname !== "raw.githubusercontent.com") {
-      throw new Error(`SSRF Prevention: Hostname ${parsedUrl.hostname} is not in the allow-list.`);
+    if (parsedUrl.hostname !== "api.github.com") {
+      throw new Error(`SSRF Prevention: Hostname ${parsedUrl.hostname} is not in the strict allow-list.`);
     }
     if (parsedUrl.protocol !== "https:") {
       throw new Error("SSRF Prevention: Only HTTPS protocol is allowed.");
     }
   } catch (e) {
-    throw new Error(`Invalid or blocked URL provided for GitHub fetch: ${(e as Error).message}`);
+    throw new Error(`Invalid or blocked URL provided for GitHub proxy fetch: ${(e as Error).message}`);
   }
 
   const headers: Record<string, string> = {
