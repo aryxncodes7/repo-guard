@@ -16,24 +16,6 @@ process.on('unhandledRejection', (reason, promise) => {
   console.error('[Unhandled Rejection] at:', promise, 'reason:', reason);
 });
 
-// Proxy Request Handler
-// SSRF Prevention: strict allow-list for external domains and validate incoming URLs before forwarding requests
-app.use('/api/proxy', (req, res) => {
-  const targetUrl = req.query.url as string;
-  if (!targetUrl) return res.status(400).json({ error: "Missing target URL" });
-  try {
-    const url = new URL(targetUrl);
-    const allowedDomains = ["api.github.com"];
-    if (!allowedDomains.includes(url.hostname)) {
-      return res.status(403).json({ error: "SSRF Prevention: Target domain is not in the strict allow-list" });
-    }
-    // Simulate forwarding request for the proxy component
-    return res.json({ status: "success", forwarded: url.href });
-  } catch {
-    return res.status(400).json({ error: "Invalid proxy URL" });
-  }
-});
-
 import {
   getErrorMessage,
   parseJsonSafe,
