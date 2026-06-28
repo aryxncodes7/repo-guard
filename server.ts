@@ -84,10 +84,32 @@ app.use((req, res, next) => {
   }
 });
 
+// Add CSRF validation middleware for API routes to prevent unauthorized cross-site requests
+app.use('/api', (req, res, next) => {
+  if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
+    const origin = req.headers.origin;
+    const referer = req.headers.referer;
+    
+    // Only allow requests from our own hostname or localhost during development
+    const isAllowed = (urlStr: string | undefined) => {
+      if (!urlStr) return true; // Some valid clients might not send these headers
+      try {
+        const url = new URL(urlStr);
+        return url.hostname === req.hostname || url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+      } catch {
+        return false;
+      }
+    };
 
-
-
-
+    if (origin && !isAllowed(origin)) {
+      return res.status(403).json({ error: "CSRF protection: unauthorized origin" });
+    }
+    if (referer && !isAllowed(referer)) {
+      return res.status(403).json({ error: "CSRF protection: unauthorized referer" });
+    }
+  }
+  next();
+});
 
 
 // Define rate limiting middleware for sensitive endpoints to prevent API key exhaustion and DoS risks.

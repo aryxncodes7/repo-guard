@@ -3,75 +3,85 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-export interface TriageReview {
-  risk_level: 'low' | 'medium' | 'high';
-  size_category: 'small' | 'medium' | 'large';
-  summary: string;
-}
+import { z } from 'zod';
 
-export interface CodeIssue {
-  file: string;
-  line: number;
-  severity: 'info' | 'warning' | 'critical';
-  category: 'security' | 'style' | 'logic' | 'missing_tests';
-  message: string;
-  resolution?: string;
-}
+export const TriageReviewSchema = z.object({
+  risk_level: z.enum(['low', 'medium', 'high']),
+  size_category: z.enum(['small', 'medium', 'large']),
+  summary: z.string(),
+});
+export type TriageReview = z.infer<typeof TriageReviewSchema>;
 
-export interface SecretDetected {
-  file: string;
-  line: number;
-  snippet_redacted: string;
-}
+export const CodeIssueSchema = z.object({
+  file: z.string(),
+  line: z.number(),
+  severity: z.enum(['info', 'warning', 'critical']),
+  category: z.enum(['security', 'style', 'logic', 'missing_tests']),
+  message: z.string(),
+  resolution: z.string().optional(),
+});
+export type CodeIssue = z.infer<typeof CodeIssueSchema>;
 
-export interface CodeReview {
-  issues: CodeIssue[];
-  secrets_detected: SecretDetected[];
-}
+export const SecretDetectedSchema = z.object({
+  file: z.string(),
+  line: z.number(),
+  snippet_redacted: z.string(),
+});
+export type SecretDetected = z.infer<typeof SecretDetectedSchema>;
 
-export interface DocsReview {
-  docs_outdated: boolean;
-  missing_sections: string[];
-  suggested_readme_diff: string;
-}
+export const CodeReviewSchema = z.object({
+  issues: z.array(CodeIssueSchema),
+  secrets_detected: z.array(SecretDetectedSchema),
+});
+export type CodeReview = z.infer<typeof CodeReviewSchema>;
 
-export interface FinalSummary {
-  verdict: 'approve' | 'request_changes' | 'needs_discussion';
-  summary_markdown: string;
-  top_priority_fixes: string[];
-}
+export const DocsReviewSchema = z.object({
+  docs_outdated: z.boolean(),
+  missing_sections: z.array(z.string()),
+  suggested_readme_diff: z.string(),
+});
+export type DocsReview = z.infer<typeof DocsReviewSchema>;
 
-export interface ReportMetrics {
-  security: number;
-  accessibility: number;
-  testCoverage: number;
-  codeCleanliness: number;
-  efficiency: number;
-  architecture: number;
-  documentation: number;
-}
+export const FinalSummarySchema = z.object({
+  verdict: z.enum(['approve', 'request_changes', 'needs_discussion']),
+  summary_markdown: z.string(),
+  top_priority_fixes: z.array(z.string()),
+});
+export type FinalSummary = z.infer<typeof FinalSummarySchema>;
 
-export interface ReviewResponse {
-  status: 'success' | 'error';
-  message?: string;
-  is_simulated?: boolean;
-  simulation_warning?: string;
-  pr_title: string;
-  pr_author: string;
-  files_changed: number;
-  triage: TriageReview;
-  code_review: CodeReview;
-  docs_review: DocsReview;
-  final_summary: FinalSummary;
-  metrics: ReportMetrics;
-}
+export const ReportMetricsSchema = z.object({
+  security: z.number(),
+  accessibility: z.number(),
+  testCoverage: z.number(),
+  codeCleanliness: z.number(),
+  efficiency: z.number(),
+  architecture: z.number(),
+  documentation: z.number(),
+});
+export type ReportMetrics = z.infer<typeof ReportMetricsSchema>;
+
+export const ReviewResponseSchema = z.object({
+  status: z.enum(['success', 'error']),
+  message: z.string().optional(),
+  is_simulated: z.boolean().optional(),
+  simulation_warning: z.string().optional(),
+  pr_title: z.string(),
+  pr_author: z.string(),
+  files_changed: z.number(),
+  triage: TriageReviewSchema,
+  code_review: CodeReviewSchema,
+  docs_review: DocsReviewSchema,
+  final_summary: FinalSummarySchema,
+  metrics: ReportMetricsSchema,
+});
+export type ReviewResponse = z.infer<typeof ReviewResponseSchema>;
 
 export type ReviewState = 'idle' | 'reviewing' | 'report' | 'error';
 
-export interface AgentProgress {
-  id: string;
-  name: string;
-  description: string;
-  status: string;
-  [key: string]: unknown;
-}
+export const AgentProgressSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  status: z.string(),
+}).catchall(z.unknown());
+export type AgentProgress = z.infer<typeof AgentProgressSchema>;
