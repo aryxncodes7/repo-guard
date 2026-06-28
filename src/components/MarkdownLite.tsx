@@ -95,7 +95,11 @@ export default function MarkdownLite({ text }: MarkdownLiteProps) {
   const safeText = React.useMemo(() => {
     const str = String(text);
     const truncated = str.length > 100000 ? str.slice(0, 100000) + '\n\n**[TRUNCATED: Output exceeded 100k characters]**' : str;
-    return DOMPurify.sanitize(truncated);
+    const fragment = DOMPurify.sanitize(truncated, { RETURN_DOM_FRAGMENT: true });
+    if (typeof fragment === 'string') return fragment;
+    const tempDiv = document.createElement('div');
+    tempDiv.appendChild(fragment);
+    return tempDiv.innerHTML;
   }, [text]);
 
   return (

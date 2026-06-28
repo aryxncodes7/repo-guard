@@ -140,16 +140,24 @@ export default function App() {
     return localStorage.getItem('repoguard-scan-depth') || 'standard';
   });
   const [showKeyModal, setShowKeyModal] = useState<boolean>(false);
-  const [customApiKey, setCustomApiKey] = useState<string>(localStorage.getItem('user_gemini_key') || '');
-  const [isKeyApplied, setIsKeyApplied] = useState<boolean>(!!localStorage.getItem('user_gemini_key'));
+  const [customApiKey, setCustomApiKey] = useState<string>('');
+  const [isKeyApplied, setIsKeyApplied] = useState<boolean>(false);
 
-  const handleSaveApiKey = (key: string) => {
+  const handleSaveApiKey = async (key: string) => {
     if (key.trim()) {
-      localStorage.setItem('user_gemini_key', key.trim());
-      setCustomApiKey(key.trim());
-      setIsKeyApplied(true);
+      try {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        await fetch(`${baseUrl}/api/set-key`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ apiKey: key.trim() }),
+        });
+        setCustomApiKey('');
+        setIsKeyApplied(true);
+      } catch (err) {
+        console.error('Failed to set API key', err);
+      }
     } else {
-      localStorage.removeItem('user_gemini_key');
       setCustomApiKey('');
       setIsKeyApplied(false);
     }
@@ -160,9 +168,6 @@ export default function App() {
     localStorage.setItem('repoguard-scan-depth', val);
   };
 
-  const [githubToken, setGithubToken] = useState<string>(() => {
-    return localStorage.getItem('repoguard-github-token-custom') || '';
-  });
 
   const handleGithubSignIn = () => {
     // Redirect to backend OAuth login endpoint which will forward to GitHub
@@ -197,7 +202,6 @@ export default function App() {
             localStorage.setItem('repoguard-github-linked', 'true');
             localStorage.setItem('repoguard-github-user', data.user);
             localStorage.setItem('repoguard-github-avatar', data.avatar || '');
-            localStorage.setItem('repoguard-github-token', data.access_token);
           }
         } catch (error) {
           console.error("OAuth flow failed:", error);
@@ -212,28 +216,22 @@ export default function App() {
   }, []);
 
   const handleDisconnect = async () => {
-    const token = localStorage.getItem('repoguard-github-token');
-    if (token) {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
-      await fetch(`${baseUrl}/api/auth/revoke`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ access_token: token })
-      }).catch(() => { });
-    }
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+    await fetch(`${baseUrl}/api/auth/revoke`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include'
+    }).catch(() => { });
 
     window.history.replaceState({}, document.title, window.location.pathname);
 
     localStorage.removeItem('repoguard-github-linked');
     localStorage.removeItem('repoguard-github-user');
     localStorage.removeItem('repoguard-github-avatar');
-    localStorage.removeItem('repoguard-github-token-custom');
-    localStorage.removeItem('repoguard-github-token');
 
     setGithubConnected(false);
     setGithubConnectedUser('');
     setGithubAvatar('');
-    setGithubToken('');
     setRepoSearchQuery('');
     setRepoUrl('https://github.com/');
   };
@@ -248,20 +246,14 @@ export default function App() {
       const fetchRepos = async () => {
         setReposLoading(true);
         try {
-          const token = githubToken || localStorage.getItem('repoguard-github-token-custom') || localStorage.getItem('repoguard-github-token');
-          let url = 'https://api.github.com/user/repos?per_page=50&sort=updated';
-          const headers: Record<string, string> = {
-            'Accept': 'application/vnd.github.v3+json'
-          };
-
-          if (token) {
-            headers['Authorization'] = `token ${token}`;
-          } else if (githubConnectedUser) {
-            // Fallback for public repos if no token is available
-            url = `https://api.github.com/users/${githubConnectedUser}/repos?per_page=50&sort=updated`;
+          const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+          let url = `${baseUrl}/api/repos`;
+          
+          if (githubConnectedUser) {
+             url += `?user=${encodeURIComponent(githubConnectedUser)}`;
           }
 
-          const response = await fetch(url, { headers });
+          const response = await fetch(url, { credentials: 'include' });
           if (response.ok) {
             const data = await response.json();
             setRepositories(data);
@@ -280,7 +272,7 @@ export default function App() {
     } else {
       setRepositories([]);
     }
-  }, [githubConnected, githubConnectedUser, githubToken]);
+  }, [githubConnected, githubConnectedUser]);
 
 
 
@@ -382,10 +374,6 @@ export default function App() {
     const reviewHeaders: Record<string, string> = {
       'Content-Type': 'application/json'
     };
-    if (githubToken) reviewHeaders['x-github-token'] = githubToken;
-    const storedKey = localStorage.getItem('user_gemini_key');
-    if (storedKey) reviewHeaders['x-gemini-key'] = storedKey;
-
     const requestBody = {
       repo_url: trimmedUrl,
       pr_number: prNumber ? parseInt(prNumber, 10) : undefined
@@ -1047,7 +1035,7 @@ export default function App() {
                             {isKeyApplied ? '✓ Applied' : 'Apply Key'}
                           </button>
                         </div>
-                        <p className="text-[11px] text-slate-500 font-sans mt-1 leading-relaxed">If applied, requests will route using your personal token quota. The key is securely stored in your local browser storage.</p>
+                        <p className="text-[11px] text-slate-500 font-sans mt-1 leading-relaxed">If applied, requests will route using your personal token quota. The key is securely stored in an HttpOnly cookie.</p>
                       </div>
                     </div>
                   </motion.div>
