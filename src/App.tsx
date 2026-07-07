@@ -864,6 +864,7 @@ export default function App() {
                           </form>
                         </div>
                       )}
+                    </div>
                   </div>
                 </motion.div>
               )}
