@@ -694,9 +694,9 @@ export default function App() {
                   animate={{ opacity: 1, x: 0, scale: 1 }}
                   exit={{ opacity: 0, x: -60, scale: 0.98 }}
                   transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                  className="max-w-[1500px] w-full mx-auto py-4 md:py-8 grid grid-cols-1 md:grid-cols-12 gap-8 items-start"
+                  className="max-w-2xl w-full mx-auto py-4 md:py-12 flex flex-col items-center"
                 >
-                  <div className="md:col-span-7 space-y-8 w-full">
+                  <div className="space-y-8 w-full">
 
                     {/* Visual Head section description */}
                     <div className="text-center space-y-3.5 animate-fade-in">
@@ -864,19 +864,6 @@ export default function App() {
                           </form>
                         </div>
                       )}
-                    </div>
-
-                  </div>
-
-                  {/* Right column: Chatbot Companion Panel (Spans 5 on md+) */}
-                  <div className="md:col-span-5 w-full flex flex-col justify-start">
-                    <ChatbotCompanion
-                      activeReportContext={activeReviewResult ? {
-                        repoUrl: repoUrl,
-                        verdict: activeReviewResult.final_summary.verdict,
-                        issues: activeReviewResult.code_review.issues
-                      } : undefined}
-                    />
                   </div>
                 </motion.div>
               )}
