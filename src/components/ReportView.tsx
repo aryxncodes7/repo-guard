@@ -168,8 +168,8 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack }: Repo
           {/* Main Verdict Card */}
           <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-sm relative overflow-hidden group hover:border-slate-300 dark:hover:border-zinc-700 transition-all border-l-4 border-red-500">
             <div className={`absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r ${activeReviewResult.final_summary.verdict === 'approve' ? 'from-emerald-500 to-teal-400' :
-                activeReviewResult.final_summary.verdict === 'request_changes' ? 'from-rose-500 to-orange-400' :
-                  'from-amber-500 to-yellow-400'
+              activeReviewResult.final_summary.verdict === 'request_changes' ? 'from-rose-500 to-orange-400' :
+                'from-amber-500 to-yellow-400'
               }`} />
 
             <span className="text-[10px] font-sans text-slate-400 dark:text-zinc-500 uppercase tracking-wide block font-extrabold">
@@ -262,8 +262,8 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack }: Repo
               <div className="space-y-1">
                 <span className="text-[10px] font-sans text-slate-400 dark:text-zinc-500 uppercase block font-extrabold">RISK CLASSIFIER</span>
                 <span className={`inline-flex px-2.5 py-1 rounded-full font-sans text-[9px] font-extrabold border uppercase leading-none tracking-wider ${activeReviewResult.triage.risk_level === 'high' ? 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900' :
-                    activeReviewResult.triage.risk_level === 'medium' ? 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900' :
-                      'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900'
+                  activeReviewResult.triage.risk_level === 'medium' ? 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900' :
+                    'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900'
                   }`}>
                   {activeReviewResult.triage.risk_level}
                 </span>
@@ -317,7 +317,7 @@ export default function ReportView({ activeReviewResult, repoUrl, onBack }: Repo
           <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-sm space-y-5 animate-fade-in relative overflow-hidden">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-2.5">
               <span className="text-[10px] font-sans text-slate-400 dark:text-zinc-500 uppercase tracking-widest font-extrabold flex items-center gap-1.5">
-                <span className="text-sm">🎛️</span> REPOSITORY AUDIT MATRIX
+                <span className="text-sm"> </span> REPOSITORY AUDIT MATRIX
               </span>
             </div>
 

@@ -191,6 +191,7 @@ Inside the **Analysis Settings** modal (accessed via the Settings gear icon in t
 > RepoGuard handles sensitive codebase scans. For public deployments:
 > - Do not commit your `.env` files. Ensure they are listed in your `.gitignore`.
 > - If deploying to cloud platforms, store `GEMINI_API_KEY`, `GITHUB_CLIENT_ID`, and `GITHUB_CLIENT_SECRET` as secure system environment variables.
+> - **Dangerous Advice Warning:** Never store API keys in `localStorage`. Always implement server-side session management or use secure, HttpOnly cookies for key management.
 
 ---
 
