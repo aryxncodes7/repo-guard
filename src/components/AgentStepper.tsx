@@ -38,12 +38,6 @@ export default function AgentStepper({ agents = [] }: AgentStepperProps) {
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         className="space-y-2.5 text-center"
       >
-        <div className="w-12 h-12 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center justify-center mx-auto text-emerald-600 dark:text-emerald-400 shadow-sm relative">
-          <Cpu className="w-6 h-6 animate-pulse" />
-          <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white dark:border-zinc-900 flex items-center justify-center">
-            <span className="text-[8px] text-white font-sans font-bold leading-none">AI</span>
-          </div>
-        </div>
         <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-zinc-100 font-sans mt-3">
           Running Real Multi-Agent Analysis
         </h2>

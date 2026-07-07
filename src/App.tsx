@@ -439,24 +439,26 @@ export default function App() {
     };
 
     // Timeline steps progression
-    setTimeout(() => {
+    const t1 = setTimeout(() => {
       updateAgentStatus('triage', 'completed');
       updateAgentStatus('code_review', 'running');
     }, intervalTime);
 
-    setTimeout(() => {
+    const t2 = setTimeout(() => {
       updateAgentStatus('code_review', 'completed');
       updateAgentStatus('docs', 'running');
     }, intervalTime * 2);
 
-    setTimeout(() => {
+    const t3 = setTimeout(() => {
       updateAgentStatus('docs', 'completed');
       updateAgentStatus('synthesizer', 'running');
     }, intervalTime * 3);
 
-    // Final result synthesis handler (wait for both the simulation AND network response)
-    setTimeout(async () => {
-      const responseResult = await fetchPromise;
+    // Final result synthesis handler (wait for network response)
+    fetchPromise.then((responseResult) => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
 
       if (hasError || !responseResult) {
         setErrorMessage(fallbackErrorMessage || 'Failed to construct structured AI report.');
@@ -464,6 +466,9 @@ export default function App() {
         setErrorTimestamp(new Date().toISOString().replace('T', ' ').substring(0, 19));
         setReviewState('error');
       } else {
+        updateAgentStatus('triage', 'completed');
+        updateAgentStatus('code_review', 'completed');
+        updateAgentStatus('docs', 'completed');
         updateAgentStatus('synthesizer', 'completed');
         // brief delay for satisfaction trigger
         setTimeout(() => {
@@ -471,7 +476,7 @@ export default function App() {
           setReviewState('report');
         }, 500);
       }
-    }, intervalTime * 4);
+    });
   };
 
 
