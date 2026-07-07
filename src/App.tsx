@@ -69,7 +69,6 @@ const RepoGuardOctocatLogo = ({ className = "w-10 h-10", animate = true }: { cla
     </div>
   );
 };
-
 const RepoGuardLogoBig = () => (
   <div className="relative w-36 h-36 mx-auto flex items-center justify-center group">
     {/* Concentric rotating outer ring */}
