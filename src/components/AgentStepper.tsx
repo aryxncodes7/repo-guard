@@ -136,13 +136,6 @@ export default function AgentStepper({ agents = [] }: AgentStepperProps) {
             />
           </div>
         </div>
-
-        <div className="text-center pt-1 animate-pulse">
-          <span className="text-[9px] font-sans text-slate-400 dark:text-zinc-500 uppercase tracking-tight">
-            * Calling Google backend servers for live analysis and web insights validation
-          </span>
-        </div>
-
       </motion.div>
 
     </div>
